@@ -12,7 +12,7 @@ export function Header() {
         </h1>
       </div>
       <p className="text-lg text-muted-foreground max-w-2xl">
-        Your simple tool for fetching and exploring global stock market data.
+        global stock market data
       </p>
     </header>
   );
