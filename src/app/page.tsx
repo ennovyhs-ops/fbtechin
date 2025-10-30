@@ -98,7 +98,7 @@ export default function Home() {
                       <FormControl>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input placeholder="e.g., AAPL, MSFT, 0005.HK" className="pl-10" {...field} />
+                          <Input placeholder="e.g., GOOG, 0005.HK" className="pl-10" {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
