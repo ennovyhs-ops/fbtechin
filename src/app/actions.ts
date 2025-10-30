@@ -25,17 +25,15 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
 
     const data = await response.json();
 
-    if (data['Error Message']) {
-      return { error: `Invalid ticker symbol or API error: ${data['Error Message']}` };
-    }
+    const timeSeries = data['Time Series (Daily)'];
     
     if (data['Note']) {
         return { error: `API rate limit likely exceeded. Please wait a moment and try again. The free plan is limited.` };
     }
 
-    const timeSeries = data['Time Series (Daily)'];
-    if (!timeSeries) {
-      return { error: `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.` };
+    if (data['Error Message'] || !timeSeries) {
+      const errorMessage = data['Error Message'] || `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.`;
+      return { error: `Invalid ticker symbol or API error: ${errorMessage}` };
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
