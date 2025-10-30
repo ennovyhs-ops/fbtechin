@@ -25,14 +25,16 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
 
     const data = await response.json();
 
-    const timeSeries = data['Time Series (Daily)'];
-    
+    // Handle API rate limiting note
     if (data['Note']) {
         return { error: `API rate limit likely exceeded. Please wait a moment and try again. The free plan is limited.` };
     }
 
-    if (data['Error Message'] || !timeSeries) {
-      const errorMessage = data['Error Message'] || `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.`;
+    const timeSeries = data['Time Series (Daily)'];
+    
+    // Handle both "Error Message" and "Information" for invalid tickers
+    if (data['Error Message'] || data['Information'] || !timeSeries) {
+      const errorMessage = data['Error Message'] || data['Information'] || `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.`;
       return { error: `Invalid ticker symbol or API error: ${errorMessage}` };
     }
 
