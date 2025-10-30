@@ -81,6 +81,8 @@ export default function Home() {
   };
 
   const latestData = marketData?.[0];
+  const isForex = submittedTicker && /^[A-Z]{6}$/.test(submittedTicker);
+
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -88,8 +90,8 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Search Stock Data</CardTitle>
-            <CardDescription>Enter a stock ticker symbol to retrieve end-of-day market data.</CardDescription>
+            <CardTitle className="font-headline text-2xl">Search Market Data</CardTitle>
+            <CardDescription>Enter a stock ticker or currency pair to retrieve end-of-day market data.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -99,11 +101,11 @@ export default function Home() {
                   name="ticker"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ticker Symbol</FormLabel>
+                      <FormLabel>Ticker Symbol / Currency Pair</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input placeholder="e.g., GOOG, 0005.HK" className="pl-10" {...field} />
+                          <Input placeholder="e.g., GOOG, 0005.HK, EURUSD" className="pl-10" {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -150,7 +152,7 @@ export default function Home() {
              <CardContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-end gap-2">
-                      <p className="text-4xl md:text-5xl font-bold text-primary">${latestData.close}</p>
+                      <p className="text-4xl md:text-5xl font-bold text-primary">{isForex ? '' : '$'}{latestData.close}</p>
                       <p className="text-lg text-muted-foreground font-medium pb-1">Close</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
@@ -158,21 +160,21 @@ export default function Home() {
                         <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Open</p>
-                            <p className="font-semibold">${latestData.open}</p>
+                            <p className="font-semibold">{isForex ? '' : '$'}{latestData.open}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingUp className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">High</p>
-                            <p className="font-semibold">${latestData.high}</p>
+                            <p className="font-semibold">{isForex ? '' : '$'}{latestData.high}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingDown className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Low</p>
-                            <p className="font-semibold">${latestData.low}</p>
+                            <p className="font-semibold">{isForex ? '' : '$'}{latestData.low}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -221,5 +223,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

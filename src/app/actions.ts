@@ -14,12 +14,28 @@ export async function getApiKey() {
   return serverConfig.alphaVantageApiKey;
 }
 
+function isCurrencyPair(ticker: string): boolean {
+  // Simple check for a 6-letter string, common for currency pairs like EURUSD
+  return /^[A-Z]{6}$/.test(ticker);
+}
+
 export async function fetchMarketData(ticker: string, apiKey: string | null): Promise<FetchResult> {
   if (!apiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
+  
+  let url = '';
+  let isForex = false;
 
-  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apiKey}&outputsize=full`;
+  if (isCurrencyPair(ticker)) {
+    const from_symbol = ticker.substring(0, 3);
+    const to_symbol = ticker.substring(3, 6);
+    url = `${BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${apiKey}&outputsize=full`;
+    isForex = true;
+  } else {
+    url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apiKey}&outputsize=full`;
+  }
+
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -32,8 +48,9 @@ export async function fetchMarketData(ticker: string, apiKey: string | null): Pr
     if (data['Note']) {
         return { error: `API rate limit likely exceeded. Please wait a moment and try again. The free plan is limited.` };
     }
-
-    const timeSeries = data['Time Series (Daily)'];
+    
+    const timeSeriesKey = isForex ? 'Time Series FX (Daily)' : 'Time Series (Daily)';
+    const timeSeries = data[timeSeriesKey];
     
     if (data['Error Message'] || data['Information'] || !timeSeries) {
       const errorMessage = data['Error Message'] || data['Information'] || `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.`;
@@ -42,11 +59,11 @@ export async function fetchMarketData(ticker: string, apiKey: string | null): Pr
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
       date,
-      open: parseFloat(values['1. open']).toFixed(2),
-      high: parseFloat(values['2. high']).toFixed(2),
-      low: parseFloat(values['3. low']).toFixed(2),
-      close: parseFloat(values['4. close']).toFixed(2),
-      volume: values['5. volume'],
+      open: parseFloat(values['1. open']).toFixed(isForex ? 4 : 2),
+      high: parseFloat(values['2. high']).toFixed(isForex ? 4 : 2),
+      low: parseFloat(values['3. low']).toFixed(isForex ? 4 : 2),
+      close: parseFloat(values['4. close']).toFixed(isForex ? 4 : 2),
+      volume: values['5. volume'] || 'N/A',
     }));
 
     return { data: marketData.slice(0, 730) };

@@ -16,6 +16,8 @@ interface MarketDataTableProps {
 }
 
 export function MarketDataTable({ data, ticker }: MarketDataTableProps) {
+  const isForex = ticker && /^[A-Z]{6}$/.test(ticker);
+
   return (
     <Card>
       <CardHeader>
@@ -39,11 +41,11 @@ export function MarketDataTable({ data, ticker }: MarketDataTableProps) {
               {data.map((day) => (
                 <TableRow key={day.date}>
                   <TableCell className="font-medium">{day.date}</TableCell>
-                  <TableCell className="text-right">{day.open}</TableCell>
-                  <TableCell className="text-right">{day.high}</TableCell>
-                  <TableCell className="text-right">{day.low}</TableCell>
-                  <TableCell className="text-right">{day.close}</TableCell>
-                  <TableCell className="text-right">{Number(day.volume).toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{isForex ? '' : '$'}{day.open}</TableCell>
+                  <TableCell className="text-right">{isForex ? '' : '$'}{day.high}</TableCell>
+                  <TableCell className="text-right">{isForex ? '' : '$'}{day.low}</TableCell>
+                  <TableCell className="text-right">{isForex ? '' : '$'}{day.close}</TableCell>
+                  <TableCell className="text-right">{day.volume === 'N/A' ? 'N/A' : Number(day.volume).toLocaleString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
