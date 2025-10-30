@@ -8,7 +8,7 @@ export function Header() {
           <LineChart className="h-8 w-8 text-primary" />
         </div>
         <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">
-          Market Data Retriever
+          Market Data
         </h1>
       </div>
       <p className="text-lg text-muted-foreground max-w-2xl">
