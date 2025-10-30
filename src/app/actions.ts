@@ -1,6 +1,6 @@
 'use server';
 
-import type { MarketData, SearchResult } from '@/lib/types';
+import type { MarketData, SearchResult, RsiData, MacdData, BbandsData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
@@ -14,6 +14,13 @@ interface FetchResult {
 interface SearchFetchResult {
   data?: SearchResult[] | null;
   error?: string | null;
+}
+
+interface IndicatorsResult {
+    rsi?: RsiData[];
+    macd?: MacdData[];
+    bbands?: BbandsData[];
+    error?: string | null;
 }
 
 export async function getApiKey() {
@@ -96,6 +103,84 @@ export async function fetchMarketData(ticker: string, apiKey: string | null): Pr
     return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
   }
 }
+
+async function fetchIndicatorData(apiKey: string, ticker: string, func: 'RSI' | 'MACD' | 'BBANDS', timePeriod: number = 20): Promise<any> {
+    const isForex = isCurrencyPair(ticker);
+    const isCrypto = isCryptoPair(ticker);
+    let symbol = ticker;
+
+    if (isForex || isCrypto) {
+        // Indicators for forex/crypto use the symbols directly
+    }
+
+    let url = `${BASE_URL}?function=${func}&symbol=${symbol}&interval=daily&series_type=close&apikey=${apiKey}`;
+    if(func === 'RSI') url += `&time_period=14`;
+    if(func === 'MACD') url += `&fastperiod=12&slowperiod=26&signalperiod=9`;
+    if(func === 'BBANDS') url += `&time_period=${timePeriod}&nbdevup=2&nbdevdn=2`;
+
+    try {
+        const response = await fetch(url, { cache: 'no-store' });
+        const data = await response.json();
+
+        if (data['Note']) {
+            return { error: 'Rate limit' };
+        }
+        if (data['Error Message'] || !data[`Technical Analysis: ${func}`]) {
+            return null;
+        }
+
+        const indicatorData = data[`Technical Analysis: ${func}`];
+        return Object.entries(indicatorData).map(([date, values]: [string, any]) => ({
+            date,
+            ...values,
+        }));
+    } catch (err) {
+        console.error(`Failed to fetch ${func} for ${ticker}`, err);
+        return null;
+    }
+}
+
+export async function fetchAllIndicators(ticker: string, apiKey: string | null): Promise<IndicatorsResult> {
+    if (!apiKey) {
+        return { error: 'API key not configured.' };
+    }
+
+    if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
+        return { error: 'Technical indicators are not supported for currency or crypto pairs in this version.' };
+    }
+
+    try {
+        const [rsi, macd, bbands] = await Promise.all([
+            fetchIndicatorData(apiKey, ticker, 'RSI'),
+            fetchIndicatorData(apiKey, ticker, 'MACD'),
+            fetchIndicatorData(apiKey, ticker, 'BBANDS'),
+        ]);
+
+        const createError = (name: string, data: any) => {
+            if (data?.error === 'Rate limit') return `API rate limit exceeded while fetching ${name}. Please wait and try again.`;
+            return null;
+        };
+
+        const rsiError = createError('RSI', rsi);
+        if (rsiError) return { error: rsiError };
+        
+        const macdError = createError('MACD', macd);
+        if (macdError) return { error: macdError };
+
+        const bbandsError = createError('BBANDS', bbands);
+        if (bbandsError) return { error: bbandsError };
+
+        return {
+            rsi: rsi?.slice(0, 730) || [],
+            macd: macd?.slice(0, 730) || [],
+            bbands: bbands?.slice(0, 730) || [],
+        };
+    } catch (err) {
+        console.error('An unexpected error occurred while fetching indicators', err);
+        return { error: 'Could not fetch technical indicators.' };
+    }
+}
+
 
 export async function searchSymbols(keywords: string, apiKey: string | null): Promise<SearchFetchResult> {
   if (!apiKey) {

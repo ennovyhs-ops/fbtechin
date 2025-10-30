@@ -14,3 +14,22 @@ export interface SearchResult {
   region: string;
   currency: string;
 }
+
+export type RsiData = {
+  date: string;
+  RSI: string;
+}
+
+export type MacdData = {
+  date: string;
+  'MACD_Hist': string;
+  'MACD_Signal': string;
+  'MACD': string;
+}
+
+export type BbandsData = {
+    date: string;
+    'Real Upper Band': string;
+    'Real Lower Band': string;
+    'Real Middle Band': string;
+}

@@ -7,8 +7,8 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
-import type { MarketData, SearchResult } from '@/lib/types';
-import { fetchMarketData, getApiKey, searchSymbols } from '@/app/actions';
+import type { MarketData, SearchResult, RsiData, MacdData, BbandsData } from '@/lib/types';
+import { fetchMarketData, getApiKey, searchSymbols, fetchAllIndicators } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { isCurrencyPair } from '@/lib/utils';
+import { TechnicalIndicators } from '@/components/technical-indicators';
 
 
 const FormSchema = z.object({
@@ -40,6 +41,10 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
+
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[]} | null>(null);
+  const [indicatorsLoading, setIndicatorsLoading] = useState(false);
+  const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
 
   useEffect(() => {
     getApiKey().then(setApiKey);
@@ -89,6 +94,8 @@ export default function Home() {
     setIsHistoryExpanded(false);
     setIsSearchPopoverOpen(false);
     setSearchResults([]);
+    setIndicatorData(null);
+    setIndicatorsError(null);
 
     startTransition(async () => {
       const result = await fetchMarketData(values.ticker, apiKey);
@@ -97,6 +104,20 @@ export default function Home() {
       } else if (result.data) {
         setMarketData(result.data);
         setSubmittedTicker(values.ticker);
+        
+        // Fetch indicators
+        setIndicatorsLoading(true);
+        const indicatorsResult = await fetchAllIndicators(values.ticker, apiKey);
+        if (indicatorsResult.error) {
+          setIndicatorsError(indicatorsResult.error);
+        } else {
+          setIndicatorData({
+            rsi: indicatorsResult.rsi || [],
+            macd: indicatorsResult.macd || [],
+            bbands: indicatorsResult.bbands || [],
+          });
+        }
+        setIndicatorsLoading(false);
       }
     });
   }
@@ -286,6 +307,15 @@ export default function Home() {
                 </Collapsible>
              </CardFooter>
            </Card>
+          )}
+
+          {submittedTicker && (
+            <TechnicalIndicators 
+                ticker={submittedTicker}
+                data={indicatorData}
+                loading={indicatorsLoading}
+                error={indicatorsError}
+            />
           )}
           
           {submittedTicker && marketData && marketData.length > 0 && (
