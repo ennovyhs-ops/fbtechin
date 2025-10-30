@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Search, TrendingUp, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download } from 'lucide-react';
 
 import type { MarketData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -54,6 +54,27 @@ export default function Home() {
     });
   }
   
+  const handleExport = () => {
+    if (!marketData || !submittedTicker) return;
+
+    const headers = ['date', 'open', 'high', 'low', 'close', 'volume'];
+    const csvContent = [
+      headers.join(','),
+      ...marketData.map(row => 
+        [row.date, row.open, row.high, row.low, row.close, row.volume].join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${submittedTicker}_history.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const latestData = marketData?.[0];
 
   return (
@@ -128,14 +149,20 @@ export default function Home() {
                 </div>
              </CardContent>
              <CardFooter>
-                <Collapsible open={isHistoryExpanded} onOpenChange={setIsHistoryExpanded}>
+                <Collapsible open={isHistoryExpanded} onOpenChange={setIsHistoryExpanded} className="w-full">
                     <div className="flex flex-col items-start gap-4">
-                        <CollapsibleTrigger asChild>
-                            <Button variant="outline">
-                                {isHistoryExpanded ? 'Hide' : 'Show'} Full History
-                                {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
+                        <div className="flex gap-2">
+                            <CollapsibleTrigger asChild>
+                                <Button variant="outline">
+                                    {isHistoryExpanded ? 'Hide' : 'Show'} Full History
+                                    {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
+                                </Button>
+                            </CollapsibleTrigger>
+                            <Button variant="outline" onClick={handleExport}>
+                                CSV Export
+                                <Download className="ml-2" />
                             </Button>
-                        </CollapsibleTrigger>
+                        </div>
                         <CollapsibleContent className="w-full">
                             {marketData && marketData.length > 0 && (
                                 <div className="animate-in fade-in-50 duration-500">
