@@ -20,7 +20,7 @@ import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { isCurrencyPair } from '@/lib/utils';
+import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 
 
@@ -46,48 +46,17 @@ export default function Home() {
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
 
-  useEffect(() => {
-    getApiKey().then(setApiKey);
-  }, []);
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      ticker: '',
+      ticker: 'GOOG',
     },
   });
 
   const { watch, setValue } = form;
   const tickerValue = watch('ticker');
-
-  useEffect(() => {
-    setSearchQuery(tickerValue);
-  }, [tickerValue]);
-
-  useEffect(() => {
-    if (debouncedSearchQuery && debouncedSearchQuery.length > 1) {
-      setIsSearching(true);
-      setIsSearchPopoverOpen(true);
-      searchSymbols(debouncedSearchQuery, apiKey).then(result => {
-        if (result.data) {
-          setSearchResults(result.data);
-        }
-        setIsSearching(false);
-      });
-    } else {
-      setSearchResults([]);
-      setIsSearchPopoverOpen(false);
-    }
-  }, [debouncedSearchQuery, apiKey]);
-
-  const handleSelectSuggestion = (symbol: string) => {
-    setValue('ticker', symbol);
-    setIsSearchPopoverOpen(false);
-    setSearchResults([]);
-    form.handleSubmit(onSubmit)();
-  };
-
-  async function onSubmit(values: z.infer<typeof FormSchema>) {
+  
+  const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     setError(null);
     setMarketData(null);
     setSubmittedTicker(null);
@@ -120,7 +89,45 @@ export default function Home() {
         setIndicatorsLoading(false);
       }
     });
-  }
+  }, [apiKey]);
+
+  useEffect(() => {
+    getApiKey().then(key => {
+        setApiKey(key);
+        if (key) {
+            // Automatically run a sample search for GOOG on page load
+            onSubmit({ ticker: 'GOOG' });
+        }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
+
+  useEffect(() => {
+    setSearchQuery(tickerValue);
+  }, [tickerValue]);
+
+  useEffect(() => {
+    if (debouncedSearchQuery && debouncedSearchQuery.length > 1) {
+      setIsSearching(true);
+      setIsSearchPopoverOpen(true);
+      searchSymbols(debouncedSearchQuery, apiKey).then(result => {
+        if (result.data) {
+          setSearchResults(result.data);
+        }
+        setIsSearching(false);
+      });
+    } else {
+      setSearchResults([]);
+      setIsSearchPopoverOpen(false);
+    }
+  }, [debouncedSearchQuery, apiKey]);
+
+  const handleSelectSuggestion = (symbol: string) => {
+    setValue('ticker', symbol);
+    setIsSearchPopoverOpen(false);
+    setSearchResults([]);
+    form.handleSubmit(onSubmit)();
+  };
   
   const handleExport = () => {
     if (!marketData || !submittedTicker) return;
@@ -144,7 +151,7 @@ export default function Home() {
   };
 
   const latestData = marketData?.[0];
-  const isForexOrCrypto = submittedTicker && isCurrencyPair(submittedTicker);
+  const isForexOrCrypto = submittedTicker && (isCurrencyPair(submittedTicker) || isCryptoPair(submittedTicker));
 
 
   return (
@@ -247,9 +254,9 @@ export default function Home() {
              </CardHeader>
              <CardContent>
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-end gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
                       <p className="text-4xl md:text-5xl font-bold text-primary">{isForexOrCrypto ? '' : '$'}{latestData.close}</p>
-                      <p className="text-lg text-muted-foreground font-medium pb-1">Close</p>
+                      <p className="text-lg text-muted-foreground font-medium sm:pb-1">Close</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                     <div className="flex items-center gap-2">
