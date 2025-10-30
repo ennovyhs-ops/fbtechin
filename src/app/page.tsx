@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Search } from 'lucide-react';
+import { Loader2, AlertCircle, Search, TrendingUp, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 
 import type { MarketData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const FormSchema = z.object({
   ticker: z.string().min(1, 'Ticker symbol is required.').max(10, 'Ticker symbol is too long.').toUpperCase(),
@@ -27,6 +28,7 @@ export default function Home() {
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -39,6 +41,7 @@ export default function Home() {
     setError(null);
     setMarketData(null);
     setSubmittedTicker(null);
+    setIsHistoryExpanded(false);
 
     startTransition(async () => {
       const result = await fetchMarketData(values.ticker);
@@ -50,6 +53,8 @@ export default function Home() {
       }
     });
   }
+  
+  const latestData = marketData?.[0];
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -105,10 +110,43 @@ export default function Home() {
             </Alert>
           )}
 
-          {marketData && marketData.length > 0 && (
-            <div className="animate-in fade-in-50 duration-500">
-              <MarketDataTable data={marketData} ticker={submittedTicker!} />
-            </div>
+          {latestData && submittedTicker && (
+             <Card className="animate-in fade-in-50 duration-500">
+             <CardHeader>
+               <CardTitle className="font-headline text-2xl">
+                 Latest Price for {submittedTicker}
+               </CardTitle>
+               <CardDescription className="flex items-center gap-2 text-sm">
+                 <Calendar className="h-4 w-4" />
+                 <span>As of {new Date(latestData.date).toDateString()}</span>
+               </CardDescription>
+             </CardHeader>
+             <CardContent>
+                <div className="flex items-end gap-2">
+                    <p className="text-4xl font-bold text-primary">${latestData.close}</p>
+                    <p className="text-lg text-muted-foreground">USD</p>
+                </div>
+             </CardContent>
+             <CardFooter>
+                <Collapsible open={isHistoryExpanded} onOpenChange={setIsHistoryExpanded}>
+                    <div className="flex flex-col items-start gap-4">
+                        <CollapsibleTrigger asChild>
+                            <Button variant="outline">
+                                {isHistoryExpanded ? 'Hide' : 'Show'} Full History
+                                {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
+                            </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="w-full">
+                            {marketData && marketData.length > 0 && (
+                                <div className="animate-in fade-in-50 duration-500">
+                                    <MarketDataTable data={marketData} ticker={submittedTicker} />
+                                </div>
+                            )}
+                        </CollapsibleContent>
+                    </div>
+                </Collapsible>
+             </CardFooter>
+           </Card>
           )}
           
           {submittedTicker && marketData && marketData.length > 0 && (
