@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, ArrowUp, ArrowDown, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
 
 import type { MarketData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -143,9 +143,41 @@ export default function Home() {
                </CardDescription>
              </CardHeader>
              <CardContent>
-                <div className="flex items-end gap-2">
-                    <p className="text-4xl font-bold text-primary">${latestData.close}</p>
-                    <p className="text-lg text-muted-foreground">USD</p>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-end gap-2">
+                      <p className="text-4xl font-bold text-primary">${latestData.close}</p>
+                      <p className="text-lg text-muted-foreground font-medium">Close</p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                        <Minus className="text-muted-foreground" />
+                        <div>
+                            <p className="text-muted-foreground">Open</p>
+                            <p className="font-semibold">${latestData.open}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <TrendingUp className="text-muted-foreground" />
+                        <div>
+                            <p className="text-muted-foreground">High</p>
+                            <p className="font-semibold">${latestData.high}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <TrendingDown className="text-muted-foreground" />
+                        <div>
+                            <p className="text-muted-foreground">Low</p>
+                            <p className="font-semibold">${latestData.low}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Scale className="text-muted-foreground" />
+                        <div>
+                            <p className="text-muted-foreground">Volume</p>
+                            <p className="font-semibold">{Number(latestData.volume).toLocaleString()}</p>
+                        </div>
+                    </div>
+                  </div>
                 </div>
              </CardContent>
              <CardFooter>
