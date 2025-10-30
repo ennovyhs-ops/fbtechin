@@ -15,7 +15,7 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
 
-  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${API_KEY}&outputsize=compact`;
+  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${API_KEY}&outputsize=full`;
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -47,8 +47,8 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
       volume: values['5. volume'],
     }));
 
-    // Return the last 30 days of data
-    return { data: marketData.slice(0, 30) };
+    // Return up to 2 years of data (approximately 730 days)
+    return { data: marketData.slice(0, 730) };
   } catch (err) {
     console.error(err);
     return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
