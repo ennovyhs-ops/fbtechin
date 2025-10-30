@@ -1,8 +1,8 @@
 'use server';
 
 import type { MarketData } from '@/lib/types';
+import { serverConfig } from '@/lib/server-config';
 
-const API_KEY = process.env.ALPHAVANTAGE_API_KEY;
 const BASE_URL = 'https://www.alphavantage.co/query';
 
 interface FetchResult {
@@ -10,12 +10,16 @@ interface FetchResult {
   error?: string | null;
 }
 
-export async function fetchMarketData(ticker: string): Promise<FetchResult> {
-  if (!API_KEY) {
+export async function getApiKey() {
+  return serverConfig.alphaVantageApiKey;
+}
+
+export async function fetchMarketData(ticker: string, apiKey: string | null): Promise<FetchResult> {
+  if (!apiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
 
-  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${API_KEY}&outputsize=full`;
+  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apiKey}&outputsize=full`;
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -25,14 +29,12 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
 
     const data = await response.json();
 
-    // Handle API rate limiting note
     if (data['Note']) {
         return { error: `API rate limit likely exceeded. Please wait a moment and try again. The free plan is limited.` };
     }
 
     const timeSeries = data['Time Series (Daily)'];
     
-    // Handle both "Error Message" and "Information" for invalid tickers
     if (data['Error Message'] || data['Information'] || !timeSeries) {
       const errorMessage = data['Error Message'] || data['Information'] || `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.`;
       return { error: `Invalid ticker symbol or API error: ${errorMessage}` };
@@ -47,7 +49,6 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
       volume: values['5. volume'],
     }));
 
-    // Return up to 2 years of data (approximately 730 days)
     return { data: marketData.slice(0, 730) };
   } catch (err) {
     console.error(err);

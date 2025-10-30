@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, ArrowUp, ArrowDown, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
 
 import type { MarketData } from '@/lib/types';
-import { fetchMarketData } from '@/app/actions';
+import { fetchMarketData, getApiKey } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +29,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    getApiKey().then(setApiKey);
+  }, []);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -44,7 +49,7 @@ export default function Home() {
     setIsHistoryExpanded(false);
 
     startTransition(async () => {
-      const result = await fetchMarketData(values.ticker);
+      const result = await fetchMarketData(values.ticker, apiKey);
       if (result.error) {
         setError(result.error);
       } else if (result.data) {
@@ -107,7 +112,7 @@ export default function Home() {
                 />
               </CardContent>
               <CardFooter>
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" disabled={isPending || !apiKey}>
                   {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isPending ? 'Retrieving Data...' : 'Get Data'}
                 </Button>
