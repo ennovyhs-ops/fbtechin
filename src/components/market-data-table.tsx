@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 
 interface MarketDataTableProps {
   data: MarketData[];
@@ -16,7 +17,7 @@ interface MarketDataTableProps {
 }
 
 export function MarketDataTable({ data, ticker }: MarketDataTableProps) {
-  const isForex = ticker && /^[A-Z]{6}$/.test(ticker);
+  const isForexOrCrypto = ticker && (isCurrencyPair(ticker) || isCryptoPair(ticker));
 
   return (
     <Card>
@@ -41,10 +42,10 @@ export function MarketDataTable({ data, ticker }: MarketDataTableProps) {
               {data.map((day) => (
                 <TableRow key={day.date}>
                   <TableCell className="font-medium">{day.date}</TableCell>
-                  <TableCell className="text-right">{isForex ? '' : '$'}{day.open}</TableCell>
-                  <TableCell className="text-right">{isForex ? '' : '$'}{day.high}</TableCell>
-                  <TableCell className="text-right">{isForex ? '' : '$'}{day.low}</TableCell>
-                  <TableCell className="text-right">{isForex ? '' : '$'}{day.close}</TableCell>
+                  <TableCell className="text-right">{isForexOrCrypto ? '' : '$'}{day.open}</TableCell>
+                  <TableCell className="text-right">{isForexOrCrypto ? '' : '$'}{day.high}</TableCell>
+                  <TableCell className="text-right">{isForexOrCrypto ? '' : '$'}{day.low}</TableCell>
+                  <TableCell className="text-right">{isForexOrCrypto ? '' : '$'}{day.close}</TableCell>
                   <TableCell className="text-right">{day.volume === 'N/A' ? 'N/A' : Number(day.volume).toLocaleString()}</TableCell>
                 </TableRow>
               ))}

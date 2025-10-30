@@ -20,9 +20,11 @@ import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { isCurrencyPair } from '@/lib/utils';
+
 
 const FormSchema = z.object({
-  ticker: z.string().min(1, 'Ticker symbol is required.').max(10, 'Ticker symbol is too long.').toUpperCase(),
+  ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.').toUpperCase(),
 });
 
 export default function Home() {
@@ -121,7 +123,7 @@ export default function Home() {
   };
 
   const latestData = marketData?.[0];
-  const isForex = submittedTicker && isCurrencyPair(submittedTicker);
+  const isForexOrCrypto = submittedTicker && isCurrencyPair(submittedTicker);
 
 
   return (
@@ -131,7 +133,7 @@ export default function Home() {
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search Market Data</CardTitle>
-            <CardDescription>Enter a stock ticker or currency pair to retrieve end-of-day market data.</CardDescription>
+            <CardDescription>Enter a stock ticker, currency pair or crypto symbol to retrieve end-of-day market data.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -141,13 +143,13 @@ export default function Home() {
                   name="ticker"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ticker Symbol / Currency Pair</FormLabel>
+                      <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                        <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
                         <PopoverTrigger asChild>
                           <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <FormControl>
-                              <Input placeholder="e.g., GOOG, 0005.HK, EURUSD" className="pl-10" {...field} autoComplete="off" />
+                              <Input placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD" className="pl-10" {...field} autoComplete="off" />
                             </FormControl>
                           </div>
                         </PopoverTrigger>
@@ -225,7 +227,7 @@ export default function Home() {
              <CardContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-end gap-2">
-                      <p className="text-4xl md:text-5xl font-bold text-primary">{isForex ? '' : '$'}{latestData.close}</p>
+                      <p className="text-4xl md:text-5xl font-bold text-primary">{isForexOrCrypto ? '' : '$'}{latestData.close}</p>
                       <p className="text-lg text-muted-foreground font-medium pb-1">Close</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
@@ -233,21 +235,21 @@ export default function Home() {
                         <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Open</p>
-                            <p className="font-semibold">{isForex ? '' : '$'}{latestData.open}</p>
+                            <p className="font-semibold">{isForexOrCrypto ? '' : '$'}{latestData.open}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingUp className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">High</p>
-                            <p className="font-semibold">{isForex ? '' : '$'}{latestData.high}</p>
+                            <p className="font-semibold">{isForexOrCrypto ? '' : '$'}{latestData.high}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingDown className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Low</p>
-                            <p className="font-semibold">{isForex ? '' : '$'}{latestData.low}</p>
+                            <p className="font-semibold">{isForexOrCrypto ? '' : '$'}{latestData.low}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">

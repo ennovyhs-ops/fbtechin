@@ -2,6 +2,7 @@
 
 import type { MarketData, SearchResult } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
+import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
 const BASE_URL = 'https://www.alphavantage.co/query';
 
@@ -19,26 +20,45 @@ export async function getApiKey() {
   return serverConfig.alphaVantageApiKey;
 }
 
-function isCurrencyPair(ticker: string): boolean {
-  // Simple check for a 6-letter string, common for currency pairs like EURUSD
-  return /^[A-Z]{6}$/.test(ticker);
-}
-
 export async function fetchMarketData(ticker: string, apiKey: string | null): Promise<FetchResult> {
   if (!apiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
   
   let url = '';
-  let isForex = false;
+  let timeSeriesKey = '';
+  let openKey: string, highKey: string, lowKey: string, closeKey: string, volumeKey: string;
+  let precision = 2;
 
-  if (isCurrencyPair(ticker)) {
-    const from_symbol = ticker.substring(0, 3);
-    const to_symbol = ticker.substring(3, 6);
+  if (isCryptoPair(ticker)) {
+    const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
+    url = `${BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${apiKey}&outputsize=full`;
+    timeSeriesKey = 'Time Series (Digital Currency Daily)';
+    openKey = `1a. open (${to_symbol})`;
+    highKey = `2a. high (${to_symbol})`;
+    lowKey = `3a. low (${to_symbol})`;
+    closeKey = `4a. close (${to_symbol})`;
+    volumeKey = '5. volume';
+    precision = 2; // Keep it simple for crypto for now
+  } else if (isCurrencyPair(ticker)) {
+    const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     url = `${BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${apiKey}&outputsize=full`;
-    isForex = true;
+    timeSeriesKey = 'Time Series FX (Daily)';
+    openKey = '1. open';
+    highKey = '2. high';
+    lowKey = '3. low';
+    closeKey = '4. close';
+    volumeKey = '5. volume';
+    precision = 4;
   } else {
     url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apiKey}&outputsize=full`;
+    timeSeriesKey = 'Time Series (Daily)';
+    openKey = '1. open';
+    highKey = '2. high';
+    lowKey = '3. low';
+    closeKey = '4. close';
+    volumeKey = '5. volume';
+    precision = 2;
   }
 
 
@@ -54,21 +74,20 @@ export async function fetchMarketData(ticker: string, apiKey: string | null): Pr
         return { error: `API rate limit likely exceeded. Please wait a moment and try again. The free plan is limited.` };
     }
     
-    const timeSeriesKey = isForex ? 'Time Series FX (Daily)' : 'Time Series (Daily)';
     const timeSeries = data[timeSeriesKey];
     
     if (data['Error Message'] || data['Information'] || !timeSeries) {
-      const errorMessage = data['Error Message'] || data['Information'] || `No data found for ticker symbol "${ticker}". Please check if the symbol is correct and listed.`;
-      return { error: `Invalid ticker symbol or API error: ${errorMessage}` };
+      const errorMessage = data['Error Message'] || data['Information'] || `No data found for symbol "${ticker}". Please check if the symbol is correct and listed.`;
+      return { error: `Invalid symbol or API error: ${errorMessage}` };
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
       date,
-      open: parseFloat(values['1. open']).toFixed(isForex ? 4 : 2),
-      high: parseFloat(values['2. high']).toFixed(isForex ? 4 : 2),
-      low: parseFloat(values['3. low']).toFixed(isForex ? 4 : 2),
-      close: parseFloat(values['4. close']).toFixed(isForex ? 4 : 2),
-      volume: values['5. volume'] || 'N/A',
+      open: parseFloat(values[openKey]).toFixed(precision),
+      high: parseFloat(values[highKey]).toFixed(precision),
+      low: parseFloat(values[lowKey]).toFixed(precision),
+      close: parseFloat(values[closeKey]).toFixed(precision),
+      volume: values[volumeKey] || 'N/A',
     }));
 
     return { data: marketData.slice(0, 730) };
