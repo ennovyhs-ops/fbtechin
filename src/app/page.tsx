@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, ArrowUp, ArrowDown, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
+import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
 
 import type { MarketData } from '@/lib/types';
 import { fetchMarketData, getApiKey } from '@/app/actions';
@@ -142,7 +142,7 @@ export default function Home() {
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
                </CardTitle>
-               <CardDescription className="flex items-center gap-2 text-sm">
+               <CardDescription className="flex items-center gap-2 text-sm pt-1">
                  <Calendar className="h-4 w-4" />
                  <span>As of {new Date(latestData.date).toDateString()}</span>
                </CardDescription>
@@ -150,33 +150,33 @@ export default function Home() {
              <CardContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-end gap-2">
-                      <p className="text-4xl font-bold text-primary">${latestData.close}</p>
-                      <p className="text-lg text-muted-foreground font-medium">Close</p>
+                      <p className="text-4xl md:text-5xl font-bold text-primary">${latestData.close}</p>
+                      <p className="text-lg text-muted-foreground font-medium pb-1">Close</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                     <div className="flex items-center gap-2">
-                        <Minus className="text-muted-foreground" />
+                        <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Open</p>
                             <p className="font-semibold">${latestData.open}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <TrendingUp className="text-muted-foreground" />
+                        <TrendingUp className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">High</p>
                             <p className="font-semibold">${latestData.high}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <TrendingDown className="text-muted-foreground" />
+                        <TrendingDown className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Low</p>
                             <p className="font-semibold">${latestData.low}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Scale className="text-muted-foreground" />
+                        <Scale className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Volume</p>
                             <p className="font-semibold">{Number(latestData.volume).toLocaleString()}</p>
@@ -187,27 +187,25 @@ export default function Home() {
              </CardContent>
              <CardFooter>
                 <Collapsible open={isHistoryExpanded} onOpenChange={setIsHistoryExpanded} className="w-full">
-                    <div className="flex flex-col items-start gap-4">
-                        <div className="flex gap-2">
-                            <CollapsibleTrigger asChild>
-                                <Button variant="outline">
-                                    {isHistoryExpanded ? 'Hide' : 'Show'} Full History
-                                    {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
-                                </Button>
-                            </CollapsibleTrigger>
-                            <Button variant="outline" onClick={handleExport}>
-                                CSV Export
-                                <Download className="ml-2" />
+                    <div className="flex flex-col sm:flex-row items-start gap-2">
+                        <CollapsibleTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto">
+                                {isHistoryExpanded ? 'Hide' : 'Show'} Full History
+                                {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
                             </Button>
-                        </div>
-                        <CollapsibleContent className="w-full">
-                            {marketData && marketData.length > 0 && (
-                                <div className="animate-in fade-in-50 duration-500">
-                                    <MarketDataTable data={marketData} ticker={submittedTicker} />
-                                </div>
-                            )}
-                        </CollapsibleContent>
+                        </CollapsibleTrigger>
+                        <Button variant="outline" onClick={handleExport} className="w-full sm:w-auto">
+                            CSV Export
+                            <Download className="ml-2" />
+                        </Button>
                     </div>
+                    <CollapsibleContent className="w-full mt-4">
+                        {marketData && marketData.length > 0 && (
+                            <div className="animate-in fade-in-50 duration-500">
+                                <MarketDataTable data={marketData} ticker={submittedTicker} />
+                            </div>
+                        )}
+                    </CollapsibleContent>
                 </Collapsible>
              </CardFooter>
            </Card>
@@ -223,3 +221,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
