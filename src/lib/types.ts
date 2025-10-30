@@ -6,3 +6,11 @@ export type MarketData = {
   close: string;
   volume: string;
 };
+
+export interface SearchResult {
+  symbol: string;
+  name: string;
+  type: string;
+  region: string;
+  currency: string;
+}
