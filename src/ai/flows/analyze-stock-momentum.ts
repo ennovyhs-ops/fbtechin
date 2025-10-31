@@ -74,11 +74,15 @@ export async function analyzeStockMomentum(
         }
     };
 
-    return analyzeStockMomentumFlow(input);
+    const result = await analyzeStockMomentumFlow(input);
+    if ('error' in result) {
+        return { error: (result as any).message || 'Flow execution failed.' };
+    }
+    return result;
 
   } catch (e: any) {
     console.error(e);
-    return { error: 'An unexpected error occurred during analysis.' };
+    return { error: e.message || 'An unexpected error occurred during analysis.' };
   }
 }
 

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldCheck, ShieldAlert, Scale, Hand, AlertTriangle, ChevronDown } from 'lucide-react';
-import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
+import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
+import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -32,14 +33,17 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
     if (ticker) {
       setLoading(true);
       setAnalysis(null);
-      analyzeStockMomentum(ticker)
-        .then(setAnalysis)
-        .catch(() => {
-          setAnalysis({ error: 'An unexpected error occurred while generating the analysis.' });
-        })
-        .finally(() => {
+      const performAnalysis = async () => {
+        try {
+          const result = await analyzeStockMomentum(ticker);
+          setAnalysis(result);
+        } catch (e: any) {
+          setAnalysis({ error: e.message || 'An unexpected error occurred while generating the analysis.' });
+        } finally {
           setLoading(false);
-        });
+        }
+      }
+      performAnalysis();
     }
   }, [ticker]);
 
