@@ -41,7 +41,7 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 150);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 50);
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
 
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[]} | null>(null);
@@ -99,7 +99,7 @@ export default function Home() {
         setApiKey(key);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []);
 
   useEffect(() => {
     setSearchQuery(tickerValue);
@@ -338,3 +338,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
