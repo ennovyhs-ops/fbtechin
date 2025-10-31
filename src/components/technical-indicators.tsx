@@ -2,8 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import type { RsiData, MacdData, BbandsData } from '@/lib/types';
+import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart } from 'lucide-react';
+import type { RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 
 interface TechnicalIndicatorsProps {
     ticker: string;
@@ -11,6 +11,7 @@ interface TechnicalIndicatorsProps {
         rsi: RsiData[];
         macd: MacdData[];
         bbands: BbandsData[];
+        roc: RocData[];
     } | null;
     loading: boolean;
     error: string | null;
@@ -54,6 +55,7 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
     const latestRsi = data.rsi?.[0];
     const latestMacd = data.macd?.[0];
     const latestBbands = data.bbands?.[0];
+    const latestRoc = data.roc?.[0];
 
     return (
         <Card className="animate-in fade-in-50 duration-500 delay-100">
@@ -67,6 +69,20 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+                 {latestRoc && (
+                    <div>
+                        <h3 className="font-semibold text-lg mb-2">Rate of Change (22-day)</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <AreaChart className="text-muted-foreground h-5 w-5" />
+                                <div>
+                                    <p className="text-muted-foreground">ROC</p>
+                                    <p className="font-semibold">{parseFloat(latestRoc.ROC).toFixed(2)}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {latestRsi && (
                     <div>
                         <h3 className="font-semibold text-lg mb-2">RSI (14-day)</h3>

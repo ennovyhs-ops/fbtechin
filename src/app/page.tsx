@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
-import type { MarketData, SearchResult, RsiData, MacdData, BbandsData } from '@/lib/types';
+import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 import { fetchMarketData, getApiKey, searchSymbols, fetchAllIndicators } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,7 @@ export default function Home() {
   const [debouncedSearchQuery] = useDebounce(searchQuery, 150);
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
 
@@ -85,6 +85,7 @@ export default function Home() {
             rsi: indicatorsResult.rsi || [],
             macd: indicatorsResult.macd || [],
             bbands: indicatorsResult.bbands || [],
+            roc: indicatorsResult.roc || [],
           });
         }
         setIndicatorsLoading(false);
@@ -318,7 +319,7 @@ export default function Home() {
            </Card>
           )}
 
-          {submittedTicker && (
+          {submittedTicker && !isPending && (
             <StockAnalysis ticker={submittedTicker} />
           )}
 

@@ -1,71 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, ChevronsUp, ChevronsDown, Atom, Minus } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldCheck, ShieldAlert, Scale, Hand, AlertTriangle } from 'lucide-react';
 import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 interface StockAnalysisProps {
   ticker: string;
 }
 
-const getSignalIcon = (signal: string) => {
-    switch (signal) {
-        case 'Strong Bullish':
-        case 'Bullish':
-            return <TrendingUp className="h-5 w-5 text-green-500" />;
-        case 'Strong Bearish':
-        case 'Bearish':
-            return <TrendingDown className="h-5 w-5 text-red-500" />;
-        default:
-            return <Minus className="h-5 w-5 text-muted-foreground" />;
-    }
+const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string } => {
+    if (signal.includes('STRONG BULLISH')) return { icon: <Rocket className="h-6 w-6" />, color: 'text-green-400' };
+    if (signal.includes('MODERATE BULLISH')) return { icon: <TrendingUp className="h-6 w-6" />, color: 'text-green-400' };
+    if (signal.includes('MILD BULLISH')) return { icon: <AlertTriangle className="h-6 w-6" />, color: 'text-yellow-400' };
+    if (signal.includes('STRONG BEARISH')) return { icon: <TrendingDown className="h-6 w-6" />, color: 'text-red-400' };
+    if (signal.includes('MODERATE BEARISH')) return { icon: <ShieldAlert className="h-6 w-6" />, color: 'text-red-400' };
+    if (signal.includes('MILD BEARISH')) return { icon: <Hand className="h-6 w-6" />, color: 'text-orange-400' };
+    return { icon: <Scale className="h-6 w-6" />, color: 'text-muted-foreground' };
 }
-
-const getSignalBadgeVariant = (signal: string): "default" | "destructive" | "secondary" => {
-    if (signal.includes('Bullish')) return 'default';
-    if (signal.includes('Bearish')) return 'destructive';
-    return 'secondary';
-}
-
-const AnalysisItem = ({ title, icon, data }: { title: string, icon: React.ReactNode, data: AnalyzeStockMomentumOutput[keyof AnalyzeStockMomentumOutput] }) => {
-    if(typeof data !== 'object' || !data.signal) return null;
-    return (
-        <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                    {icon}
-                    <h4 className="font-semibold">{title}</h4>
-                </div>
-                <Badge variant={getSignalBadgeVariant(data.signal)} className="ml-auto">{data.signal}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground pl-8">{data.reasoning}</p>
-        </div>
-    );
-};
 
 export function StockAnalysis({ ticker }: StockAnalysisProps) {
-  const [analysis, setAnalysis] = useState<AnalyzeStockMomentumOutput | null>(null);
+  const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (ticker) {
       setLoading(true);
-      setError(null);
       setAnalysis(null);
       analyzeStockMomentum(ticker)
-        .then((response) => {
-            if ('error' in response) {
-                setError(response.error);
-            } else {
-                setAnalysis(response);
-            }
-        })
+        .then(setAnalysis)
         .catch(() => {
-          setError('An unexpected error occurred while generating the analysis.');
+          setAnalysis({ error: 'An unexpected error occurred while generating the analysis.' });
         })
         .finally(() => {
           setLoading(false);
@@ -73,7 +39,6 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
     }
   }, [ticker]);
 
-  if (!ticker) return null;
 
   if (loading) {
     return (
@@ -84,20 +49,22 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
                     <span>AI Momentum Analysis</span>
                 </CardTitle>
                 <CardDescription>
-                    The AI is analyzing the momentum for {ticker}...
+                    The AI is running a detailed scoring model for {ticker}...
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Running analysis...</span>
+                    <span>Running analysis... This may take a moment.</span>
                 </div>
             </CardContent>
         </Card>
     );
   }
+  
+  if (!analysis) return null;
 
-  if (error) {
+  if (analysis.error) {
     return (
         <Card>
             <CardHeader>
@@ -112,37 +79,60 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
             <CardContent>
                  <div className="flex items-center gap-2 text-destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <span>{error}</span>
+                    <span>{analysis.error}</span>
                 </div>
             </CardContent>
         </Card>
     );
   }
   
-  if (!analysis) return null;
-    
+  if (analysis.signal === 'N/A') {
+      return (
+           <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                    <Zap className="h-6 w-6 text-muted-foreground" />
+                    <span>AI Momentum Analysis</span>
+                </CardTitle>
+                <CardDescription>
+                    {analysis.tradeAction}
+                </CardDescription>
+            </CardHeader>
+        </Card>
+      )
+  }
+
+  const { icon, color } = getSignalInfo(analysis.signal);
+
   return (
     <Card className="animate-in fade-in-50 duration-500 delay-300">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Zap className="h-6 w-6 text-accent" />
-          <span>AI Momentum Analysis for {ticker}</span>
+          <span>AI Momentum Score for {ticker}</span>
         </CardTitle>
         <CardDescription>
-          {analysis.conclusion}
+          A proprietary score based on ROC, Bollinger Bands, RSI, and Volume analysis.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-            <h3 className="font-semibold text-lg mb-2">Summary</h3>
-            <p className="text-sm text-muted-foreground">{analysis.summary}</p>
+      <CardContent className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-lg bg-muted/50">
+            <div className={`flex items-center gap-3 ${color}`}>
+                {icon}
+                <div className="flex flex-col">
+                    <span className="font-semibold text-lg">{analysis.signal}</span>
+                    <span className="text-sm opacity-80">{analysis.interpretation}</span>
+                </div>
+            </div>
+            <div className="text-center sm:text-right">
+                <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Total Score</p>
+            </div>
         </div>
-        <Separator />
-        <div className="space-y-6">
-            <AnalysisItem title="Primary Trend" icon={<ChevronsUp className="h-5 w-5 text-muted-foreground" />} data={analysis.primaryTrend} />
-            <AnalysisItem title="Momentum" icon={<Atom className="h-5 w-5 text-muted-foreground" />} data={analysis.momentum} />
-            <AnalysisItem title="Velocity" icon={<ChevronsDown className="h-5 w-5 text-muted-foreground" />} data={analysis.velocity} />
-            <AnalysisItem title="Volume" icon={getSignalIcon(analysis.volume.signal)} data={analysis.volume} />
+        
+        <div className="space-y-2">
+            <h3 className="font-semibold">Suggested Action:</h3>
+            <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
         </div>
       </CardContent>
     </Card>

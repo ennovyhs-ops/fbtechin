@@ -20,6 +20,11 @@ export type RsiData = {
   RSI: string;
 }
 
+export type RocData = {
+  date: string;
+  'ROC': string;
+}
+
 export type MacdData = {
   date: string;
   'MACD_Hist': string;

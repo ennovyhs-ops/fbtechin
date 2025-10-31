@@ -1,6 +1,6 @@
 'use server';
 
-import type { MarketData, SearchResult, RsiData, MacdData, BbandsData } from '@/lib/types';
+import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { fetchMarketDataService, fetchAllIndicatorsService } from '@/lib/server-services';
 
@@ -20,6 +20,7 @@ interface IndicatorsResult {
     rsi?: RsiData[];
     macd?: MacdData[];
     bbands?: BbandsData[];
+    roc?: RocData[];
     error?: string | null;
 }
 
