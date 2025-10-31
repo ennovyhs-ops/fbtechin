@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';

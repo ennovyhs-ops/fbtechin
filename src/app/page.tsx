@@ -5,11 +5,10 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
-import { useDebounce } from 'use-debounce';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
 
-import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
-import { fetchMarketData, getApiKey, searchSymbols, fetchAllIndicators } from '@/app/actions';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
+import { fetchMarketData, getApiKey, fetchAllIndicators } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +19,6 @@ import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
@@ -38,12 +36,6 @@ export default function Home() {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
 
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 50);
-  const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
-
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
@@ -54,17 +46,12 @@ export default function Home() {
       ticker: '',
     },
   });
-
-  const { watch, setValue } = form;
-  const tickerValue = watch('ticker');
   
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     setError(null);
     setMarketData(null);
     setSubmittedTicker(null);
     setIsHistoryExpanded(false);
-    setIsSearchPopoverOpen(false);
-    setSearchResults([]);
     setIndicatorData(null);
     setIndicatorsError(null);
 
@@ -98,35 +85,7 @@ export default function Home() {
     getApiKey().then(key => {
         setApiKey(key);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setSearchQuery(tickerValue);
-  }, [tickerValue]);
-
-  useEffect(() => {
-    if (debouncedSearchQuery && debouncedSearchQuery.length > 1) {
-      setIsSearching(true);
-      setIsSearchPopoverOpen(true);
-      searchSymbols(debouncedSearchQuery, apiKey).then(result => {
-        if (result.data) {
-          setSearchResults(result.data);
-        }
-        setIsSearching(false);
-      });
-    } else {
-      setSearchResults([]);
-      setIsSearchPopoverOpen(false);
-    }
-  }, [debouncedSearchQuery, apiKey]);
-
-  const handleSelectSuggestion = (symbol: string) => {
-    setValue('ticker', symbol);
-    setIsSearchPopoverOpen(false);
-    setSearchResults([]);
-    form.handleSubmit(onSubmit)();
-  };
   
   const handleExport = () => {
     if (!marketData || !submittedTicker) return;
@@ -171,45 +130,9 @@ export default function Home() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
-                       <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
-                        <PopoverTrigger asChild>
-                          <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <FormControl>
-                              <Input placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD" className="pl-10" {...field} autoComplete="off" />
-                            </FormControl>
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                          {isSearching && (
-                            <div className="p-4 text-sm text-muted-foreground flex items-center">
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Searching...
-                            </div>
-                          )}
-                          {searchResults.length > 0 && !isSearching && (
-                            <ul className="max-h-60 overflow-y-auto">
-                              {searchResults.map((result) => (
-                                <li
-                                  key={result.symbol}
-                                  className="p-3 hover:bg-accent cursor-pointer"
-                                  onClick={() => handleSelectSuggestion(result.symbol)}
-                                  onMouseDown={(e) => e.preventDefault()}
-                                >
-                                  <div className="font-semibold">{result.symbol}</div>
-                                  <div className="text-sm text-muted-foreground truncate">{result.name}</div>
-                                  <div className="text-xs text-muted-foreground">{result.region} - {result.type}</div>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                           {!isSearching && debouncedSearchQuery.length > 1 && searchResults.length === 0 && (
-                              <div className="p-4 text-sm text-muted-foreground">
-                                No results found.
-                              </div>
-                            )}
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <Input placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD" {...field} autoComplete="off" />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -338,5 +261,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
