@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
@@ -70,7 +71,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     const data = await response.json();
 
     if (data['Note']) {
-        return { error: `API rate limit likely exceeded. Please wait a moment and try again. The free plan is limited.` };
+        return { error: data['Note'] };
     }
     
     const timeSeries = data[timeSeriesKey];
@@ -120,7 +121,7 @@ async function fetchIndicatorDataService(ticker: string, func: 'RSI' | 'MACD' | 
         const data = await response.json();
 
         if (data['Note']) {
-            return { error: 'Rate limit' };
+            return { error: data['Note'] };
         }
         if (data['Error Message'] || !data[`Technical Analysis: ${func}`]) {
             return null;
@@ -156,7 +157,7 @@ export async function fetchAllIndicatorsService(ticker: string): Promise<Indicat
         ]);
 
         const createError = (name: string, data: any) => {
-            if (data?.error === 'Rate limit') return `API rate limit exceeded while fetching ${name}. Please wait and try again.`;
+            if (data?.error) return data.error;
             return null;
         };
 

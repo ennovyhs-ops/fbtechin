@@ -156,9 +156,9 @@ export default function Home() {
           )}
 
           {error && (
-            <Alert variant="destructive">
+            <Alert variant={error.includes('Thank you for using Alpha Vantage!') ? 'default' : 'destructive'}>
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>{error.includes('Thank you for using Alpha Vantage!') ? 'API Information' : 'Error'}</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
