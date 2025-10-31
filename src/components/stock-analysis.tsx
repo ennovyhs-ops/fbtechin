@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldCheck, ShieldAlert, Scale, Hand, AlertTriangle } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldCheck, ShieldAlert, Scale, Hand, AlertTriangle, ChevronDown } from 'lucide-react';
 import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { MomentumScoreExplanation } from '@/components/momentum-score-explanation';
+
 
 interface StockAnalysisProps {
   ticker: string;
@@ -23,6 +26,7 @@ const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string }
 export function StockAnalysis({ ticker }: StockAnalysisProps) {
   const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
 
   useEffect(() => {
     if (ticker) {
@@ -135,6 +139,19 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
             <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
         </div>
       </CardContent>
+      <CardFooter>
+          <Collapsible open={isExplanationExpanded} onOpenChange={setIsExplanationExpanded} className="w-full">
+            <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm">
+                    How is this calculated?
+                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-200 ${isExplanationExpanded ? 'rotate-180' : ''}`} />
+                </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+                <MomentumScoreExplanation />
+            </CollapsibleContent>
+          </Collapsible>
+      </CardFooter>
     </Card>
   );
 }
