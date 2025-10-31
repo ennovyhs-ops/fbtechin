@@ -38,3 +38,17 @@ export type BbandsData = {
     'Real Lower Band': string;
     'Real Middle Band': string;
 }
+
+export type MomentumAnalysisInput = {
+  ticker: string;
+  isRocPositive: boolean;
+  priceAboveMiddleBand: boolean;
+  isBBSqueezing: boolean;
+  breakoutSignal: "above_upper" | "below_lower" | "none";
+  isRsiBullish: boolean;
+  divergence: "bullish" | "bearish" | "none";
+  isVolumeUp: boolean;
+  isUpDay: boolean;
+};
+
+    

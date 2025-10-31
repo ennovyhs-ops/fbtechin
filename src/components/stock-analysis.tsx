@@ -159,3 +159,5 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
     </Card>
   );
 }
+
+    
