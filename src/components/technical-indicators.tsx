@@ -48,7 +48,7 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
           );
     }
     
-    if (!data || (!data.rsi.length && !data.macd.length && !data.bbands.length)) {
+    if (!data) {
         return null;
     }
 
@@ -69,32 +69,31 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                 {latestRoc && (
-                    <div>
-                        <h3 className="font-semibold text-lg mb-2">Rate of Change (22-day)</h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <AreaChart className="text-muted-foreground h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">ROC</p>
-                                    <p className="font-semibold">{parseFloat(latestRoc.ROC).toFixed(2)}%</p>
-                                </div>
+                 <div>
+                    <h3 className="font-semibold text-lg mb-2">Rate of Change (22-day)</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <AreaChart className="text-muted-foreground h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">ROC</p>
+                                <p className="font-semibold">{latestRoc ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
                             </div>
                         </div>
                     </div>
-                )}
-                {latestRsi && (
-                    <div>
-                        <h3 className="font-semibold text-lg mb-2">RSI (14-day)</h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <Target className="text-muted-foreground h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">Value</p>
-                                    <p className="font-semibold">{parseFloat(latestRsi.RSI).toFixed(2)}</p>
-                                </div>
+                </div>
+
+                <div>
+                    <h3 className="font-semibold text-lg mb-2">RSI (14-day)</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <Target className="text-muted-foreground h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">Value</p>
+                                <p className="font-semibold">{latestRsi ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
                             </div>
-                            <div className="flex items-center gap-2">
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {latestRsi ? (
                                 <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
                                     parseFloat(latestRsi.RSI) > 70 ? 'bg-red-500/20 text-red-400' : 
                                     parseFloat(latestRsi.RSI) < 30 ? 'bg-green-500/20 text-green-400' : 
@@ -104,66 +103,66 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                                     parseFloat(latestRsi.RSI) < 30 ? 'Oversold' : 
                                     'Neutral'}
                                 </p>
+                            ) : (
+                                 <p className="font-semibold px-2 py-1 rounded-md text-xs bg-muted text-muted-foreground">N/A</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 className="font-semibold text-lg mb-2">MACD (12, 26, 9)</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp className="text-blue-400 h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">MACD</p>
+                                <p className="font-semibold">{latestMacd ? parseFloat(latestMacd.MACD).toFixed(2) : 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <TrendingDown className="text-orange-400 h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">Signal</p>
+                                <p className="font-semibold">{latestMacd ? parseFloat(latestMacd.MACD_Signal).toFixed(2) : 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Minus className="text-gray-400 h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">Histogram</p>
+                                <p className="font-semibold">{latestMacd ? parseFloat(latestMacd.MACD_Hist).toFixed(2) : 'N/A'}</p>
                             </div>
                         </div>
                     </div>
-                )}
-                {latestMacd && (
-                     <div>
-                        <h3 className="font-semibold text-lg mb-2">MACD (12, 26, 9)</h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <TrendingUp className="text-blue-400 h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">MACD</p>
-                                    <p className="font-semibold">{parseFloat(latestMacd.MACD).toFixed(2)}</p>
-                                </div>
+                </div>
+                
+                <div>
+                    <h3 className="font-semibold text-lg mb-2">Bollinger Bands® (20, 2)</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp className="text-green-400 h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">Upper Band</p>
+                                <p className="font-semibold">{latestBbands ? parseFloat(latestBbands['Real Upper Band']).toFixed(2) : 'N/A'}</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <TrendingDown className="text-orange-400 h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">Signal</p>
-                                    <p className="font-semibold">{parseFloat(latestMacd.MACD_Signal).toFixed(2)}</p>
-                                </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Minus className="text-gray-400 h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">Middle Band</p>
+                                <p className="font-semibold">{latestBbands ? parseFloat(latestBbands['Real Middle Band']).toFixed(2) : 'N/A'}</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Minus className="text-gray-400 h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">Histogram</p>
-                                    <p className="font-semibold">{parseFloat(latestMacd.MACD_Hist).toFixed(2)}</p>
-                                </div>
+                        </div>
+                         <div className="flex items-center gap-2">
+                            <TrendingDown className="text-red-400 h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">Lower Band</p>
+                                <p className="font-semibold">{latestBbands ? parseFloat(latestBbands['Real Lower Band']).toFixed(2) : 'N/A'}</p>
                             </div>
                         </div>
                     </div>
-                )}
-                {latestBbands && (
-                    <div>
-                        <h3 className="font-semibold text-lg mb-2">Bollinger Bands® (20, 2)</h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <TrendingUp className="text-green-400 h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">Upper Band</p>
-                                    <p className="font-semibold">{parseFloat(latestBbands['Real Upper Band']).toFixed(2)}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Minus className="text-gray-400 h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">Middle Band</p>
-                                    <p className="font-semibold">{parseFloat(latestBbands['Real Middle Band']).toFixed(2)}</p>
-                                </div>
-                            </div>
-                             <div className="flex items-center gap-2">
-                                <TrendingDown className="text-red-400 h-5 w-5" />
-                                <div>
-                                    <p className="text-muted-foreground">Lower Band</p>
-                                    <p className="font-semibold">{parseFloat(latestBbands['Real Lower Band']).toFixed(2)}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                </div>
             </CardContent>
         </Card>
     );
