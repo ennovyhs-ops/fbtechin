@@ -19,7 +19,7 @@ import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
+import { isCurrencyPair, isCryptoPair, parseApiLimit } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
 
@@ -113,6 +113,9 @@ export default function Home() {
 
   const showSkeleton = !isPending && !marketData && !error && !submittedTicker;
 
+  const apiLimitMessage = error ? parseApiLimit(error) : null;
+  const isApiLimitError = !!apiLimitMessage;
+
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -158,10 +161,15 @@ export default function Home() {
           )}
 
           {error && (
-            <Alert variant={error.includes('Thank you for using Alpha Vantage!') ? 'default' : 'destructive'}>
+            <Alert variant={isApiLimitError ? 'default' : 'destructive'}>
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{error.includes('Thank you for using Alpha Vantage!') ? 'API Information' : 'Error'}</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              {isApiLimitError ? 
+                <AlertTitle>{apiLimitMessage}</AlertTitle> : 
+                <>
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </>
+              }
             </Alert>
           )}
 
