@@ -5,7 +5,7 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 import { fetchMarketData, getApiKey, fetchAllIndicators } from '@/app/actions';
@@ -110,6 +110,8 @@ export default function Home() {
 
   const latestData = marketData?.[0];
   const isForexOrCrypto = submittedTicker && (isCurrencyPair(submittedTicker) || isCryptoPair(submittedTicker));
+
+  const showSkeleton = !isPending && !marketData && !error && !submittedTicker;
 
 
   return (
@@ -254,6 +256,84 @@ export default function Home() {
           {submittedTicker && marketData && marketData.length > 0 && (
             <div className="animate-in fade-in-50 duration-500 delay-200">
                 <SuggestedQuestions ticker={submittedTicker} />
+            </div>
+          )}
+
+          {showSkeleton && (
+            <div className="space-y-8 animate-pulse">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl">
+                            <div className="h-8 w-48 bg-muted/80 rounded-md"></div>
+                        </CardTitle>
+                        <CardDescription className="flex items-center gap-2 text-sm pt-1">
+                            <Calendar className="h-4 w-4" />
+                            <div className="h-5 w-32 bg-muted/80 rounded-md"></div>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
+                                <div className="h-12 w-32 bg-muted/80 rounded-md"></div>
+                                <div className="h-6 w-16 bg-muted/80 rounded-md sm:pb-1"></div>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                                <div className="h-10 w-24 bg-muted/80 rounded-md"></div>
+                                <div className="h-10 w-24 bg-muted/80 rounded-md"></div>
+                                <div className="h-10 w-24 bg-muted/80 rounded-md"></div>
+                                <div className="h-10 w-24 bg-muted/80 rounded-md"></div>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                       <div className="h-10 w-36 bg-muted/80 rounded-md"></div>
+                    </CardFooter>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                            <Zap className="h-6 w-6 text-muted-foreground" />
+                            <span>AI Momentum Score</span>
+                        </CardTitle>
+                        <CardDescription>A proprietary score based on ROC, Bollinger Bands, RSI, and Volume analysis.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
+                </Card>
+
+                <Card>
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                            <Activity className="h-6 w-6 text-muted-foreground" />
+                            <span>Technical Indicators</span>
+                        </CardTitle>
+                        <CardDescription>Latest calculated values based on daily data.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="h-10 w-full bg-muted/80 rounded-md"></div>
+                        <div className="h-10 w-full bg-muted/80 rounded-md"></div>
+                        <div className="h-10 w-full bg-muted/80 rounded-md"></div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                          <BrainCircuit className="h-6 w-6 text-muted-foreground" />
+                          <span>Suggested Exploration</span>
+                        </CardTitle>
+                        <CardDescription>
+                          AI-powered suggestions for your next query will appear here.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                         <div className="flex flex-wrap gap-2">
+                            <div className="h-9 w-48 bg-muted/80 rounded-md"></div>
+                            <div className="h-9 w-56 bg-muted/80 rounded-md"></div>
+                            <div className="h-9 w-64 bg-muted/80 rounded-md"></div>
+                         </div>
+                      </CardContent>
+                </Card>
             </div>
           )}
         </div>
