@@ -7,7 +7,7 @@ export function Header() {
         <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
           <LineChart className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
         </div>
-        <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
+        <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">
           Market Data
         </h1>
       </div>
@@ -17,5 +17,3 @@ export function Header() {
     </header>
   );
 }
-
-    
