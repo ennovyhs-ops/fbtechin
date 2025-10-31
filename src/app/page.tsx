@@ -25,7 +25,7 @@ import { StockAnalysis } from '@/components/stock-analysis';
 
 
 const FormSchema = z.object({
-  ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.').toUpperCase(),
+  ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.'),
 });
 
 export default function Home() {
@@ -116,6 +116,8 @@ export default function Home() {
   const apiLimitMessage = error ? parseApiLimit(error) : null;
   const isApiLimitError = !!apiLimitMessage;
 
+  const isApiInfoNote = error && error.includes('Thank you for using Alpha Vantage!');
+
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -161,12 +163,12 @@ export default function Home() {
           )}
 
           {error && (
-            <Alert variant={isApiLimitError ? 'default' : 'destructive'}>
+            <Alert variant={isApiLimitError || isApiInfoNote ? 'default' : 'destructive'}>
               <AlertCircle className="h-4 w-4" />
               {isApiLimitError ? 
                 <AlertTitle>{apiLimitMessage}</AlertTitle> : 
                 <>
-                  <AlertTitle>Error</AlertTitle>
+                  <AlertTitle>{isApiInfoNote ? 'API Information' : 'Error'}</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </>
               }
@@ -349,6 +351,8 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     
 
