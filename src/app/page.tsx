@@ -22,6 +22,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
+import { StockAnalysis } from '@/components/stock-analysis';
 
 
 const FormSchema = z.object({
@@ -315,6 +316,10 @@ export default function Home() {
                 </Collapsible>
              </CardFooter>
            </Card>
+          )}
+
+          {submittedTicker && (
+            <StockAnalysis ticker={submittedTicker} />
           )}
 
           {submittedTicker && (
