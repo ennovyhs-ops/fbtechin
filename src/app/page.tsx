@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, useCallback } from 'react';
@@ -96,11 +97,6 @@ export default function Home() {
   useEffect(() => {
     getApiKey().then(key => {
         setApiKey(key);
-        if (key) {
-            setValue('ticker', 'GOOG');
-            // Automatically run a sample search for GOOG on page load
-            onSubmit({ ticker: 'GOOG' });
-        }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
