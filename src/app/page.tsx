@@ -39,7 +39,7 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 150);
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
 
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[]} | null>(null);
@@ -49,7 +49,7 @@ export default function Home() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      ticker: 'GOOG',
+      ticker: '',
     },
   });
 
@@ -95,6 +95,7 @@ export default function Home() {
     getApiKey().then(key => {
         setApiKey(key);
         if (key) {
+            setValue('ticker', 'GOOG');
             // Automatically run a sample search for GOOG on page load
             onSubmit({ ticker: 'GOOG' });
         }
