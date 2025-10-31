@@ -52,7 +52,7 @@ export async function analyzeStockMomentum(
       return {
         totalScore: 0,
         signal: 'N/A',
-        interpretation: 'Analysis not available for this asset type.',
+        interpretation: 'AI momentum analysis is not applicable to currency or crypto pairs.',
         tradeAction: 'Technical indicator analysis is not supported for currency or crypto pairs.'
       };
     }
@@ -221,5 +221,3 @@ const analyzeStockMomentumFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

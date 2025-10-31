@@ -103,7 +103,7 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
                     <span>AI Momentum Analysis</span>
                 </CardTitle>
                 <CardDescription>
-                    {analysis.tradeAction}
+                    {analysis.interpretation}
                 </CardDescription>
             </CardHeader>
         </Card>
@@ -159,5 +159,3 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
     </Card>
   );
 }
-
-    

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart } from 'lucide-react';
 import type { RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
+import { isCryptoPair, isCurrencyPair } from '@/lib/utils';
 
 interface TechnicalIndicatorsProps {
     ticker: string;
@@ -18,6 +19,22 @@ interface TechnicalIndicatorsProps {
 }
 
 export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalIndicatorsProps) {
+    if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                        <Activity className="h-6 w-6 text-muted-foreground" />
+                        <span>Technical Indicators</span>
+                    </CardTitle>
+                    <CardDescription>
+                        Standard technical indicator analysis is not applicable to currency or crypto pairs.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        )
+    }
+
     if (loading) {
         return (
             <Card>
@@ -48,14 +65,10 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
           );
     }
     
-    if (!data) {
-        return null;
-    }
-
-    const latestRsi = data.rsi?.[0];
-    const latestMacd = data.macd?.[0];
-    const latestBbands = data.bbands?.[0];
-    const latestRoc = data.roc?.[0];
+    const latestRsi = data?.rsi?.[0];
+    const latestMacd = data?.macd?.[0];
+    const latestBbands = data?.bbands?.[0];
+    const latestRoc = data?.roc?.[0];
 
     return (
         <Card className="animate-in fade-in-50 duration-500 delay-100">
