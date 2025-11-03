@@ -78,7 +78,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     
     if (data['Error Message'] || data['Information'] || !timeSeries) {
       const errorMessage = data['Error Message'] || data['Information'] || `No data found for symbol "${ticker}". Please check if the symbol is correct and listed.`;
-      return { error: `Invalid symbol or API error: ${errorMessage}` };
+      return { error: `${errorMessage}` };
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
@@ -101,15 +101,7 @@ async function fetchIndicatorDataService(ticker: string, func: 'RSI' | 'MACD' | 
     const apiKey = serverConfig.alphaVantageApiKey;
     if (!apiKey) return { error: 'API key not configured.' };
 
-    const isForex = isCurrencyPair(ticker);
-    const isCrypto = isCryptoPair(ticker);
-    let symbol = ticker;
-
-    if (isForex || isCrypto) {
-        // Indicators for forex/crypto use the symbols directly
-    }
-
-    let url = `${BASE_URL}?function=${func}&symbol=${symbol}&interval=daily&series_type=close&apikey=${apiKey}`;
+    let url = `${BASE_URL}?function=${func}&symbol=${ticker}&interval=daily&series_type=close&apikey=${apiKey}`;
     if(func === 'RSI') url += `&time_period=14`;
     if(func === 'MACD') url += `&fastperiod=12&slowperiod=26&signalperiod=9`;
     if(func === 'BBANDS') url += `&time_period=${timePeriod}&nbdevup=2&nbdevdn=2`;
@@ -145,7 +137,12 @@ export async function fetchAllIndicatorsService(ticker: string): Promise<Indicat
     }
 
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
-        return { error: 'Technical indicators are not supported for currency or crypto pairs in this version.' };
+        return { 
+            rsi: [],
+            macd: [],
+            bbands: [],
+            roc: [],
+        };
     }
 
     try {
@@ -157,7 +154,7 @@ export async function fetchAllIndicatorsService(ticker: string): Promise<Indicat
         ]);
 
         const createError = (name: string, data: any) => {
-            if (data?.error) return data.error;
+            if (data?.error) return `API call for ${name} failed: ${data.error}`;
             return null;
         };
 
@@ -181,6 +178,6 @@ export async function fetchAllIndicatorsService(ticker: string): Promise<Indicat
         };
     } catch (err) {
         console.error('An unexpected error occurred while fetching indicators', err);
-        return { error: 'Could not fetch technical indicators.' };
+        return { error: 'Could not fetch one or more technical indicators due to a network or server issue.' };
     }
 }

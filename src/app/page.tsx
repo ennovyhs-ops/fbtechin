@@ -57,7 +57,7 @@ export default function Home() {
     setIndicatorsError(null);
 
     startTransition(async () => {
-      const result = await fetchMarketData(values.ticker, apiKey);
+      const result = await fetchMarketData(values.ticker);
       if (result.error) {
         setError(result.error);
       } else if (result.data) {
@@ -66,7 +66,7 @@ export default function Home() {
         
         // Fetch indicators
         setIndicatorsLoading(true);
-        const indicatorsResult = await fetchAllIndicators(values.ticker, apiKey);
+        const indicatorsResult = await fetchAllIndicators(values.ticker);
         if (indicatorsResult.error) {
           setIndicatorsError(indicatorsResult.error);
         } else {
@@ -80,7 +80,7 @@ export default function Home() {
         setIndicatorsLoading(false);
       }
     });
-  }, [apiKey]);
+  }, []);
 
   useEffect(() => {
     getApiKey().then(key => {
@@ -160,17 +160,17 @@ export default function Home() {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Our Data Sources</DialogTitle>
+                      <DialogTitle>Our Data Source</DialogTitle>
                       <DialogDescription>
-                        This application retrieves financial data from multiple providers to ensure comprehensive coverage.
+                        This application retrieves all financial data from a single provider to ensure consistency.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 text-sm">
                       <p>
-                        <strong>Primary Data:</strong> End-of-day stock data is sourced from <a href="https://stockanalysis.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">stockanalysis.com</a> due to its reliability and generous free tier for historical data.
+                        <strong>Primary Data Source:</strong> All end-of-day stock data, forex rates, cryptocurrency prices, and technical indicators are sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>.
                       </p>
                       <p>
-                        <strong>Supplementary Data:</strong> For technical indicators, forex (currency pairs), and cryptocurrency data, we use the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a limit of 25 requests per day.
+                        A free API key is used for this service, which has a limit of 25 requests per day.
                       </p>
                     </div>
                   </DialogContent>
@@ -376,5 +376,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

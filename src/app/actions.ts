@@ -5,8 +5,6 @@ import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData }
 import { serverConfig } from '@/lib/server-config';
 import { fetchMarketDataService, fetchAllIndicatorsService } from '@/lib/server-services';
 
-const BASE_URL = 'https://www.alphavantage.co/query';
-
 interface FetchResult {
   data?: MarketData[] | null;
   error?: string | null;
@@ -24,12 +22,10 @@ export async function getApiKey() {
   return serverConfig.alphaVantageApiKey;
 }
 
-export async function fetchMarketData(ticker: string, apiKey: string | null): Promise<FetchResult> {
-  // apiKey is kept for compatibility but the service now reads from serverConfig
+export async function fetchMarketData(ticker: string): Promise<FetchResult> {
   return fetchMarketDataService(ticker);
 }
 
-export async function fetchAllIndicators(ticker: string, apiKey: string | null): Promise<IndicatorsResult> {
-    // apiKey is kept for compatibility but the service now reads from serverConfig
+export async function fetchAllIndicators(ticker: string): Promise<IndicatorsResult> {
     return fetchAllIndicatorsService(ticker);
 }
