@@ -60,13 +60,20 @@ export async function analyzeStockMomentum(
     }
 
     const marketDataResult = await fetchMarketDataService(ticker);
-    if (marketDataResult.error || !marketDataResult.data || marketDataResult.data.length < 20) {
+    if (marketDataResult.error || !marketDataResult.data || marketDataResult.data.length < 22) {
         return { error: marketDataResult.error || "Insufficient market data for analysis." };
     }
 
     const indicatorsResult = await fetchAllIndicatorsService(ticker);
-    if (indicatorsResult.error || !indicatorsResult.rsi || !indicatorsResult.macd || !indicatorsResult.bbands || !indicatorsResult.roc || indicatorsResult.roc.length === 0) {
-        return { error: indicatorsResult.error || "Failed to fetch all required technical indicators." };
+    if (indicatorsResult.error) {
+        return { error: indicatorsResult.error };
+    }
+    
+    if (!indicatorsResult.rsi || indicatorsResult.rsi.length === 0 || 
+        !indicatorsResult.bbands || indicatorsResult.bbands.length === 0 || 
+        !indicatorsResult.roc || indicatorsResult.roc.length === 0 ||
+        !indicatorsResult.macd || indicatorsResult.macd.length < 2) {
+      return { error: "One or more required technical indicators could not be fetched. Analysis cannot be completed." };
     }
     
     // Pre-calculation logic
