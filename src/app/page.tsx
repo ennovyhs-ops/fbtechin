@@ -335,7 +335,7 @@ export default function Home() {
                             <Zap className="h-6 w-6 text-muted-foreground" />
                             <span>Calculated Momentum Score</span>
                         </CardTitle>
-                        <CardDescription>A proprietary score based on ROC, Bollinger Bands, RSI, and Volume analysis.</CardDescription>
+                        <CardDescription>A proprietary score based on ROC, Bollinger Bands, RSI, MACD, and Volume analysis.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
                 </Card>
@@ -380,3 +380,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

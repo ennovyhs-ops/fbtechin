@@ -124,7 +124,7 @@ export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
           <span>Calculated Momentum Score for {ticker}</span>
         </CardTitle>
         <CardDescription>
-          A proprietary score based on ROC, Bollinger Bands, RSI, and Volume analysis.
+          A proprietary score based on ROC, Bollinger Bands, RSI, MACD, and Volume analysis.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -163,3 +163,5 @@ export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
     </Card>
   );
 }
+
+    
