@@ -5,7 +5,7 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 import { fetchMarketData, getApiKey, fetchAllIndicators } from '@/app/actions';
@@ -22,6 +22,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { isCurrencyPair, isCryptoPair, parseApiLimit } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 
 const FormSchema = z.object({
@@ -145,11 +146,35 @@ export default function Home() {
                   )}
                 />
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex items-center gap-2">
                 <Button type="submit" disabled={isPending || !apiKey}>
                   {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isPending ? 'Retrieving Data...' : 'Get Data'}
                 </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                     <Button variant="outline">
+                      Data Sources
+                      <Info className="ml-2" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Our Data Sources</DialogTitle>
+                      <DialogDescription>
+                        This application retrieves financial data from multiple providers to ensure comprehensive coverage.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 text-sm">
+                      <p>
+                        <strong>Primary Data:</strong> End-of-day stock data is sourced from <a href="https://stockanalysis.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">stockanalysis.com</a> due to its reliability and generous free tier for historical data.
+                      </p>
+                      <p>
+                        <strong>Supplementary Data:</strong> For technical indicators, forex (currency pairs), and cryptocurrency data, we use the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a limit of 25 requests per day.
+                      </p>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardFooter>
             </form>
           </Form>
@@ -351,11 +376,5 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    
-
-    
 
     
