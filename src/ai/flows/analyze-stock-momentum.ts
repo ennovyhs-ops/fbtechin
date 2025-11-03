@@ -8,8 +8,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { fetchMarketDataService, fetchAllIndicatorsService } from '@/lib/server-services';
+import { z } from 'zod';
+import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, MomentumAnalysisInput } from '@/lib/types';
 import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 
@@ -47,7 +47,8 @@ const MomentumAnalysisInputSchema = z.object({
 
 
 export async function analyzeStockMomentum(
-  ticker: string
+  ticker: string,
+  marketData: MarketData[],
 ): Promise<AnalyzeStockMomentumOutput | { error: string }> {
   try {
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
@@ -58,85 +59,90 @@ export async function analyzeStockMomentum(
         tradeAction: 'Technical indicator analysis is not supported for currency or crypto pairs.'
       };
     }
-
-    const marketDataResult = await fetchMarketDataService(ticker);
-    if (marketDataResult.error || !marketDataResult.data || marketDataResult.data.length < 22) {
-        return { error: marketDataResult.error || "Insufficient market data for analysis." };
-    }
-
-    const indicatorsResult = await fetchAllIndicatorsService(ticker);
-    if (indicatorsResult.error) {
-        return { error: indicatorsResult.error };
-    }
     
-    if (!indicatorsResult.rsi || indicatorsResult.rsi.length === 0 || 
-        !indicatorsResult.bbands || indicatorsResult.bbands.length === 0 || 
-        !indicatorsResult.roc || indicatorsResult.roc.length === 0 ||
-        !indicatorsResult.macd || indicatorsResult.macd.length < 2) {
-      return { error: "One or more required technical indicators could not be fetched. Analysis cannot be completed." };
+    if (!marketData || marketData.length < 50) { // Need enough data for all indicators
+        return { error: "Insufficient market data for analysis. At least 50 days of data are required." };
     }
-    
+
     // Pre-calculation logic
-    const marketData = marketDataResult.data;
-    const { rsi, macd, bbands, roc } = indicatorsResult;
+    const reversedData = [...marketData].reverse();
+    const closePrices = reversedData.map(d => parseFloat(d.close));
+    
+    const rsi = calculateRSI(closePrices, 14);
+    const macd = calculateMACD(closePrices, 12, 26, 9);
+    const bbands = calculateBollingerBands(closePrices, 20, 2);
+    const roc = calculateROC(closePrices, 22);
+    
+    const data = marketData; // Keep variable name for clarity, it's descending
+
+    // Get latest valid values by finding the first non-NaN from the end
+    const getLatest = <T>(arr: T[]) => [...arr].reverse().find(v => v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
+
+    const latestRoc = [...roc].reverse().find(v => !isNaN(v));
+    const latestRsi = [...rsi].reverse().find(v => !isNaN(v));
+    const latestMacd = getLatest(macd);
+    const prevMacd = [...macd].reverse().find((v, i) => i > 0 && v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
+    const latestBbands = getLatest(bbands);
+    
+    if (latestRoc === undefined || latestRsi === undefined || !latestMacd || !latestBbands || !prevMacd) {
+        return { error: "Could not calculate one or more required technical indicators. Analysis cannot be completed." };
+    }
 
     // Step 1: ROC
-    const isRocPositive = parseFloat(roc[0].ROC) > 0;
+    const isRocPositive = latestRoc > 0;
 
     // Step 2: Bollinger Bands
-    const latestClose = parseFloat(marketData[0].close);
-    const middleBand = parseFloat(bbands[0]['Real Middle Band']);
+    const latestClose = parseFloat(data[0].close);
+    const middleBand = latestBbands.middle;
     const priceAboveMiddleBand = latestClose > middleBand;
     
-    const bbWidths = bbands.slice(0, 20).map(b => (parseFloat(b['Real Upper Band']) - parseFloat(b['Real Lower Band'])) / parseFloat(b['Real Middle Band']));
-    const latestWidth = bbWidths[0];
-    const isBBSqueezing = Math.min(...bbWidths) === latestWidth;
+    const recentBbands = bbands.slice(-20);
+    const bbWidths = recentBbands.map(b => b.upper && b.lower && b.middle ? (b.upper - b.lower) / b.middle : 0).filter(w => w > 0);
+    const latestWidth = (latestBbands.upper - latestBbands.lower) / latestBbands.middle;
+    const isBBSqueezing = bbWidths.length > 0 && Math.min(...bbWidths) === latestWidth;
 
     let breakoutSignal: "above_upper" | "below_lower" | "none" = "none";
-    if (latestClose > parseFloat(bbands[0]['Real Upper Band'])) {
+    if (latestClose > latestBbands.upper) {
         breakoutSignal = "above_upper";
-    } else if (latestClose < parseFloat(bbands[0]['Real Lower Band'])) {
+    } else if (latestClose < latestBbands.lower) {
         breakoutSignal = "below_lower";
     }
 
     // Step 3: RSI
-    const latestRsi = parseFloat(rsi[0].RSI);
     const isRsiBullish = latestRsi > 50;
 
     let divergence: "bullish" | "bearish" | "none" = "none";
-    if (marketData.length >= 11 && rsi.length >= 11) {
-        const priceLow5 = parseFloat(marketData[5].low);
-        const priceLow0 = parseFloat(marketData[0].low);
-        const rsiLow5 = parseFloat(rsi[5].RSI);
-        const rsiLow0 = parseFloat(rsi[0].RSI);
+    // Simplified divergence check looking at recent significant lows/highs
+    if (data.length >= 11 && rsi.length >= data.length) {
+        const rsiReversed = [...rsi].reverse();
+        
+        const priceLow5 = parseFloat(data[5].low);
+        const priceLow0 = parseFloat(data[0].low);
+        const rsiLow5 = rsiReversed[5];
+        const rsiLow0 = rsiReversed[0];
         if (priceLow0 < priceLow5 && rsiLow0 > rsiLow5) {
             divergence = "bullish";
         }
         
-        const priceHigh5 = parseFloat(marketData[5].high);
-        const priceHigh0 = parseFloat(marketData[0].high);
-        const rsiHigh5 = parseFloat(rsi[5].RSI);
-        const rsiHigh0 = parseFloat(rsi[0].RSI);
+        const priceHigh5 = parseFloat(data[5].high);
+        const priceHigh0 = parseFloat(data[0].high);
+        const rsiHigh5 = rsiReversed[5];
+        const rsiHigh0 = rsiReversed[0];
         if (priceHigh0 > priceHigh5 && rsiHigh0 < rsiHigh5) {
             divergence = "bearish";
         }
     }
 
     // Step 4: Volume
-    const volumes = marketData.slice(0, 20).map(d => parseFloat(d.volume));
+    const volumes = data.slice(0, 20).map(d => parseFloat(d.volume));
     const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
-    const latestVolume = parseFloat(marketData[0].volume);
+    const latestVolume = parseFloat(data[0].volume);
     const isVolumeUp = latestVolume > avgVolume;
-    const isUpDay = parseFloat(marketData[0].close) > parseFloat(marketData[0].open);
+    const isUpDay = parseFloat(data[0].close) > parseFloat(data[0].open);
 
     // Step 5: MACD
-    const latestMacdValue = parseFloat(macd[0]['MACD']);
-    const latestSignalValue = parseFloat(macd[0]['MACD_Signal']);
-    const isMacdBullish = latestMacdValue > latestSignalValue;
-    
-    const previousMacdValue = parseFloat(macd[1]['MACD']);
-    const previousSignalValue = parseFloat(macd[1]['MACD_Signal']);
-    const isMacdCrossoverBullish = previousMacdValue <= previousSignalValue && latestMacdValue > latestSignalValue;
+    const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
+    const isMacdCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
 
 
     const analysisInput: MomentumAnalysisInput = {

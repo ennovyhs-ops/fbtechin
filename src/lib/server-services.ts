@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
+import type { MarketData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
@@ -10,14 +10,6 @@ const BASE_URL = 'https://www.alphavantage.co/query';
 interface FetchResult {
   data?: MarketData[] | null;
   error?: string | null;
-}
-
-interface IndicatorsResult {
-    rsi?: RsiData[];
-    macd?: MacdData[];
-    bbands?: BbandsData[];
-    roc?: RocData[];
-    error?: string | null;
 }
 
 export async function fetchMarketDataService(ticker: string): Promise<FetchResult> {
@@ -95,89 +87,4 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     console.error(err);
     return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
   }
-}
-
-async function fetchIndicatorDataService(ticker: string, func: 'RSI' | 'MACD' | 'BBANDS' | 'ROC', timePeriod: number = 20): Promise<any> {
-    const apiKey = serverConfig.alphaVantageApiKey;
-    if (!apiKey) return { error: 'API key not configured.' };
-
-    let url = `${BASE_URL}?function=${func}&symbol=${ticker}&interval=daily&series_type=close&apikey=${apiKey}`;
-    if(func === 'RSI') url += `&time_period=14`;
-    if(func === 'MACD') url += `&fastperiod=12&slowperiod=26&signalperiod=9`;
-    if(func === 'BBANDS') url += `&time_period=${timePeriod}&nbdevup=2&nbdevdn=2`;
-    if(func === 'ROC') url += `&time_period=22`;
-
-
-    try {
-        const response = await fetch(url, { cache: 'no-store' });
-        const data = await response.json();
-
-        if (data['Note']) {
-            return { error: data['Note'] };
-        }
-        if (data['Error Message'] || !data[`Technical Analysis: ${func}`]) {
-            return null;
-        }
-
-        const indicatorData = data[`Technical Analysis: ${func}`];
-        return Object.entries(indicatorData).map(([date, values]: [string, any]) => ({
-            date,
-            ...values,
-        }));
-    } catch (err) {
-        console.error(`Failed to fetch ${func} for ${ticker}`, err);
-        return null;
-    }
-}
-
-export async function fetchAllIndicatorsService(ticker: string): Promise<IndicatorsResult> {
-    const apiKey = serverConfig.alphaVantageApiKey;
-    if (!apiKey) {
-        return { error: 'API key not configured.' };
-    }
-
-    if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
-        return { 
-            rsi: [],
-            macd: [],
-            bbands: [],
-            roc: [],
-        };
-    }
-
-    try {
-        const [rsi, macd, bbands, roc] = await Promise.all([
-            fetchIndicatorDataService(ticker, 'RSI'),
-            fetchIndicatorDataService(ticker, 'MACD'),
-            fetchIndicatorDataService(ticker, 'BBANDS', 20),
-            fetchIndicatorDataService(ticker, 'ROC', 22),
-        ]);
-
-        const createError = (name: string, data: any) => {
-            if (data?.error) return `API call for ${name} failed: ${data.error}`;
-            return null;
-        };
-
-        const rsiError = createError('RSI', rsi);
-        if (rsiError) return { error: rsiError };
-        
-        const macdError = createError('MACD', macd);
-        if (macdError) return { error: macdError };
-
-        const bbandsError = createError('BBANDS', bbands);
-        if (bbandsError) return { error: bbandsError };
-        
-        const rocError = createError('ROC', roc);
-        if (rocError) return { error: rocError };
-
-        return {
-            rsi: rsi?.slice(0, 730) || [],
-            macd: macd?.slice(0, 730) || [],
-            bbands: bbands?.slice(0, 730) || [],
-            roc: roc?.slice(0, 730) || [],
-        };
-    } catch (err) {
-        console.error('An unexpected error occurred while fetching indicators', err);
-        return { error: 'Could not fetch one or more technical indicators due to a network or server issue.' };
-    }
 }

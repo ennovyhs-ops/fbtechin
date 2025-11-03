@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { MomentumScoreExplanation } from '@/components/momentum-score-explanation';
+import type { MarketData } from '@/lib/types';
 
 
 interface StockAnalysisProps {
   ticker: string;
+  marketData: MarketData[] | null;
 }
 
 const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string } => {
@@ -24,18 +26,18 @@ const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string }
     return { icon: <Scale className="h-6 w-6" />, color: 'text-muted-foreground' };
 }
 
-export function StockAnalysis({ ticker }: StockAnalysisProps) {
+export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
   const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
 
   useEffect(() => {
-    if (ticker) {
+    if (ticker && marketData) {
       setLoading(true);
       setAnalysis(null);
       const performAnalysis = async () => {
         try {
-          const result = await analyzeStockMomentum(ticker);
+          const result = await analyzeStockMomentum(ticker, marketData);
           setAnalysis(result);
         } catch (e: any) {
           setAnalysis({ error: e.message || 'An unexpected error occurred while generating the analysis.' });
@@ -44,8 +46,10 @@ export function StockAnalysis({ ticker }: StockAnalysisProps) {
         }
       }
       performAnalysis();
+    } else if (ticker) {
+        setLoading(false);
     }
-  }, [ticker]);
+  }, [ticker, marketData]);
 
 
   if (loading) {

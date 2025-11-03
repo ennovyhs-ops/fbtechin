@@ -1,9 +1,9 @@
-
 'use server';
 
 import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
-import { fetchMarketDataService, fetchAllIndicatorsService } from '@/lib/server-services';
+import { fetchMarketDataService } from '@/lib/server-services';
+import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
 
 interface FetchResult {
   data?: MarketData[] | null;
@@ -26,6 +26,45 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
   return fetchMarketDataService(ticker);
 }
 
-export async function fetchAllIndicators(ticker: string): Promise<IndicatorsResult> {
-    return fetchAllIndicatorsService(ticker);
+export async function calculateAllIndicators(marketData: MarketData[]): Promise<IndicatorsResult> {
+    if (!marketData || marketData.length === 0) {
+        return { error: 'Market data is required for indicator calculation.' };
+    }
+    
+    // The data comes in descending order, but calculations need ascending.
+    const reversedData = [...marketData].reverse();
+    const closePrices = reversedData.map(d => parseFloat(d.close));
+
+    try {
+        const rsi = calculateRSI(closePrices, 14).reverse();
+        const macd = calculateMACD(closePrices, 12, 26, 9).reverse();
+        const bbands = calculateBollingerBands(closePrices, 20, 2).reverse();
+        const roc = calculateROC(closePrices, 22).reverse();
+
+        // Match dates from original data (which is descending)
+        const datedRsi = rsi.map((val, i) => ({ date: marketData[i].date, RSI: val.toString() }));
+        const datedMacd = macd.map((val, i) => ({ 
+            date: marketData[i].date, 
+            MACD: val.MACD?.toString() || '0',
+            MACD_Signal: val.signal?.toString() || '0',
+            MACD_Hist: val.histogram?.toString() || '0'
+        }));
+        const datedBbands = bbands.map((val, i) => ({ 
+            date: marketData[i].date, 
+            'Real Upper Band': val.upper.toString(),
+            'Real Middle Band': val.middle.toString(),
+            'Real Lower Band': val.lower.toString()
+        }));
+        const datedRoc = roc.map((val, i) => ({ date: marketData[i].date, 'ROC': val.toString() }));
+
+        return {
+            rsi: datedRsi,
+            macd: datedMacd,
+            bbands: datedBbands,
+            roc: datedRoc
+        };
+
+    } catch(e: any) {
+        return { error: `An error occurred during indicator calculation: ${e.message}`};
+    }
 }

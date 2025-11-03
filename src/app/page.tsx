@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
-import { fetchMarketData, getApiKey, fetchAllIndicators } from '@/app/actions';
+import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,20 +64,24 @@ export default function Home() {
         setMarketData(result.data);
         setSubmittedTicker(values.ticker);
         
-        // Fetch indicators
-        setIndicatorsLoading(true);
-        const indicatorsResult = await fetchAllIndicators(values.ticker);
-        if (indicatorsResult.error) {
-          setIndicatorsError(indicatorsResult.error);
+        const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
+        if (!isForexOrCrypto) {
+            setIndicatorsLoading(true);
+            const indicatorsResult = await calculateAllIndicators(result.data);
+            if (indicatorsResult.error) {
+              setIndicatorsError(indicatorsResult.error);
+            } else {
+              setIndicatorData({
+                rsi: indicatorsResult.rsi || [],
+                macd: indicatorsResult.macd || [],
+                bbands: indicatorsResult.bbands || [],
+                roc: indicatorsResult.roc || [],
+              });
+            }
+            setIndicatorsLoading(false);
         } else {
-          setIndicatorData({
-            rsi: indicatorsResult.rsi || [],
-            macd: indicatorsResult.macd || [],
-            bbands: indicatorsResult.bbands || [],
-            roc: indicatorsResult.roc || [],
-          });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
         }
-        setIndicatorsLoading(false);
       }
     });
   }, []);
@@ -276,7 +280,7 @@ export default function Home() {
           )}
 
           {submittedTicker && !isPending && (
-            <StockAnalysis ticker={submittedTicker} />
+            <StockAnalysis ticker={submittedTicker} marketData={marketData}/>
           )}
 
           {submittedTicker && (
