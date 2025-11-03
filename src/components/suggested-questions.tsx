@@ -54,7 +54,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
         {!loading && !error && (
           <div className="flex flex-wrap gap-2">
             {questions.map((q, i) => (
-              <Button key={i} variant="outline" className="text-left h-auto">
+              <Button key={i} variant="outline" className="text-left h-auto whitespace-normal">
                 {q}
               </Button>
             ))}
