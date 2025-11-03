@@ -360,7 +360,7 @@ export default function Home() {
                           <span>Option Strategy Ideas</span>
                         </CardTitle>
                         <CardDescription>
-                          AI-generated option strategies based on the momentum score will appear here.
+                          Option strategies based on the momentum score will appear here.
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
