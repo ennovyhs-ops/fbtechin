@@ -1,0 +1,109 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Lightbulb, Loader2, AlertCircle } from 'lucide-react';
+import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
+import type { OptionStrategySuggestion } from '@/lib/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+
+interface OptionStrategiesProps {
+  ticker: string;
+  analysis: AnalyzeStockMomentumOutput;
+}
+
+export function OptionStrategies({ ticker, analysis }: OptionStrategiesProps) {
+  const [suggestions, setSuggestions] = useState<OptionStrategySuggestion | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (ticker && analysis?.signal) {
+      setLoading(true);
+      setError(null);
+      suggestOptionStrategies({ ticker, signal: analysis.signal })
+        .then(response => {
+          setSuggestions(response);
+        })
+        .catch(() => {
+          setError('Could not generate option strategy suggestions at this time.');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [ticker, analysis]);
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+            <Lightbulb className="h-6 w-6 text-accent" />
+            <span>Generating Option Strategy Ideas...</span>
+          </CardTitle>
+          <CardDescription>
+            The AI is analyzing the momentum score to suggest potential strategies for {ticker}.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Thinking...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+       <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+            <Lightbulb className="h-6 w-6 text-destructive" />
+            <span>Option Strategy Ideas</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <span>{error}</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!suggestions || suggestions.strategies.length === 0) return null;
+
+  return (
+    <Card className="animate-in fade-in-50 duration-500 delay-500">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+          <Lightbulb className="h-6 w-6 text-accent" />
+          <span>Option Strategy Ideas for {ticker}</span>
+        </CardTitle>
+        <CardDescription>
+          Based on the "{analysis.signal}" signal, here are some potential strategies.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {suggestions.strategies.map((strategy, index) => (
+          <div key={index} className="p-4 rounded-lg border bg-background">
+            <h3 className="font-semibold text-md text-foreground">{strategy.name}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{strategy.rationale}</p>
+          </div>
+        ))}
+         <Alert variant="default" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Disclaimer</AlertTitle>
+            <AlertDescription>
+                {suggestions.disclaimer}
+            </AlertDescription>
+         </Alert>
+      </CardContent>
+    </Card>
+  );
+}

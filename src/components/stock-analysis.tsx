@@ -14,6 +14,7 @@ import type { MarketData } from '@/lib/types';
 interface StockAnalysisProps {
   ticker: string;
   marketData: MarketData[] | null;
+  onAnalysisComplete: (analysis: AnalyzeStockMomentumOutput | null) => void;
 }
 
 const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string } => {
@@ -26,7 +27,7 @@ const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string }
     return { icon: <Scale className="h-6 w-6" />, color: 'text-muted-foreground' };
 }
 
-export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
+export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockAnalysisProps) {
   const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
@@ -35,12 +36,18 @@ export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
     if (ticker && marketData) {
       setLoading(true);
       setAnalysis(null);
+      onAnalysisComplete(null);
       const performAnalysis = async () => {
         try {
           const result = await analyzeStockMomentum(ticker, marketData);
           setAnalysis(result);
+           if (!result.error) {
+            onAnalysisComplete(result as AnalyzeStockMomentumOutput);
+          }
         } catch (e: any) {
-          setAnalysis({ error: e.message || 'An unexpected error occurred while generating the analysis.' });
+          const errorResult = { error: e.message || 'An unexpected error occurred while generating the analysis.' };
+          setAnalysis(errorResult);
+          onAnalysisComplete(null);
         } finally {
           setLoading(false);
         }
@@ -48,8 +55,9 @@ export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
       performAnalysis();
     } else if (ticker) {
         setLoading(false);
+        onAnalysisComplete(null);
     }
-  }, [ticker, marketData]);
+  }, [ticker, marketData, onAnalysisComplete]);
 
 
   if (loading) {
@@ -163,5 +171,3 @@ export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
     </Card>
   );
 }
-
-    

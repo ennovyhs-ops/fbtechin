@@ -5,7 +5,7 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/actions';
@@ -22,7 +22,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { isCurrencyPair, isCryptoPair, parseApiLimit } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
+import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 
 
 const FormSchema = z.object({
@@ -40,6 +42,8 @@ export default function Home() {
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
+  
+  const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -55,6 +59,7 @@ export default function Home() {
     setIsHistoryExpanded(false);
     setIndicatorData(null);
     setIndicatorsError(null);
+    setAnalysisResult(null);
 
     startTransition(async () => {
       const result = await fetchMarketData(values.ticker);
@@ -280,7 +285,15 @@ export default function Home() {
           )}
 
           {submittedTicker && !isPending && (
-            <StockAnalysis ticker={submittedTicker} marketData={marketData}/>
+            <StockAnalysis 
+              ticker={submittedTicker} 
+              marketData={marketData}
+              onAnalysisComplete={setAnalysisResult}
+            />
+          )}
+
+          {analysisResult && analysisResult.signal !== 'N/A' && (
+            <OptionStrategies ticker={submittedTicker!} analysis={analysisResult} />
           )}
 
           {submittedTicker && (
@@ -340,6 +353,24 @@ export default function Home() {
                     <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
                 </Card>
 
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                          <Lightbulb className="h-6 w-6 text-muted-foreground" />
+                          <span>Option Strategy Ideas</span>
+                        </CardTitle>
+                        <CardDescription>
+                          AI-generated option strategies based on the momentum score will appear here.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                         <div className="space-y-4">
+                            <div className="h-12 w-full bg-muted/80 rounded-md"></div>
+                            <div className="h-12 w-full bg-muted/80 rounded-md"></div>
+                         </div>
+                      </CardContent>
+                </Card>
+
                 <Card>
                      <CardHeader>
                         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
@@ -380,5 +411,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

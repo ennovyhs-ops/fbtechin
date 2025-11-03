@@ -52,3 +52,13 @@ export type MomentumAnalysisInput = {
   isMacdBullish: boolean;
   isMacdCrossoverBullish: boolean;
 };
+
+export type OptionStrategy = {
+  name: string;
+  rationale: string;
+};
+
+export type OptionStrategySuggestion = {
+  strategies: OptionStrategy[];
+  disclaimer: string;
+};
