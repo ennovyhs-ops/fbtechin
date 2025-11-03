@@ -26,6 +26,13 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
   return fetchMarketDataService(ticker);
 }
 
+const formatNumber = (num: number | null | undefined, precision: number = 2): string | null => {
+    if (num === null || num === undefined || isNaN(num)) {
+        return null;
+    }
+    return num.toFixed(precision);
+}
+
 export async function calculateAllIndicators(marketData: MarketData[]): Promise<IndicatorsResult> {
     if (!marketData || marketData.length === 0) {
         return { error: 'Market data is required for indicator calculation.' };
@@ -42,26 +49,32 @@ export async function calculateAllIndicators(marketData: MarketData[]): Promise<
         const roc = calculateROC(closePrices, 22).reverse();
 
         // Match dates from original data (which is descending)
-        const datedRsi = rsi.map((val, i) => ({ date: marketData[i].date, RSI: val.toString() }));
+        const datedRsi = rsi.map((val, i) => ({ 
+            date: marketData[i].date, 
+            RSI: formatNumber(val) 
+        }));
         const datedMacd = macd.map((val, i) => ({ 
             date: marketData[i].date, 
-            MACD: val.MACD?.toString() || '0',
-            MACD_Signal: val.signal?.toString() || '0',
-            MACD_Hist: val.histogram?.toString() || '0'
+            MACD: formatNumber(val.MACD),
+            MACD_Signal: formatNumber(val.signal),
+            MACD_Hist: formatNumber(val.histogram)
         }));
         const datedBbands = bbands.map((val, i) => ({ 
             date: marketData[i].date, 
-            'Real Upper Band': val.upper.toString(),
-            'Real Middle Band': val.middle.toString(),
-            'Real Lower Band': val.lower.toString()
+            'Real Upper Band': formatNumber(val.upper),
+            'Real Middle Band': formatNumber(val.middle),
+            'Real Lower Band': formatNumber(val.lower)
         }));
-        const datedRoc = roc.map((val, i) => ({ date: marketData[i].date, 'ROC': val.toString() }));
+        const datedRoc = roc.map((val, i) => ({ 
+            date: marketData[i].date, 
+            'ROC': formatNumber(val, 2)
+        }));
 
         return {
-            rsi: datedRsi,
-            macd: datedMacd,
-            bbands: datedBbands,
-            roc: datedRoc
+            rsi: datedRsi as RsiData[],
+            macd: datedMacd as MacdData[],
+            bbands: datedBbands as BbandsData[],
+            roc: datedRoc as RocData[]
         };
 
     } catch(e: any) {

@@ -17,26 +17,26 @@ export interface SearchResult {
 
 export type RsiData = {
   date: string;
-  RSI: string;
+  RSI: string | null;
 }
 
 export type RocData = {
   date: string;
-  'ROC': string;
+  'ROC': string | null;
 }
 
 export type MacdData = {
   date: string;
-  'MACD_Hist': string;
-  'MACD_Signal': string;
-  'MACD': string;
+  'MACD_Hist': string | null;
+  'MACD_Signal': string | null;
+  'MACD': string | null;
 }
 
 export type BbandsData = {
     date: string;
-    'Real Upper Band': string;
-    'Real Lower Band': string;
-    'Real Middle Band': string;
+    'Real Upper Band': string | null;
+    'Real Lower Band': string | null;
+    'Real Middle Band': string | null;
 }
 
 export type MomentumAnalysisInput = {

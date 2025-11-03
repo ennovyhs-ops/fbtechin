@@ -70,6 +70,16 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
     const latestBbands = data?.bbands?.[0];
     const latestRoc = data?.roc?.[0];
 
+    const getRsiStatus = (rsiValue: string | null) => {
+        if (rsiValue === null) return 'N/A';
+        const rsi = parseFloat(rsiValue);
+        if (rsi > 70) return 'Overbought';
+        if (rsi < 30) return 'Oversold';
+        return 'Neutral';
+    };
+    
+    const rsiStatus = getRsiStatus(latestRsi?.RSI ?? null);
+
     return (
         <Card className="animate-in fade-in-50 duration-500 delay-100">
             <CardHeader>
@@ -89,7 +99,7 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <AreaChart className="text-muted-foreground h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">ROC</p>
-                                <p className="font-semibold">{latestRoc ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
+                                <p className="font-semibold">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
                             </div>
                         </div>
                     </div>
@@ -102,23 +112,17 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <Target className="text-muted-foreground h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Value</p>
-                                <p className="font-semibold">{latestRsi ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestRsi?.RSI ?? 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            {latestRsi ? (
-                                <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
-                                    parseFloat(latestRsi.RSI) > 70 ? 'bg-red-500/20 text-red-400' : 
-                                    parseFloat(latestRsi.RSI) < 30 ? 'bg-green-500/20 text-green-400' : 
-                                    'bg-muted text-muted-foreground'
-                                }`}>
-                                    {parseFloat(latestRsi.RSI) > 70 ? 'Overbought' : 
-                                    parseFloat(latestRsi.RSI) < 30 ? 'Oversold' : 
-                                    'Neutral'}
-                                </p>
-                            ) : (
-                                 <p className="font-semibold px-2 py-1 rounded-md text-xs bg-muted text-muted-foreground">N/A</p>
-                            )}
+                            <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
+                                rsiStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
+                                rsiStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
+                                'bg-muted text-muted-foreground'
+                            }`}>
+                                {rsiStatus}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -130,21 +134,21 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <TrendingUp className="text-blue-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">MACD</p>
-                                <p className="font-semibold">{latestMacd ? parseFloat(latestMacd.MACD).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestMacd?.MACD ?? 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <TrendingDown className="text-orange-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Signal</p>
-                                <p className="font-semibold">{latestMacd ? parseFloat(latestMacd.MACD_Signal).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestMacd?.MACD_Signal ?? 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Minus className="text-gray-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Histogram</p>
-                                <p className="font-semibold">{latestMacd ? parseFloat(latestMacd.MACD_Hist).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestMacd?.MACD_Hist ?? 'N/A'}</p>
                             </div>
                         </div>
                     </div>
@@ -157,21 +161,21 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <TrendingUp className="text-green-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Upper Band</p>
-                                <p className="font-semibold">{latestBbands ? parseFloat(latestBbands['Real Upper Band']).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestBbands?.['Real Upper Band'] ?? 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Minus className="text-gray-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Middle Band</p>
-                                <p className="font-semibold">{latestBbands ? parseFloat(latestBbands['Real Middle Band']).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestBbands?.['Real Middle Band'] ?? 'N/A'}</p>
                             </div>
                         </div>
                          <div className="flex items-center gap-2">
                             <TrendingDown className="text-red-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Lower Band</p>
-                                <p className="font-semibold">{latestBbands ? parseFloat(latestBbands['Real Lower Band']).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold">{latestBbands?.['Real Lower Band'] ?? 'N/A'}</p>
                             </div>
                         </div>
                     </div>
