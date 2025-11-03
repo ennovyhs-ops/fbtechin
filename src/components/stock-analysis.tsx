@@ -121,7 +121,7 @@ export function StockAnalysis({ ticker, marketData }: StockAnalysisProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Zap className="h-6 w-6 text-accent" />
-          <span>AI Momentum Score for {ticker}</span>
+          <span>Calculated Momentum Score for {ticker}</span>
         </CardTitle>
         <CardDescription>
           A proprietary score based on ROC, Bollinger Bands, RSI, and Volume analysis.
