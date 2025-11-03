@@ -254,7 +254,7 @@ export default function Home() {
                     <div className="flex flex-col sm:flex-row items-start gap-2">
                         <CollapsibleTrigger asChild>
                             <Button variant="outline" className="w-full sm:w-auto">
-                                {isHistoryExpanded ? 'Hide' : 'Show'} Full History
+                                {isHistoryExpanded ? 'Hide' : 'Show'} 2-Year History
                                 {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
                             </Button>
                         </CollapsibleTrigger>

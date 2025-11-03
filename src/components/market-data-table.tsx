@@ -23,7 +23,7 @@ export function MarketDataTable({ data, ticker }: MarketDataTableProps) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Historical Data for {ticker}</CardTitle>
-        <CardDescription>Showing recent end-of-day market data.</CardDescription>
+        <CardDescription>Showing up to two years of recent end-of-day market data.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
