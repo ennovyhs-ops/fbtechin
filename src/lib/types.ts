@@ -49,6 +49,6 @@ export type MomentumAnalysisInput = {
   divergence: "bullish" | "bearish" | "none";
   isVolumeUp: boolean;
   isUpDay: boolean;
+  isMacdBullish: boolean;
+  isMacdCrossoverBullish: boolean;
 };
-
-    

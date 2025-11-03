@@ -41,6 +41,8 @@ const MomentumAnalysisInputSchema = z.object({
   divergence: z.enum(["bullish", "bearish", "none"]).describe("Indicates if bullish or bearish RSI divergence is detected."),
   isVolumeUp: z.boolean().describe("True if the latest volume is greater than the 20-day average volume."),
   isUpDay: z.boolean().describe("True if the latest close price is > the latest open price."),
+  isMacdBullish: z.boolean().describe("True if the MACD line is above the Signal line."),
+  isMacdCrossoverBullish: z.boolean().describe("True if the MACD line has just crossed above the Signal line."),
 });
 
 
@@ -120,6 +122,15 @@ export async function analyzeStockMomentum(
     const isVolumeUp = latestVolume > avgVolume;
     const isUpDay = parseFloat(marketData[0].close) > parseFloat(marketData[0].open);
 
+    // Step 5: MACD
+    const latestMacdValue = parseFloat(macd[0]['MACD']);
+    const latestSignalValue = parseFloat(macd[0]['MACD_Signal']);
+    const isMacdBullish = latestMacdValue > latestSignalValue;
+    
+    const previousMacdValue = parseFloat(macd[1]['MACD']);
+    const previousSignalValue = parseFloat(macd[1]['MACD_Signal']);
+    const isMacdCrossoverBullish = previousMacdValue <= previousSignalValue && latestMacdValue > latestSignalValue;
+
 
     const analysisInput: MomentumAnalysisInput = {
         ticker,
@@ -130,7 +141,9 @@ export async function analyzeStockMomentum(
         isRsiBullish,
         divergence,
         isVolumeUp,
-        isUpDay
+        isUpDay,
+        isMacdBullish,
+        isMacdCrossoverBullish
     };
 
     const result = await analyzeStockMomentumFlow(analysisInput);
@@ -153,22 +166,17 @@ const momentumAnalysisPrompt = ai.definePrompt({
 
 **Analysis Rules:**
 
-You must calculate a \`totalScore\` by summing points from the following 4 steps.
+You must calculate a \`totalScore\` by summing points from the following 5 steps.
 
-**Step 1: Rate of Change (ROC) Momentum (+/- 0.3 points)**
-- **Rule:** If \`isRocPositive\` is true, add +0.3 points. Otherwise, subtract -0.3 points.
+**Step 1: Rate of Change (ROC) Momentum (+/- 0.2 points)**
+- **Rule:** If \`isRocPositive\` is true, add +0.2 points. Otherwise, subtract -0.2 points.
 
 **Step 2: Bollinger Bands (BBands) Analysis (+/- 0.2 points, +/- 0.1 points)**
 - **2a. Price vs. Middle Band:** If \`priceAboveMiddleBand\` is true, add +0.1 points. Otherwise, subtract -0.1 points.
 - **2b. Breakout/Squeeze Analysis:**
-    - **If \`isBBSqueezing\` is true:**
-        - If \`breakoutSignal\` is "above_upper", add +0.2 points.
-        - If \`breakoutSignal\` is "below_lower", subtract -0.2 points.
-        - Otherwise, 0 points.
-    - **If \`isBBSqueezing\` is false:**
-        - If \`breakoutSignal\` is "above_upper", add +0.2 points (strong trend).
-        - If \`breakoutSignal\` is "below_lower", subtract -0.2 points (strong trend).
-        - Otherwise, 0 points.
+    - If \`breakoutSignal\` is "above_upper", add +0.1 points.
+    - If \`breakoutSignal\` is "below_lower", subtract -0.1 points.
+    - Otherwise, 0 points.
 
 **Step 3: RSI Confirmation & Divergence (+/- 0.1 points, +/- 0.1 bonus points)**
 - **3a. RSI Level:** If \`isRsiBullish\` is true, add +0.1 points. If false, subtract -0.1 points.
@@ -182,9 +190,13 @@ You must calculate a \`totalScore\` by summing points from the following 4 steps
 - If \`isVolumeUp\` is true AND \`isUpDay\` is false, subtract -0.1 points.
 - Otherwise, 0 points.
 
+**Step 5: MACD Analysis (+/- 0.2 points, +/- 0.1 bonus points)**
+- **5a. MACD State:** If \`isMacdBullish\` is true (MACD > Signal), add +0.2 points. Otherwise, subtract -0.2 points.
+- **5b. MACD Crossover (Bonus):** If \`isMacdCrossoverBullish\` is true, add a bonus of +0.1 points.
+
 **Final Calculation & Interpretation:**
 
-1.  **Calculate \`totalScore\`:** Sum all the points from steps 1-4. The score must be between -1.0 and 1.0.
+1.  **Calculate \`totalScore\`:** Sum all the points from steps 1-5. The score must be between -1.0 and 1.0.
 2.  **Determine \`signal\`, \`interpretation\`, and \`tradeAction\`** based on the score using this table:
     - **+0.8 to +1.0:** "🚀 STRONG BULLISH", "High conviction long", "Use pullbacks to enter"
     - **+0.4 to +0.7:** "✅ MODERATE BULLISH", "Consider long positions", "Manage risk with stop losses"
