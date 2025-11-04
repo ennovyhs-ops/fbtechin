@@ -77,15 +77,17 @@ export async function analyzeStockMomentum(
 
     // Get latest valid values by finding the first non-NaN from the end
     const getLatest = <T>(arr: T[]) => [...arr].reverse().find(v => v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
+    const getPrevious = <T>(arr: T[]) => [...arr].reverse().find((v, i) => i > 0 && v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
+
 
     const latestRoc = [...roc].reverse().find(v => !isNaN(v));
     const latestRsi = [...rsi].reverse().find(v => !isNaN(v));
     const latestMacd = getLatest(macd);
-    const prevMacd = [...macd].reverse().find((v, i) => i > 0 && v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
+    const prevMacd = getPrevious(macd);
     const latestBbands = getLatest(bbands);
     
     if (latestRoc === undefined || latestRsi === undefined || !latestMacd || !latestBbands || !prevMacd) {
-        return { error: "Could not calculate one or more required technical indicators. Analysis cannot be completed." };
+        return { error: "Could not calculate one or more required technical indicators. The asset may not have enough historical data." };
     }
 
     // Step 1: ROC
@@ -246,3 +248,5 @@ const analyzeStockMomentumFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
