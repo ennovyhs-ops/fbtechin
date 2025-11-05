@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldCheck, ShieldAlert, Scale, Hand, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldCheck, ShieldAlert, Scale, Hand, AlertTriangle, ChevronDown, Info } from 'lucide-react';
 import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { MomentumScoreExplanation } from '@/components/momentum-score-explanation';
 import type { MarketData } from '@/lib/types';
 
@@ -25,6 +26,17 @@ const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string }
     if (signal.includes('MODERATE BEARISH')) return { icon: <ShieldAlert className="h-6 w-6" />, color: 'text-red-400' };
     if (signal.includes('MILD BEARISH')) return { icon: <Hand className="h-6 w-6" />, color: 'text-orange-400' };
     return { icon: <Scale className="h-6 w-6" />, color: 'text-muted-foreground' };
+}
+
+const actionGlossary: Record<string, { title: string; description: string; }> = {
+    'Use pullbacks to enter': {
+        title: "What is a 'Pullback'?",
+        description: "A pullback is a temporary dip or pause in a stock's strong upward trend. The suggestion to 'use pullbacks to enter' means waiting for one of these small price drops to buy the stock, rather than buying it when the price is at a high point. It's a strategy aimed at getting a better entry price within a larger uptrend."
+    },
+    'Use rallies to enter': {
+        title: "What is a 'Rally'?",
+        description: "A rally is a temporary price increase in a stock's strong downward trend. The suggestion to 'use rallies to enter' a short position means waiting for one of these small price spikes to sell or short the stock, rather than selling when the price is at a low point. It's a strategy for getting a better entry price within a larger downtrend."
+    }
 }
 
 export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockAnalysisProps) {
@@ -123,6 +135,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockA
   }
 
   const { icon, color } = getSignalInfo(analysis.signal);
+  const actionExplanation = actionGlossary[analysis.tradeAction];
 
   return (
     <Card className="animate-in fade-in-50 duration-500 delay-300">
@@ -151,7 +164,26 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockA
         </div>
         
         <div className="space-y-2">
-            <h3 className="font-semibold">Suggested Action:</h3>
+            <div className="flex items-center gap-2">
+                <h3 className="font-semibold">Suggested Action:</h3>
+                {actionExplanation && (
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <button className="text-muted-foreground hover:text-foreground">
+                                <Info className="h-4 w-4" />
+                            </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{actionExplanation.title}</DialogTitle>
+                                <DialogDescription>
+                                    {actionExplanation.description}
+                                </DialogDescription>
+                            </DialogHeader>
+                        </DialogContent>
+                    </Dialog>
+                )}
+            </div>
             <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
         </div>
       </CardContent>
