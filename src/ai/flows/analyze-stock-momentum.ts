@@ -76,17 +76,26 @@ export async function analyzeStockMomentum(
     const data = marketData; // Keep variable name for clarity, it's descending
 
     // Get latest valid values by finding the first non-NaN from the end
-    const getLatest = <T>(arr: T[]) => [...arr].reverse().find(v => v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
-    const getPrevious = <T>(arr: T[]) => [...arr].reverse().find((v, i) => i > 0 && v !== null && v !== undefined && !Object.values(v as any).some(val => val === null || isNaN(val as number)));
+    const getLatest = <T>(arr: (T | { [key: string]: number | undefined | null })[]): T | undefined => {
+      const reversedArr = [...arr].reverse();
+      return reversedArr.find(v => v && typeof v === 'object' && Object.values(v).every(val => val !== null && val !== undefined && !isNaN(val as number))) as T | undefined;
+    };
+    
+    const getPrevious = <T>(arr: (T | { [key: string]: number | undefined | null })[]): T | undefined => {
+      const reversedArr = [...arr].reverse();
+      const latestIndex = reversedArr.findIndex(v => v && typeof v === 'object' && Object.values(v).every(val => val !== null && val !== undefined && !isNaN(val as number)));
+      if (latestIndex === -1) return undefined;
+      return reversedArr.find((v, i) => i > latestIndex && v && typeof v === 'object' && Object.values(v).every(val => val !== null && val !== undefined && !isNaN(val as number))) as T | undefined;
+    };
 
 
     const latestRoc = [...roc].reverse().find(v => !isNaN(v));
     const latestRsi = [...rsi].reverse().find(v => !isNaN(v));
-    const latestMacd = getLatest(macd);
-    const prevMacd = getPrevious(macd);
-    const latestBbands = getLatest(bbands);
+    const latestMacd = getLatest<MacdData>(macd);
+    const prevMacd = getPrevious<MacdData>(macd);
+    const latestBbands = getLatest<BbandsData>(bbands);
     
-    if (latestRoc === undefined || latestRsi === undefined || !latestMacd || !latestBbands || !prevMacd) {
+    if (latestRoc === undefined || latestRsi === undefined || !latestMacd || !prevMacd || !latestBbands) {
         return { error: "Could not calculate one or more required technical indicators. The asset may not have enough historical data." };
     }
 
@@ -95,18 +104,18 @@ export async function analyzeStockMomentum(
 
     // Step 2: Bollinger Bands
     const latestClose = parseFloat(data[0].close);
-    const middleBand = latestBbands.middle;
-    const priceAboveMiddleBand = latestClose > middleBand;
+    const middleBand = latestBbands['Real Middle Band']!;
+    const priceAboveMiddleBand = latestClose > parseFloat(middleBand);
     
     const recentBbands = bbands.slice(-20);
-    const bbWidths = recentBbands.map(b => b.upper && b.lower && b.middle ? (b.upper - b.lower) / b.middle : 0).filter(w => w > 0);
-    const latestWidth = (latestBbands.upper - latestBbands.lower) / latestBbands.middle;
+    const bbWidths = recentBbands.map(b => (b.upper && b.lower && b.middle) ? (b.upper - b.lower) / b.middle : 0).filter(w => w > 0);
+    const latestWidth = (latestBbands['Real Upper Band']! - latestBbands['Real Lower Band']!) / middleBand;
     const isBBSqueezing = bbWidths.length > 0 && Math.min(...bbWidths) === latestWidth;
 
     let breakoutSignal: "above_upper" | "below_lower" | "none" = "none";
-    if (latestClose > latestBbands.upper) {
+    if (latestClose > latestBbands['Real Upper Band']!) {
         breakoutSignal = "above_upper";
-    } else if (latestClose < latestBbands.lower) {
+    } else if (latestClose < latestBbands['Real Lower Band']!) {
         breakoutSignal = "below_lower";
     }
 
@@ -143,8 +152,8 @@ export async function analyzeStockMomentum(
     const isUpDay = parseFloat(data[0].close) > parseFloat(data[0].open);
 
     // Step 5: MACD
-    const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
-    const isMacdCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
+    const isMacdBullish = parseFloat(latestMacd.MACD!) > parseFloat(latestMacd.MACD_Signal!);
+    const isMacdCrossoverBullish = parseFloat(prevMacd.MACD!) <= parseFloat(prevMacd.MACD_Signal!) && parseFloat(latestMacd.MACD!) > parseFloat(latestMacd.MACD_Signal!);
 
 
     const analysisInput: MomentumAnalysisInput = {
@@ -248,5 +257,3 @@ const analyzeStockMomentumFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
