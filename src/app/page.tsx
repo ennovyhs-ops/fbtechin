@@ -294,8 +294,12 @@ export default function Home() {
             />
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && (
-            <OptionStrategies ticker={submittedTicker!} analysis={analysisResult} />
+          {analysisResult && analysisResult.signal !== 'N/A' && latestData && (
+            <OptionStrategies 
+                ticker={submittedTicker!} 
+                analysis={analysisResult}
+                latestClose={latestData.close}
+            />
           )}
 
           {submittedTicker && (

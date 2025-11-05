@@ -14,19 +14,20 @@ import { Button } from '@/components/ui/button';
 interface OptionStrategiesProps {
   ticker: string;
   analysis: AnalyzeStockMomentumOutput;
+  latestClose: string;
 }
 
-export function OptionStrategies({ ticker, analysis }: OptionStrategiesProps) {
+export function OptionStrategies({ ticker, analysis, latestClose }: OptionStrategiesProps) {
   const [suggestions, setSuggestions] = useState<OptionStrategySuggestion | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   useEffect(() => {
-    if (ticker && analysis?.signal) {
+    if (ticker && analysis?.signal && latestClose) {
       setLoading(true);
       setError(null);
-      suggestOptionStrategies({ ticker, signal: analysis.signal })
+      suggestOptionStrategies({ ticker, signal: analysis.signal, latestClose })
         .then(response => {
           setSuggestions(response);
         })
@@ -37,7 +38,7 @@ export function OptionStrategies({ ticker, analysis }: OptionStrategiesProps) {
           setLoading(false);
         });
     }
-  }, [ticker, analysis]);
+  }, [ticker, analysis, latestClose]);
 
   if (loading) {
     return (
