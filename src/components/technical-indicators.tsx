@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +33,7 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                     </CardDescription>
                 </CardHeader>
             </Card>
-        )
+        );
     }
 
     if (loading) {
@@ -99,7 +100,7 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <AreaChart className="text-muted-foreground h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">ROC</p>
-                                <p className="font-semibold">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
+                                <p className="font-semibold">{latestRoc?.ROC ? `${latestRoc.ROC}` : 'N/A'}</p>
                             </div>
                         </div>
                     </div>

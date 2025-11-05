@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
@@ -49,25 +50,25 @@ export async function calculateAllIndicators(marketData: MarketData[]): Promise<
         const roc = calculateROC(closePrices, 22).reverse();
 
         // Match dates from original data (which is descending)
-        const datedRsi = rsi.map((val, i) => ({ 
+        const datedRsi = marketData.map((_, i) => ({ 
             date: marketData[i].date, 
-            RSI: formatNumber(val) 
+            RSI: formatNumber(rsi[i]) 
         }));
-        const datedMacd = macd.map((val, i) => ({ 
+        const datedMacd = marketData.map((_, i) => ({ 
             date: marketData[i].date, 
-            MACD: formatNumber(val.MACD),
-            MACD_Signal: formatNumber(val.signal),
-            MACD_Hist: formatNumber(val.histogram)
+            MACD: formatNumber(macd[i]?.MACD),
+            MACD_Signal: formatNumber(macd[i]?.signal),
+            MACD_Hist: formatNumber(macd[i]?.histogram)
         }));
-        const datedBbands = bbands.map((val, i) => ({ 
+        const datedBbands = marketData.map((_, i) => ({ 
             date: marketData[i].date, 
-            'Real Upper Band': formatNumber(val.upper),
-            'Real Middle Band': formatNumber(val.middle),
-            'Real Lower Band': formatNumber(val.lower)
+            'Real Upper Band': formatNumber(bbands[i]?.upper),
+            'Real Middle Band': formatNumber(bbands[i]?.middle),
+            'Real Lower Band': formatNumber(bbands[i]?.lower)
         }));
-        const datedRoc = roc.map((val, i) => ({ 
+        const datedRoc = marketData.map((_, i) => ({ 
             date: marketData[i].date, 
-            'ROC': formatNumber(val, 2)
+            'ROC': formatNumber(roc[i], 2)
         }));
 
         return {
