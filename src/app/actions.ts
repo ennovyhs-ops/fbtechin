@@ -1,15 +1,10 @@
 
 'use server';
 
-import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
+import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData, FetchResult } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { fetchMarketDataService } from '@/lib/server-services';
 import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
-
-interface FetchResult {
-  data?: MarketData[] | null;
-  error?: string | null;
-}
 
 interface IndicatorsResult {
     rsi?: RsiData[];

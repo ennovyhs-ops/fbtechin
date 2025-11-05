@@ -18,21 +18,21 @@ const CRYPTO_CURRENCIES = new Set([
 
 export function isCurrencyPair(ticker: string): boolean {
   if (ticker.length !== 6) return false;
-  const from = ticker.substring(0, 3);
-  const to = ticker.substring(3, 6);
+  const from = ticker.substring(0, 3).toUpperCase();
+  const to = ticker.substring(3, 6).toUpperCase();
   return FOREX_CURRENCIES.has(from) && FOREX_CURRENCIES.has(to);
 }
 
 export function isCryptoPair(ticker: string): boolean {
   if (ticker.length < 6) return false; // e.g. BTCUSD
-  const to = ticker.substring(ticker.length - 3);
-  const from = ticker.substring(0, ticker.length - 3);
+  const to = ticker.substring(ticker.length - 3).toUpperCase();
+  const from = ticker.substring(0, ticker.length - 3).toUpperCase();
   return CRYPTO_CURRENCIES.has(from) && FOREX_CURRENCIES.has(to);
 }
 
 export function getCurrencyOrCryptoPair(ticker: string): { from_symbol: string, to_symbol: string } {
-    const to_symbol = ticker.substring(ticker.length - 3);
-    const from_symbol = ticker.substring(0, ticker.length - 3);
+    const to_symbol = ticker.substring(ticker.length - 3).toUpperCase();
+    const from_symbol = ticker.substring(0, ticker.length - 3).toUpperCase();
     return { from_symbol, to_symbol };
 }
 
@@ -50,4 +50,27 @@ export function parseApiLimit(note: string): string | null {
   }
   
   return "You have reached the Alpha Vantage API rate limit.";
+}
+
+export function formatCurrency(value: string | number | null | undefined, currency?: string | null): string {
+    if (value === null || value === undefined) return 'N/A';
+    
+    const numberValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(numberValue)) return 'N/A';
+
+    if (!currency) {
+        return `$${numberValue.toFixed(2)}`;
+    }
+
+    try {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4,
+        }).format(numberValue);
+    } catch (e) {
+        // Fallback for unknown currency codes
+        return `${currency} ${numberValue.toFixed(2)}`;
+    }
 }

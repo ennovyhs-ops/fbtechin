@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart } from 'lucide-react';
 import type { RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
-import { isCryptoPair, isCurrencyPair } from '@/lib/utils';
+import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 
 interface TechnicalIndicatorsProps {
     ticker: string;
@@ -17,9 +17,10 @@ interface TechnicalIndicatorsProps {
     } | null;
     loading: boolean;
     error: string | null;
+    currency: string | null;
 }
 
-export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalIndicatorsProps) {
+export function TechnicalIndicators({ ticker, data, loading, error, currency }: TechnicalIndicatorsProps) {
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
             <Card>
@@ -135,21 +136,21 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <TrendingUp className="text-blue-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">MACD</p>
-                                <p className="font-semibold">{latestMacd?.MACD ?? 'N/A'}</p>
+                                <p className="font-semibold">{formatCurrency(latestMacd?.MACD, currency)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <TrendingDown className="text-orange-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Signal</p>
-                                <p className="font-semibold">{latestMacd?.MACD_Signal ?? 'N/A'}</p>
+                                <p className="font-semibold">{formatCurrency(latestMacd?.MACD_Signal, currency)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Minus className="text-gray-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Histogram</p>
-                                <p className="font-semibold">{latestMacd?.MACD_Hist ?? 'N/A'}</p>
+                                <p className="font-semibold">{formatCurrency(latestMacd?.MACD_Hist, currency)}</p>
                             </div>
                         </div>
                     </div>
@@ -162,21 +163,21 @@ export function TechnicalIndicators({ ticker, data, loading, error }: TechnicalI
                             <TrendingUp className="text-green-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Upper Band</p>
-                                <p className="font-semibold">{latestBbands?.['Real Upper Band'] ?? 'N/A'}</p>
+                                <p className="font-semibold">{formatCurrency(latestBbands?.['Real Upper Band'], currency)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Minus className="text-gray-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Middle Band</p>
-                                <p className="font-semibold">{latestBbands?.['Real Middle Band'] ?? 'N/A'}</p>
+                                <p className="font-semibold">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p>
                             </div>
                         </div>
                          <div className="flex items-center gap-2">
                             <TrendingDown className="text-red-400 h-5 w-5" />
                             <div>
                                 <p className="text-muted-foreground">Lower Band</p>
-                                <p className="font-semibold">{latestBbands?.['Real Lower Band'] ?? 'N/A'}</p>
+                                <p className="font-semibold">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p>
                             </div>
                         </div>
                     </div>

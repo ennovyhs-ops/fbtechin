@@ -7,6 +7,12 @@ export type MarketData = {
   volume: string;
 };
 
+export type FetchResult = {
+  data?: MarketData[] | null;
+  currency?: string | null;
+  error?: string | null;
+}
+
 export interface SearchResult {
   symbol: string;
   name: string;
@@ -21,7 +27,7 @@ export type RsiData = {
 }
 
 export type RocData = {
-  date: string;
+  date:string;
   'ROC': string | null;
 }
 

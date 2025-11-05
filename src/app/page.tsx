@@ -19,7 +19,7 @@ import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { isCurrencyPair, isCryptoPair, parseApiLimit } from '@/lib/utils';
+import { isCurrencyPair, isCryptoPair, parseApiLimit, formatCurrency } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
 import { OptionStrategies } from '@/components/option-strategies';
@@ -38,6 +38,7 @@ export default function Home() {
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<string | null>(null);
 
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
@@ -60,14 +61,16 @@ export default function Home() {
     setIndicatorData(null);
     setIndicatorsError(null);
     setAnalysisResult(null);
+    setCurrency(null);
 
     startTransition(async () => {
-      const result = await fetchMarketData(values.ticker);
+      const result = await fetchMarketData(values.ticker.toUpperCase());
       if (result.error) {
         setError(result.error);
       } else if (result.data) {
         setMarketData(result.data);
-        setSubmittedTicker(values.ticker);
+        setSubmittedTicker(values.ticker.toUpperCase());
+        setCurrency(result.currency || null);
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
@@ -119,7 +122,6 @@ export default function Home() {
   };
 
   const latestData = marketData?.[0];
-  const isForexOrCrypto = submittedTicker && (isCurrencyPair(submittedTicker) || isCryptoPair(submittedTicker));
 
   const showSkeleton = !isPending && !marketData && !error && !submittedTicker;
 
@@ -148,7 +150,7 @@ export default function Home() {
                     <FormItem>
                       <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD" {...field} autoComplete="off" />
+                        <Input placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD" {...field} autoComplete="off" onInput={(e) => (e.currentTarget.value = e.currentTarget.value.toUpperCase())}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -223,7 +225,7 @@ export default function Home() {
              <CardContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
-                      <p className="text-4xl md:text-5xl font-bold text-foreground">{isForexOrCrypto ? '' : '$'}{latestData.close}</p>
+                      <p className="text-4xl md:text-5xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
                       <p className="text-lg text-muted-foreground font-medium sm:pb-1">Close</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
@@ -231,21 +233,21 @@ export default function Home() {
                         <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Open</p>
-                            <p className="font-semibold">{isForexOrCrypto ? '' : '$'}{latestData.open}</p>
+                            <p className="font-semibold">{formatCurrency(latestData.open, currency)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingUp className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">High</p>
-                            <p className="font-semibold">{isForexOrCrypto ? '' : '$'}{latestData.high}</p>
+                            <p className="font-semibold">{formatCurrency(latestData.high, currency)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingDown className="text-muted-foreground h-5 w-5" />
                         <div>
                             <p className="text-muted-foreground">Low</p>
-                            <p className="font-semibold">{isForexOrCrypto ? '' : '$'}{latestData.low}</p>
+                            <p className="font-semibold">{formatCurrency(latestData.low, currency)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -275,7 +277,7 @@ export default function Home() {
                     <CollapsibleContent className="w-full mt-4">
                         {marketData && marketData.length > 0 && (
                             <div className="animate-in fade-in-50 duration-500">
-                                <MarketDataTable data={marketData} ticker={submittedTicker} />
+                                <MarketDataTable data={marketData} ticker={submittedTicker} currency={currency} />
                             </div>
                         )}
                     </CollapsibleContent>
@@ -302,6 +304,7 @@ export default function Home() {
                 data={indicatorData}
                 loading={indicatorsLoading}
                 error={indicatorsError}
+                currency={currency}
             />
           )}
           
