@@ -29,7 +29,10 @@ const ema = (data: number[], period: number): number[] => {
             const sum = chunk.reduce((a, b) => a + b, 0);
             ema = sum / period;
         } else {
-            ema = data[i] * k + ema * (1 - k);
+            // Check if previous ema is a number before calculating
+            if (!isNaN(ema)) {
+                ema = data[i] * k + ema * (1 - k);
+            }
         }
         result.push(ema);
     }
@@ -67,79 +70,49 @@ export const calculateBollingerBands = (data: number[], period: number, stdDevMu
     return result;
 };
 
-export const calculateRSI = (data: number[], period: number): number[] => {
-    const result: number[] = [];
-    let gains = 0;
-    let losses = 0;
+export const calculateRSI = (prices: number[], period: number): number[] => {
+    const rsi: number[] = new Array(prices.length).fill(NaN);
+    if (prices.length <= period) return rsi;
 
-    for (let i = 1; i < data.length; i++) {
-        const diff = data[i] - data[i - 1];
-        if (i <= period) {
-            if (diff > 0) gains += diff;
-            else losses -= diff;
-        }
-
-        if (i === period) {
-            const avgGain = gains / period;
-            const avgLoss = losses / period;
-            const rs = avgGain / avgLoss;
-            result.push(100 - 100 / (1 + rs));
-        }
-
-        if (i > period) {
-            let currentGain = 0;
-            let currentLoss = 0;
-            if (diff > 0) currentGain = diff;
-            else currentLoss = -diff;
-            
-            const lastAvgGain = (result[result.length - 1] / 100) * period / (100 - result[result.length-1]) * period;
-            
-            const prevAvgGain = (gains / period) * (period - 1);
-            const prevAvgLoss = (losses / period) * (period - 1);
-
-            const newAvgGain = ((prevAvgGain * (period -1)) + currentGain) / period;
-            const newAvgLoss = ((prevAvgLoss * (period-1)) + currentLoss) / period;
-
-            const newRs = newAvgGain / newAvgLoss;
-            result.push(100 - 100 / (1 + newRs));
-        }
-    }
-    
-    const rsiValues: number[] = [];
-    let avgGain = 0;
-    let avgLoss = 0;
+    let gainSum = 0;
+    let lossSum = 0;
 
     // Calculate initial average gain and loss
     for (let i = 1; i <= period; i++) {
-        const change = data[i] - data[i - 1];
+        const change = prices[i] - prices[i - 1];
         if (change > 0) {
-            avgGain += change;
+            gainSum += change;
         } else {
-            avgLoss -= change;
+            lossSum -= change;
         }
     }
-    avgGain /= period;
-    avgLoss /= period;
-    
-    rsiValues.push(100 - 100 / (1 + avgGain / avgLoss));
+
+    let avgGain = gainSum / period;
+    let avgLoss = lossSum / period;
+
+    let rs = avgLoss === 0 ? Infinity : avgGain / avgLoss;
+    rsi[period] = 100 - (100 / (1 + rs));
 
     // Calculate subsequent RSI values
-    for (let i = period + 1; i < data.length; i++) {
-        const change = data[i] - data[i - 1];
-        let gain = 0;
-        let loss = 0;
+    for (let i = period + 1; i < prices.length; i++) {
+        const change = prices[i] - prices[i - 1];
+        let currentGain = 0;
+        let currentLoss = 0;
+
         if (change > 0) {
-            gain = change;
+            currentGain = change;
         } else {
-            loss = -change;
+            currentLoss = -change;
         }
-        avgGain = (avgGain * (period - 1) + gain) / period;
-        avgLoss = (avgLoss * (period - 1) + loss) / period;
-        rsiValues.push(100 - 100 / (1 + avgGain / avgLoss));
+
+        avgGain = (avgGain * (period - 1) + currentGain) / period;
+        avgLoss = (avgLoss * (period - 1) + currentLoss) / period;
+
+        rs = avgLoss === 0 ? Infinity : avgGain / avgLoss;
+        rsi[i] = 100 - (100 / (1 + rs));
     }
 
-
-    return Array(data.length - rsiValues.length).fill(NaN).concat(rsiValues);
+    return rsi;
 };
 
 
@@ -148,14 +121,27 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
     const emaSlow = ema(data, slowPeriod);
     
     const macdLine = emaFast.map((fast, i) => fast - emaSlow[i]);
-    const signalLine = ema(macdLine, signalPeriod);
-    const histogram = macdLine.map((macd, i) => macd - signalLine[i]);
+    const signalLine = ema(macdLine.filter(v => !isNaN(v)), signalPeriod);
+    
+    // Align signalLine with macdLine
+    const alignedSignalLine = new Array(macdLine.length).fill(NaN);
+    let signalIndex = 0;
+    for(let i=0; i < macdLine.length; i++) {
+        if(!isNaN(macdLine[i])) {
+            if(signalIndex < signalLine.length) {
+                alignedSignalLine[i] = signalLine[signalIndex];
+                signalIndex++;
+            }
+        }
+    }
+
+    const histogram = macdLine.map((macd, i) => macd - alignedSignalLine[i]);
 
     const result = [];
     for(let i=0; i < data.length; i++) {
         result.push({
             MACD: macdLine[i],
-            signal: signalLine[i],
+            signal: alignedSignalLine[i],
             histogram: histogram[i]
         });
     }

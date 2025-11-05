@@ -75,26 +75,44 @@ export async function analyzeStockMomentum(
     
     const data = marketData; // Keep variable name for clarity, it's descending
 
-    // Get latest valid values by finding the first non-NaN from the end
-    const getLatest = <T>(arr: (T | { [key: string]: number | undefined | null })[]): T | undefined => {
-      const reversedArr = [...arr].reverse();
-      return reversedArr.find(v => v && typeof v === 'object' && Object.values(v).every(val => val !== null && val !== undefined && !isNaN(val as number))) as T | undefined;
+    // Helper to find the latest valid (non-NaN) value from an array of numbers or objects
+    const findLatestValid = <T, K>(
+      arr: T[],
+      isValid: (item: T) => boolean,
+      extract: (item: T) => K
+    ): K | undefined => {
+      for (let i = arr.length - 1; i >= 0; i--) {
+        if (isValid(arr[i])) {
+          return extract(arr[i]);
+        }
+      }
+      return undefined;
     };
     
-    const getPrevious = <T>(arr: (T | { [key: string]: number | undefined | null })[]): T | undefined => {
-      const reversedArr = [...arr].reverse();
-      const latestIndex = reversedArr.findIndex(v => v && typeof v === 'object' && Object.values(v).every(val => val !== null && val !== undefined && !isNaN(val as number)));
-      if (latestIndex === -1) return undefined;
-      return reversedArr.find((v, i) => i > latestIndex && v && typeof v === 'object' && Object.values(v).every(val => val !== null && val !== undefined && !isNaN(val as number))) as T | undefined;
+    const findPreviousValid = <T, K>(
+      arr: T[],
+      isValid: (item: T) => boolean,
+      extract: (item: T) => K
+    ): K | undefined => {
+      let latestFound = false;
+      for (let i = arr.length - 1; i >= 0; i--) {
+         if (isValid(arr[i])) {
+           if (latestFound) {
+             return extract(arr[i]);
+           } else {
+             latestFound = true;
+           }
+         }
+      }
+      return undefined;
     };
 
+    const latestRoc = findLatestValid(roc, (v) => !isNaN(v), v => v);
+    const latestRsi = findLatestValid(rsi, (v) => !isNaN(v), v => v);
+    const latestMacd = findLatestValid(macd, (v) => v && !isNaN(v.MACD!) && !isNaN(v.signal!), v => v);
+    const prevMacd = findPreviousValid(macd, (v) => v && !isNaN(v.MACD!) && !isNaN(v.signal!), v => v);
+    const latestBbands = findLatestValid(bbands, (v) => v && !isNaN(v.middle) && !isNaN(v.upper) && !isNaN(v.lower), v => v);
 
-    const latestRoc = [...roc].reverse().find(v => !isNaN(v));
-    const latestRsi = [...rsi].reverse().find(v => !isNaN(v));
-    const latestMacd = getLatest<MacdData>(macd);
-    const prevMacd = getPrevious<MacdData>(macd);
-    const latestBbands = getLatest<BbandsData>(bbands);
-    
     if (latestRoc === undefined || latestRsi === undefined || !latestMacd || !prevMacd || !latestBbands) {
         return { error: "Could not calculate one or more required technical indicators. The asset may not have enough historical data." };
     }
@@ -104,18 +122,18 @@ export async function analyzeStockMomentum(
 
     // Step 2: Bollinger Bands
     const latestClose = parseFloat(data[0].close);
-    const middleBand = latestBbands['Real Middle Band']!;
-    const priceAboveMiddleBand = latestClose > parseFloat(middleBand);
+    const middleBand = latestBbands.middle;
+    const priceAboveMiddleBand = latestClose > middleBand;
     
     const recentBbands = bbands.slice(-20);
     const bbWidths = recentBbands.map(b => (b.upper && b.lower && b.middle) ? (b.upper - b.lower) / b.middle : 0).filter(w => w > 0);
-    const latestWidth = (latestBbands['Real Upper Band']! - latestBbands['Real Lower Band']!) / middleBand;
+    const latestWidth = (latestBbands.upper - latestBbands.lower) / middleBand;
     const isBBSqueezing = bbWidths.length > 0 && Math.min(...bbWidths) === latestWidth;
 
     let breakoutSignal: "above_upper" | "below_lower" | "none" = "none";
-    if (latestClose > latestBbands['Real Upper Band']!) {
+    if (latestClose > latestBbands.upper) {
         breakoutSignal = "above_upper";
-    } else if (latestClose < latestBbands['Real Lower Band']!) {
+    } else if (latestClose < latestBbands.lower) {
         breakoutSignal = "below_lower";
     }
 
@@ -123,7 +141,6 @@ export async function analyzeStockMomentum(
     const isRsiBullish = latestRsi > 50;
 
     let divergence: "bullish" | "bearish" | "none" = "none";
-    // Simplified divergence check looking at recent significant lows/highs
     if (data.length >= 11 && rsi.length >= data.length) {
         const rsiReversed = [...rsi].reverse();
         
@@ -152,8 +169,8 @@ export async function analyzeStockMomentum(
     const isUpDay = parseFloat(data[0].close) > parseFloat(data[0].open);
 
     // Step 5: MACD
-    const isMacdBullish = parseFloat(latestMacd.MACD!) > parseFloat(latestMacd.MACD_Signal!);
-    const isMacdCrossoverBullish = parseFloat(prevMacd.MACD!) <= parseFloat(prevMacd.MACD_Signal!) && parseFloat(latestMacd.MACD!) > parseFloat(latestMacd.MACD_Signal!);
+    const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
+    const isMacdCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
 
 
     const analysisInput: MomentumAnalysisInput = {
