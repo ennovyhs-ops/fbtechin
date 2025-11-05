@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Lightbulb, Loader2, AlertCircle } from 'lucide-react';
+import { Lightbulb, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
 import type { OptionStrategySuggestion } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+
 
 interface OptionStrategiesProps {
   ticker: string;
@@ -17,6 +20,7 @@ export function OptionStrategies({ ticker, analysis }: OptionStrategiesProps) {
   const [suggestions, setSuggestions] = useState<OptionStrategySuggestion | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   useEffect(() => {
     if (ticker && analysis?.signal) {
@@ -96,13 +100,23 @@ export function OptionStrategies({ ticker, analysis }: OptionStrategiesProps) {
             <p className="text-sm text-muted-foreground mt-1">{strategy.rationale}</p>
           </div>
         ))}
-         <Alert variant="default" className="mt-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Disclaimer</AlertTitle>
-            <AlertDescription>
-                {suggestions.disclaimer}
-            </AlertDescription>
-         </Alert>
+         <Collapsible open={isDisclaimerOpen} onOpenChange={setIsDisclaimerOpen} className="w-full pt-2">
+            <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm">
+                    Disclaimer
+                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-200 ${isDisclaimerOpen ? 'rotate-180' : ''}`} />
+                </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+                <Alert variant="default" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Disclaimer</AlertTitle>
+                    <AlertDescription>
+                        {suggestions.disclaimer}
+                    </AlertDescription>
+                </Alert>
+            </CollapsibleContent>
+          </Collapsible>
       </CardContent>
     </Card>
   );
