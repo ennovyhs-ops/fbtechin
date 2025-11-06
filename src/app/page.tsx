@@ -180,6 +180,9 @@ export default function Home() {
                       <p>
                         <strong>Primary Data Source:</strong> All end-of-day stock data, forex rates, cryptocurrency prices, and technical indicators are sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>.
                       </p>
+                       <p>
+                        <strong>Ticker Symbols:</strong> Ticker symbols also follow Alpha Vantage's conventions. If you are unsure of a symbol, you can use their <a href="https://www.alphavantage.co/symbol_search" target="_blank" rel="noopener noreferrer" className="text-primary underline">official search tool</a> to find the correct one (e.g., "GOOGL" for Google, or "0005.HK" for HSBC).
+                      </p>
                       <p>
                         A free API key is used for this service, which has a limit of 25 requests per day.
                       </p>
@@ -418,3 +421,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
