@@ -62,4 +62,24 @@ export type OptionStrategySuggestion = {
   disclaimer: string;
 };
 
-    
+export type NewsArticle = {
+  title: string;
+  url: string;
+  time_published: string;
+  summary: string;
+  banner_image: string;
+  source: string;
+  overall_sentiment_score: number;
+  overall_sentiment_label: string;
+  ticker_sentiment: {
+    ticker: string;
+    relevance_score: string;
+    ticker_sentiment_score: string;
+    ticker_sentiment_label: string;
+  }[];
+}
+
+export type NewsSentimentData = {
+  articles?: NewsArticle[];
+  error?: string;
+}

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -13,6 +14,7 @@ import {z} from 'genkit';
 
 const SuggestDataExplorationQuestionsInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
+  recentNews: z.array(z.string()).optional().describe('An array of recent news headlines for the stock.'),
 });
 export type SuggestDataExplorationQuestionsInput = z.infer<
   typeof SuggestDataExplorationQuestionsInputSchema
@@ -37,7 +39,16 @@ const suggestDataExplorationQuestionsPrompt = ai.definePrompt({
   name: 'suggestDataExplorationQuestionsPrompt',
   input: {schema: SuggestDataExplorationQuestionsInputSchema},
   output: {schema: SuggestDataExplorationQuestionsOutputSchema},
-  prompt: `You are an expert financial analyst. Given the stock ticker symbol "{{ticker}}", suggest five reasonable, related, specific follow-up questions a user might ask about this security, considering recent news, analyst opinions, and typical investor interests. Focus on variety; don't just repeat the same type of query.  Return the questions as a JSON array of strings.`,
+  prompt: `You are an expert financial analyst. Given the stock ticker symbol "{{ticker}}", suggest five reasonable, related, specific follow-up questions a user might ask about this security.
+
+{{#if recentNews}}
+**Use the following recent news headlines to make your questions more timely and relevant:**
+{{#each recentNews}}
+- {{{this}}}
+{{/each}}
+{{/if}}
+
+Consider typical investor interests like valuation, competitive landscape, future growth, and recent performance. Focus on variety; don't just repeat the same type of query. Return the questions as a JSON array of strings.`,
 });
 
 const suggestDataExplorationQuestionsFlow = ai.defineFlow(

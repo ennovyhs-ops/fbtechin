@@ -1,9 +1,9 @@
 
 'use server';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult, NewsSentimentData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
-import { fetchMarketDataService } from '@/lib/server-services';
+import { fetchMarketDataService, fetchNewsSentimentService } from '@/lib/server-services';
 import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
 
 interface IndicatorsResult {
@@ -21,6 +21,11 @@ export async function getApiKey() {
 export async function fetchMarketData(ticker: string): Promise<FetchResult> {
   return fetchMarketDataService(ticker);
 }
+
+export async function fetchNewsSentiment(ticker: string): Promise<NewsSentimentData> {
+    return fetchNewsSentimentService(ticker);
+}
+
 
 const formatNumber = (num: number | null | undefined, precision: number = 2): string | null => {
     if (num === null || num === undefined || isNaN(num)) {
@@ -77,5 +82,3 @@ export async function calculateAllIndicators(marketData: MarketData[]): Promise<
         return { error: `An error occurred during indicator calculation: ${e.message}`};
     }
 }
-
-    

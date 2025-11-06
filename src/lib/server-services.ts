@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { MarketData, FetchResult } from '@/lib/types';
+import type { MarketData, FetchResult, NewsSentimentData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
@@ -116,4 +116,30 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   }
 }
 
+export async function fetchNewsSentimentService(ticker: string): Promise<NewsSentimentData> {
+  const apiKey = serverConfig.alphaVantageApiKey;
+  if (!apiKey) {
+    return { error: 'API key is not configured.' };
+  }
+
+  const url = `${BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=5`;
+
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+      return { error: 'Failed to fetch news data.' };
+    }
+    const data = await response.json();
     
+    if (data['Note'] || data['Information']) {
+        return { error: data['Note'] || data['Information'] };
+    }
+    if (data['Error Message']) {
+      return { error: data['Error Message'] };
+    }
+
+    return { articles: data.feed || [] };
+  } catch (err) {
+    return { error: 'An unexpected error occurred while fetching news.' };
+  }
+}
