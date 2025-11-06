@@ -13,7 +13,6 @@ import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/action
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
@@ -25,6 +24,7 @@ import { StockAnalysis } from '@/components/stock-analysis';
 import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
+import { SymbolSearch } from '@/components/symbol-search';
 
 
 const FormSchema = z.object({
@@ -150,7 +150,19 @@ export default function Home() {
                     <FormItem>
                       <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD" {...field} autoComplete="off" onInput={(e) => (e.currentTarget.value = e.currentTarget.value.toUpperCase())}/>
+                        <SymbolSearch
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value);
+                            if (value.length < 2) {
+                              setSubmittedTicker(null); // Clear results if search is cleared
+                            }
+                          }}
+                           onSelect={(symbol) => {
+                            field.onChange(symbol);
+                            form.handleSubmit(onSubmit)(); // Auto-submit on select
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -195,7 +207,7 @@ export default function Home() {
         </Card>
 
         <div className="mt-8 space-y-8">
-          {isPending && (
+          {isPending && !submittedTicker && ( // Only show main loader if we are not already showing data
             <div className="flex justify-center items-center p-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -421,7 +433,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    

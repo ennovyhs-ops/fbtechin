@@ -1,3 +1,4 @@
+
 export type MarketData = {
   date: string;
   open: string;

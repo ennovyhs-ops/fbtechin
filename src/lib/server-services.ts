@@ -7,6 +7,44 @@ import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/uti
 
 const BASE_URL = 'https://www.alphavantage.co/query';
 
+export async function searchSymbolsService(keywords: string): Promise<SearchResult[]> {
+  const apiKey = serverConfig.alphaVantageApiKey;
+  if (!apiKey) {
+    console.error('Alpha Vantage API key not configured.');
+    return [];
+  }
+
+  const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${apiKey}`;
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+      console.error('Failed to fetch from symbol search API.');
+      return [];
+    }
+    const data = await response.json();
+    if (!data.bestMatches || !Array.isArray(data.bestMatches)) {
+      return [];
+    }
+
+    // Filter out results with low match scores or that are not Equity/ETF
+    const filteredMatches = data.bestMatches.filter((match: any) => {
+      const score = parseFloat(match['9. matchScore']);
+      return score > 0.5;
+    });
+
+    return filteredMatches.map((item: any) => ({
+      symbol: item['1. symbol'],
+      name: item['2. name'],
+      type: item['3. type'],
+      region: item['4. region'],
+      currency: item['8. currency'],
+    }));
+  } catch (error) {
+    console.error('Error searching symbols:', error);
+    return [];
+  }
+}
+
 async function fetchCurrencyForTicker(ticker: string, apiKey: string): Promise<string> {
     const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${apiKey}`;
     try {
