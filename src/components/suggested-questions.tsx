@@ -4,7 +4,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
 import { suggestDataExplorationQuestions } from '@/ai/flows/suggest-data-exploration-questions';
-import { fetchNewsSentiment } from '@/app/actions';
 import type { NewsArticle } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,11 +11,11 @@ import { NewsCard } from '@/components/news-card';
 
 interface SuggestedQuestionsProps {
   ticker: string;
+  news: NewsArticle[] | null;
 }
 
-export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
+export function SuggestedQuestions({ ticker, news }: SuggestedQuestionsProps) {
   const [questions, setQuestions] = useState<string[]>([]);
-  const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,32 +23,15 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
     if (ticker) {
       setLoading(true);
       setError(null);
-      setNews([]);
       setQuestions([]);
 
       const getSuggestions = async () => {
         try {
-          // Fetch news and suggestions in parallel
-          const newsPromise = fetchNewsSentiment(ticker);
-          const suggestionsPromise = suggestDataExplorationQuestions({ ticker });
-
-          const [newsResult, suggestionsResult] = await Promise.all([newsPromise, suggestionsPromise]);
-          
-          if (newsResult.error) {
-            console.warn("Could not fetch news:", newsResult.error);
-             // Don't block on news error, just proceed without it
-          } else if (newsResult.articles) {
-            setNews(newsResult.articles);
-            // If we got news, get updated suggestions with news context
-            const suggestionsWithNews = await suggestDataExplorationQuestions({
+            const suggestions = await suggestDataExplorationQuestions({
                 ticker,
-                recentNews: newsResult.articles.map(a => a.title)
+                recentNews: news?.map(a => a.title)
             });
-            setQuestions(suggestionsWithNews.questions);
-            return;
-          }
-
-          setQuestions(suggestionsResult.questions);
+            setQuestions(suggestions.questions);
           
         } catch (e) {
             console.error(e);
@@ -61,14 +43,16 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
 
       getSuggestions();
     }
-  }, [ticker]);
+  }, [ticker, news]);
 
   const topNews = useMemo(() => {
+    if (!news) return [];
     return news
         .filter(article => article.banner_image)
         .slice(0, 4);
   }, [news]);
 
+  const showContent = !loading && !error && (questions.length > 0 || topNews.length > 0);
 
   return (
     <Card>
@@ -85,11 +69,11 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
         {loading && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Generating ideas and fetching news...</span>
+            <span>Generating ideas...</span>
           </div>
         )}
         {error && <p className="text-sm text-destructive">{error}</p>}
-        {!loading && !error && (
+        {showContent && (
             <div className="space-y-4">
                 {topNews.length > 0 && (
                     <div>

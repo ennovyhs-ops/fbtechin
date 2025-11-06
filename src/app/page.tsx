@@ -7,8 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
-import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/actions';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle } from '@/lib/types';
+import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,7 @@ import { StockAnalysis } from '@/components/stock-analysis';
 import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
+import { NewsAnalysis } from '@/components/news-analysis';
 
 
 const FormSchema = z.object({
@@ -34,6 +35,7 @@ const FormSchema = z.object({
 export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
+  const [newsData, setNewsData] = useState<NewsArticle[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
@@ -56,6 +58,7 @@ export default function Home() {
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     setError(null);
     setMarketData(null);
+    setNewsData(null);
     setSubmittedTicker(null);
     setIsHistoryExpanded(false);
     setIndicatorData(null);
@@ -64,18 +67,30 @@ export default function Home() {
     setCurrency(null);
 
     startTransition(async () => {
-      const result = await fetchMarketData(values.ticker.toUpperCase());
-      if (result.error) {
-        setError(result.error);
-      } else if (result.data) {
-        setMarketData(result.data);
-        setSubmittedTicker(values.ticker.toUpperCase());
-        setCurrency(result.currency || null);
+      const ticker = values.ticker.toUpperCase();
+      const marketDataPromise = fetchMarketData(ticker);
+      const newsPromise = fetchNewsSentiment(ticker);
+
+      const [marketResult, newsResult] = await Promise.all([marketDataPromise, newsPromise]);
+
+      if (marketResult.error) {
+        setError(marketResult.error);
+        return;
+      } 
+      
+      if (marketResult.data) {
+        setMarketData(marketResult.data);
+        setSubmittedTicker(ticker);
+        setCurrency(marketResult.currency || null);
+
+         if (newsResult.articles) {
+            setNewsData(newsResult.articles);
+        }
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
             setIndicatorsLoading(true);
-            const indicatorsResult = await calculateAllIndicators(result.data);
+            const indicatorsResult = await calculateAllIndicators(marketResult.data);
             if (indicatorsResult.error) {
               setIndicatorsError(indicatorsResult.error);
             } else {
@@ -308,7 +323,7 @@ export default function Home() {
                 latestClose={latestData.close}
             />
           )}
-
+          
           {submittedTicker && (
             <TechnicalIndicators 
                 ticker={submittedTicker}
@@ -318,12 +333,20 @@ export default function Home() {
                 currency={currency}
             />
           )}
+
+          {submittedTicker && newsData && (
+            <NewsAnalysis 
+                ticker={submittedTicker}
+                news={newsData}
+            />
+           )}
           
-          {submittedTicker && marketData && marketData.length > 0 && (
+          {submittedTicker && (
             <div className="animate-in fade-in-50 duration-500 delay-200">
-                <SuggestedQuestions ticker={submittedTicker} />
+                <SuggestedQuestions ticker={submittedTicker} news={newsData} />
             </div>
           )}
+
 
           {showSkeleton && (
             <div className="space-y-8 animate-pulse">

@@ -83,3 +83,8 @@ export type NewsSentimentData = {
   articles?: NewsArticle[];
   error?: string;
 }
+
+export type NewsAnalysis = {
+    analysis: string;
+    impact: "Bullish" | "Bearish" | "Neutral";
+}
