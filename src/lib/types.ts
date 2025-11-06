@@ -14,14 +14,6 @@ export type FetchResult = {
   error?: string | null;
 }
 
-export interface SearchResult {
-  symbol: string;
-  name: string;
-  type: string;
-  region: string;
-  currency: string;
-}
-
 export type RsiData = {
   date: string;
   RSI: string | null;
@@ -69,3 +61,5 @@ export type OptionStrategySuggestion = {
   strategies: OptionStrategy[];
   disclaimer: string;
 };
+
+    

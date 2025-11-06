@@ -13,6 +13,7 @@ import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/action
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
@@ -24,7 +25,6 @@ import { StockAnalysis } from '@/components/stock-analysis';
 import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
-import { SymbolSearch } from '@/components/symbol-search';
 
 
 const FormSchema = z.object({
@@ -150,18 +150,10 @@ export default function Home() {
                     <FormItem>
                       <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                       <FormControl>
-                        <SymbolSearch
-                          value={field.value}
-                          onChange={(value) => {
-                            field.onChange(value);
-                            if (value.length < 2) {
-                              setSubmittedTicker(null); // Clear results if search is cleared
-                            }
-                          }}
-                           onSelect={(symbol) => {
-                            field.onChange(symbol);
-                            form.handleSubmit(onSubmit)(); // Auto-submit on select
-                          }}
+                        <Input
+                          placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD"
+                          {...field}
+                          onInput={(e) => field.onChange(e.currentTarget.value.toUpperCase())}
                         />
                       </FormControl>
                       <FormMessage />
@@ -433,3 +425,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

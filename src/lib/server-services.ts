@@ -1,49 +1,11 @@
 
 'use server';
 
-import type { MarketData, FetchResult, SearchResult } from '@/lib/types';
+import type { MarketData, FetchResult } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
 const BASE_URL = 'https://www.alphavantage.co/query';
-
-export async function searchSymbolsService(keywords: string): Promise<SearchResult[]> {
-  const apiKey = serverConfig.alphaVantageApiKey;
-  if (!apiKey) {
-    console.error('Alpha Vantage API key not configured.');
-    return [];
-  }
-
-  const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${apiKey}`;
-  try {
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) {
-      console.error('Failed to fetch from symbol search API.');
-      return [];
-    }
-    const data = await response.json();
-    if (!data.bestMatches || !Array.isArray(data.bestMatches)) {
-      return [];
-    }
-
-    // Filter out results with low match scores or that are not Equity/ETF
-    const filteredMatches = data.bestMatches.filter((match: any) => {
-      const score = parseFloat(match['9. matchScore']);
-      return score > 0.5;
-    });
-
-    return filteredMatches.map((item: any) => ({
-      symbol: item['1. symbol'],
-      name: item['2. name'],
-      type: item['3. type'],
-      region: item['4. region'],
-      currency: item['8. currency'],
-    }));
-  } catch (error) {
-    console.error('Error searching symbols:', error);
-    return [];
-  }
-}
 
 async function fetchCurrencyForTicker(ticker: string, apiKey: string): Promise<string> {
     const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${apiKey}`;
@@ -52,10 +14,12 @@ async function fetchCurrencyForTicker(ticker: string, apiKey: string): Promise<s
         if (!response.ok) return 'USD'; 
 
         const data = await response.json();
-        const bestMatch = data?.bestMatches?.[0] as SearchResult;
         
-        if (bestMatch && bestMatch.symbol.toLowerCase() === ticker.toLowerCase()) {
-            return bestMatch.currency;
+        // Find the best match, but be careful of AlphaVantage's fuzzy matching
+        const bestMatch = data?.bestMatches?.find((match: any) => match['1. symbol'].toLowerCase() === ticker.toLowerCase());
+        
+        if (bestMatch) {
+            return bestMatch['8. currency'];
         }
         
         // Default for US stocks if no specific match is found
@@ -63,7 +27,7 @@ async function fetchCurrencyForTicker(ticker: string, apiKey: string): Promise<s
             return 'USD';
         }
 
-        return 'USD';
+        return 'USD'; // Fallback
     } catch (error) {
         console.error("Could not fetch currency for ticker:", error);
         return 'USD'; // Default to USD on error
@@ -151,3 +115,5 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
   }
 }
+
+    

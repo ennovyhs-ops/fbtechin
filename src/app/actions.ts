@@ -1,9 +1,9 @@
 
 'use server';
 
-import type { MarketData, SearchResult, RsiData, MacdData, BbandsData, RocData, FetchResult } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
-import { fetchMarketDataService, searchSymbolsService } from '@/lib/server-services';
+import { fetchMarketDataService } from '@/lib/server-services';
 import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
 
 interface IndicatorsResult {
@@ -12,13 +12,6 @@ interface IndicatorsResult {
     bbands?: BbandsData[];
     roc?: RocData[];
     error?: string | null;
-}
-
-export async function searchSymbols(keywords: string): Promise<SearchResult[]> {
-  if (!keywords || keywords.length < 2) {
-    return [];
-  }
-  return searchSymbolsService(keywords);
 }
 
 export async function getApiKey() {
@@ -84,3 +77,5 @@ export async function calculateAllIndicators(marketData: MarketData[]): Promise<
         return { error: `An error occurred during indicator calculation: ${e.message}`};
     }
 }
+
+    
