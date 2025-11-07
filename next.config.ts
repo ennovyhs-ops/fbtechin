@@ -71,6 +71,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'staticx-tuner.zacks.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   devIndicators: {
