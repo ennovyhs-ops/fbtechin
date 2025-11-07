@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -159,7 +160,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockA
             </div>
             <div className="text-center sm:text-right">
                 <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">Total Score</p>
+                <p className="text-xs text-muted-foreground">Total Score (-1 to 1)</p>
             </div>
         </div>
         
