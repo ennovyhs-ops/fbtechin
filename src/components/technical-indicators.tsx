@@ -1,15 +1,15 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart } from 'lucide-react';
+import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart, RefreshCw } from 'lucide-react';
 import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
-import { useDebounce } from 'use-debounce';
+
 
 interface TechnicalIndicatorsProps {
     ticker: string;
@@ -28,11 +28,6 @@ interface TechnicalIndicatorsProps {
 
 export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange }: TechnicalIndicatorsProps) {
     const [localPeriods, setLocalPeriods] = useState(periods);
-    const [debouncedPeriods] = useDebounce(localPeriods, 700);
-
-    useEffect(() => {
-        onPeriodsChange(debouncedPeriods);
-    }, [debouncedPeriods, onPeriodsChange]);
 
     const handlePeriodChange = (indicator: 'roc' | 'rsi', value: string) => {
         const numValue = parseInt(value, 10);
@@ -40,6 +35,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             setLocalPeriods(prev => ({ ...prev, [indicator]: numValue }));
         }
     };
+
+    const handleUpdateClick = () => {
+        onPeriodsChange(localPeriods);
+    }
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
@@ -77,16 +76,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         );
     }
 
-    if (error) {
-         return (
-            <Alert variant="destructive" className="animate-in fade-in-50 duration-500">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Indicator Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          );
-    }
-    
     const latestRsi = data?.rsi?.[0];
     const latestMacd = data?.macd?.[0];
     const latestBbands = data?.bbands?.[0];
@@ -114,24 +103,49 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                 <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                           <h3 className="font-semibold text-lg">Rate of Change</h3>
-                           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                <div className="space-y-4 rounded-lg border p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                             <div>
+                                <label htmlFor="roc-period" className="text-sm font-medium text-muted-foreground">ROC Period</label>
+                                <Input
+                                    id="roc-period"
+                                    type="number"
+                                    value={localPeriods.roc}
+                                    onChange={(e) => handlePeriodChange('roc', e.target.value)}
+                                    className="w-24 h-9 text-sm mt-1"
+                                    placeholder="Days"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="rsi-period" className="text-sm font-medium text-muted-foreground">RSI Period</label>
+                                <Input
+                                    id="rsi-period"
+                                    type="number"
+                                    value={localPeriods.rsi}
+                                    onChange={(e) => handlePeriodChange('rsi', e.target.value)}
+                                    className="w-24 h-9 text-sm mt-1"
+                                    placeholder="Days"
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                type="number"
-                                value={localPeriods.roc}
-                                onChange={(e) => handlePeriodChange('roc', e.target.value)}
-                                className="w-20 h-8 text-sm"
-                                placeholder="Days"
-                            />
-                            <span className="text-sm text-muted-foreground">days</span>
-                        </div>
+                        <Button onClick={handleUpdateClick} disabled={loading} size="sm">
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw />}
+                            {loading ? 'Calculating...' : 'Update Indicators'}
+                        </Button>
                     </div>
+                     {error && (
+                        <Alert variant="destructive" className="mt-4">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Indicator Error</AlertTitle>
+                          <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                </div>
 
+
+                 <div>
+                    <h3 className="font-semibold text-lg mb-2">Rate of Change ({periods.roc}-day)</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <AreaChart className="text-muted-foreground h-5 w-5" />
@@ -144,23 +158,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 </div>
 
                 <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                           <h3 className="font-semibold text-lg">RSI</h3>
-                           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                type="number"
-                                value={localPeriods.rsi}
-                                onChange={(e) => handlePeriodChange('rsi', e.target.value)}
-                                className="w-20 h-8 text-sm"
-                                placeholder="Days"
-                            />
-                            <span className="text-sm text-muted-foreground">days</span>
-                        </div>
-                    </div>
-
+                    <h3 className="font-semibold text-lg mb-2">RSI ({periods.rsi}-day)</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <Target className="text-muted-foreground h-5 w-5" />
@@ -182,7 +180,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 </div>
                 
                 <div>
-                    <h3 className="font-semibold text-lg mb-2">MACD (12, 26, 9)</h3>
+                    <h3 className="font-semibold text-lg mb-2">MACD ({periods.macd.fast}, {periods.macd.slow}, {periods.macd.signal})</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <TrendingUp className="text-blue-400 h-5 w-5" />
@@ -209,7 +207,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 </div>
                 
                 <div>
-                    <h3 className="font-semibold text-lg mb-2">Bollinger Bands® (20, 2)</h3>
+                    <h3 className="font-semibold text-lg mb-2">Bollinger Bands® ({periods.bbands.period}, {periods.bbands.stdDev})</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <TrendingUp className="text-green-400 h-5 w-5" />

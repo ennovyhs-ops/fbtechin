@@ -66,9 +66,11 @@ export default function Home() {
 
   const handleCalculateIndicators = useCallback(async (data: MarketData[], periods: IndicatorPeriods) => {
       setIndicatorsLoading(true);
+      setIndicatorsError(null);
       const indicatorsResult = await calculateAllIndicators(data, periods);
       if (indicatorsResult.error) {
         setIndicatorsError(indicatorsResult.error);
+        setIndicatorData(null);
       } else {
         setIndicatorData({
           rsi: indicatorsResult.rsi || [],
@@ -90,6 +92,7 @@ export default function Home() {
     setIndicatorsError(null);
     setAnalysisResult(null);
     setCurrency(null);
+    setIndicatorPeriods(defaultPeriods);
 
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
@@ -114,13 +117,13 @@ export default function Home() {
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
-            await handleCalculateIndicators(marketResult.data, indicatorPeriods);
+            await handleCalculateIndicators(marketResult.data, defaultPeriods);
         } else {
             setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
         }
       }
     });
-  }, [handleCalculateIndicators, indicatorPeriods]);
+  }, [handleCalculateIndicators]);
 
   useEffect(() => {
     getApiKey().then(key => {
