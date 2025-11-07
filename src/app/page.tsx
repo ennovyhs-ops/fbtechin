@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,13 @@ const FormSchema = z.object({
   ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.'),
 });
 
+const defaultPeriods: IndicatorPeriods = {
+  roc: 22,
+  rsi: 14,
+  macd: { fast: 12, slow: 26, signal: 9 },
+  bbands: { period: 20, stdDev: 2 },
+};
+
 export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
@@ -47,6 +54,8 @@ export default function Home() {
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
+  
+  const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -54,6 +63,22 @@ export default function Home() {
       ticker: '',
     },
   });
+
+  const handleCalculateIndicators = useCallback(async (data: MarketData[], periods: IndicatorPeriods) => {
+      setIndicatorsLoading(true);
+      const indicatorsResult = await calculateAllIndicators(data, periods);
+      if (indicatorsResult.error) {
+        setIndicatorsError(indicatorsResult.error);
+      } else {
+        setIndicatorData({
+          rsi: indicatorsResult.rsi || [],
+          macd: indicatorsResult.macd || [],
+          bbands: indicatorsResult.bbands || [],
+          roc: indicatorsResult.roc || [],
+        });
+      }
+      setIndicatorsLoading(false);
+  }, []);
   
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     setError(null);
@@ -89,25 +114,13 @@ export default function Home() {
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
-            setIndicatorsLoading(true);
-            const indicatorsResult = await calculateAllIndicators(marketResult.data);
-            if (indicatorsResult.error) {
-              setIndicatorsError(indicatorsResult.error);
-            } else {
-              setIndicatorData({
-                rsi: indicatorsResult.rsi || [],
-                macd: indicatorsResult.macd || [],
-                bbands: indicatorsResult.bbands || [],
-                roc: indicatorsResult.roc || [],
-              });
-            }
-            setIndicatorsLoading(false);
+            await handleCalculateIndicators(marketResult.data, indicatorPeriods);
         } else {
             setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
         }
       }
     });
-  }, []);
+  }, [handleCalculateIndicators, indicatorPeriods]);
 
   useEffect(() => {
     getApiKey().then(key => {
@@ -135,6 +148,13 @@ export default function Home() {
     link.click();
     document.body.removeChild(link);
   };
+
+  const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
+    setIndicatorPeriods(newPeriods);
+    if (marketData) {
+      handleCalculateIndicators(marketData, newPeriods);
+    }
+  }
 
   const latestData = marketData?.[0];
 
@@ -331,6 +351,8 @@ export default function Home() {
                 loading={indicatorsLoading}
                 error={indicatorsError}
                 currency={currency}
+                periods={indicatorPeriods}
+                onPeriodsChange={onPeriodsChange}
             />
           )}
 

@@ -88,3 +88,17 @@ export type NewsAnalysis = {
     analysis: string;
     impact: "Bullish" | "Bearish" | "Neutral";
 }
+
+export type IndicatorPeriods = {
+  roc: number;
+  rsi: number;
+  macd: {
+    fast: number;
+    slow: number;
+    signal: number;
+  };
+  bbands: {
+    period: number;
+    stdDev: number;
+  };
+};

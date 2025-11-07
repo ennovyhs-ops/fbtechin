@@ -1,11 +1,15 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart } from 'lucide-react';
-import type { RsiData, MacdData, BbandsData, RocData } from '@/lib/types';
+import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
+import { useDebounce } from 'use-debounce';
 
 interface TechnicalIndicatorsProps {
     ticker: string;
@@ -18,9 +22,22 @@ interface TechnicalIndicatorsProps {
     loading: boolean;
     error: string | null;
     currency: string | null;
+    periods: IndicatorPeriods;
+    onPeriodsChange: (periods: IndicatorPeriods) => void;
 }
 
-export function TechnicalIndicators({ ticker, data, loading, error, currency }: TechnicalIndicatorsProps) {
+export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange }: TechnicalIndicatorsProps) {
+    const [rocPeriod, setRocPeriod] = useState(periods.roc);
+    const [debouncedRocPeriod] = useDebounce(rocPeriod, 500);
+
+    const handleRocPeriodChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value, 10);
+        if (!isNaN(value) && value > 0) {
+            setRocPeriod(value);
+            onPeriodsChange({ ...periods, roc: value });
+        }
+    };
+    
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
             <Card>
@@ -37,7 +54,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency }: 
         );
     }
 
-    if (loading) {
+    if (loading && !data) { // Show loading only on initial load
         return (
             <Card>
                 <CardHeader>
@@ -95,7 +112,23 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency }: 
             </CardHeader>
             <CardContent className="space-y-6">
                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Rate of Change (22-day)</h3>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                           <h3 className="font-semibold text-lg">Rate of Change</h3>
+                           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="number"
+                                value={rocPeriod}
+                                onChange={handleRocPeriodChange}
+                                className="w-20 h-8 text-sm"
+                                placeholder="Days"
+                            />
+                            <span className="text-sm text-muted-foreground">days</span>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <AreaChart className="text-muted-foreground h-5 w-5" />

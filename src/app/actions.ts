@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult, NewsSentimentData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult, NewsSentimentData, IndicatorPeriods } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { fetchMarketDataService, fetchNewsSentimentService } from '@/lib/server-services';
 import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
@@ -34,7 +34,7 @@ const formatNumber = (num: number | null | undefined, precision: number = 2): st
     return num.toFixed(precision);
 }
 
-export async function calculateAllIndicators(marketData: MarketData[]): Promise<IndicatorsResult> {
+export async function calculateAllIndicators(marketData: MarketData[], periods: IndicatorPeriods): Promise<IndicatorsResult> {
     if (!marketData || marketData.length === 0) {
         return { error: 'Market data is required for indicator calculation.' };
     }
@@ -44,10 +44,10 @@ export async function calculateAllIndicators(marketData: MarketData[]): Promise<
     const closePrices = reversedData.map(d => parseFloat(d.close));
 
     try {
-        const rsi = calculateRSI(closePrices, 14).reverse();
-        const macd = calculateMACD(closePrices, 12, 26, 9).reverse();
-        const bbands = calculateBollingerBands(closePrices, 20, 2).reverse();
-        const roc = calculateROC(closePrices, 22).reverse();
+        const rsi = calculateRSI(closePrices, periods.rsi).reverse();
+        const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal).reverse();
+        const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev).reverse();
+        const roc = calculateROC(closePrices, periods.roc).reverse();
 
         // Match dates from original data (which is descending)
         const datedRsi = marketData.map((_, i) => ({ 
