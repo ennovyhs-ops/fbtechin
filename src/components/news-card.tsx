@@ -1,7 +1,6 @@
 
 'use client';
 
-import Image from 'next/image';
 import type { NewsArticle } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -43,22 +42,12 @@ export function NewsCard({ article }: NewsCardProps) {
     const sentimentColor = getSentimentColor(sentimentLabel);
 
     return (
-        <a href={article.url} target="_blank" rel="noopener noreferrer" className="block p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors group">
+        <a href={article.url} target="_blank" rel="noopener noreferrer" className="block p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors group">
             <div className="flex flex-col h-full">
-                <div className="relative w-full h-32 rounded-md overflow-hidden mb-3">
-                    <Image
-                        src={article.banner_image}
-                        alt={article.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover"
-                        onError={(e) => e.currentTarget.style.display = 'none'}
-                    />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                </div>
                 <h4 className="font-semibold text-sm leading-snug text-card-foreground group-hover:text-foreground line-clamp-2">{article.title}</h4>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{article.summary}</p>
                 <div className="flex-grow" />
-                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
                     <span className="font-medium">{article.source}</span>
                      <div className="flex items-center gap-2">
                         <span>{timeAgo}</span>
