@@ -20,7 +20,7 @@ export type SuggestOptionStrategiesInput = z.infer<typeof SuggestOptionStrategie
 
 const OptionStrategySchema = z.object({
     name: z.string().describe('The name of the option strategy (e.g., "Covered Call", "Protective Put").'),
-    rationale: z.string().describe('A brief explanation of why this strategy is suitable for the given signal, including context for strike price selection (e.g., "slightly out-of-the-money").')
+    rationale: z.string().describe('A brief explanation of why this strategy is suitable for the given signal, including context for strike price and time frame selection (e.g., "slightly out-of-the-money" and "30-60 days to expiration").')
 });
 
 const SuggestOptionStrategiesOutputSchema = z.object({
@@ -39,7 +39,7 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
   name: 'suggestOptionStrategiesPrompt',
   input: { schema: SuggestOptionStrategiesInputSchema },
   output: { schema: SuggestOptionStrategiesOutputSchema },
-  prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price.
+  prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price. The momentum signal is based on daily data with indicators over the last 14-26 days, so the strategies should be for a short-to-medium term outlook.
 
 **Ticker:** {{ticker}}
 **Latest Closing Price:** {{latestClose}}
@@ -48,15 +48,16 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
 **Instructions:**
 1.  Analyze the signal (e.g., "STRONG BULLISH", "NEUTRAL", "MODERATE BEARISH").
 2.  Suggest 2-3 distinct and appropriate option strategies. For each strategy, provide a concise 'rationale'.
-3.  In the 'rationale', you MUST provide context for selecting a strike price relative to the latest close price. For example, mention buying a call "slightly out-of-the-money" or selling a put "below the current price."
-4.  Do not suggest overly complex or obscure strategies. Stick to well-known ones.
-5.  You MUST include the following disclaimer verbatim in the 'disclaimer' field: "This is not financial advice. The strategies presented are for educational purposes only, based on a technical momentum signal. Options trading involves significant risk and is not suitable for all investors. Consult a qualified financial advisor before making any trading decisions."
+3.  In the 'rationale', you MUST provide context for selecting a strike price relative to the latest close price (e.g., "slightly out-of-the-money").
+4.  In the 'rationale', you MUST ALSO suggest a suitable time frame for the option's expiration, typically between 3 to 8 weeks (e.g., "with 30-60 days to expiration").
+5.  Do not suggest overly complex or obscure strategies. Stick to well-known ones.
+6.  You MUST include the following disclaimer verbatim in the 'disclaimer' field: "This is not financial advice. The strategies presented are for educational purposes only, based on a technical momentum signal. Options trading involves significant risk and is not suitable for all investors. Consult a qualified financial advisor before making any trading decisions."
 
 **Example for a "STRONG BULLISH" signal and a price of $150:**
 - Strategy: "Long Call"
-- Rationale: "Allows the trader to profit from an upward price move with limited risk. Consider a strike price slightly out-of-the-money, for example $155, to balance cost and potential profit."
+- Rationale: "Allows the trader to profit from an upward price move with limited risk. Consider a strike price slightly out-of-the-money, like $155, with 30-60 days to expiration to give the thesis time to play out."
 - Strategy: "Bull Call Spread"
-- Rationale: "A moderately bullish strategy that profits from an increase in the stock price while capping risk. One might buy a call at $152.50 and sell a call at $157.50."
+- Rationale: "A moderately bullish strategy that profits from an increase in the stock price while capping risk. One might buy a call at $152.50 and sell a call at $157.50, with about 45 days to expiration."
 `,
 });
 
