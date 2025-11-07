@@ -29,10 +29,21 @@ interface TechnicalIndicatorsProps {
 export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange }: TechnicalIndicatorsProps) {
     const [localPeriods, setLocalPeriods] = useState(periods);
 
-    const handlePeriodChange = (indicator: 'roc' | 'rsi', value: string) => {
+    const handlePeriodChange = (indicator: keyof IndicatorPeriods, value: string, subKey?: keyof IndicatorPeriods['macd'] | keyof IndicatorPeriods['bbands']) => {
         const numValue = parseInt(value, 10);
         if (!isNaN(numValue) && numValue > 0) {
-            setLocalPeriods(prev => ({ ...prev, [indicator]: numValue }));
+            setLocalPeriods(prev => {
+                if (subKey && (indicator === 'macd' || indicator === 'bbands')) {
+                    return {
+                        ...prev,
+                        [indicator]: {
+                            ...prev[indicator],
+                            [subKey]: numValue
+                        }
+                    };
+                }
+                return { ...prev, [indicator]: numValue };
+            });
         }
     };
 
@@ -104,36 +115,101 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="space-y-4 rounded-lg border p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                             <div>
-                                <label htmlFor="roc-period" className="text-sm font-medium text-muted-foreground">ROC Period</label>
-                                <Input
-                                    id="roc-period"
-                                    type="number"
-                                    value={localPeriods.roc}
-                                    onChange={(e) => handlePeriodChange('roc', e.target.value)}
-                                    className="w-24 h-9 text-sm mt-1"
-                                    placeholder="Days"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="rsi-period" className="text-sm font-medium text-muted-foreground">RSI Period</label>
-                                <Input
-                                    id="rsi-period"
-                                    type="number"
-                                    value={localPeriods.rsi}
-                                    onChange={(e) => handlePeriodChange('rsi', e.target.value)}
-                                    className="w-24 h-9 text-sm mt-1"
-                                    placeholder="Days"
-                                />
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                             <h4 className="text-md font-semibold text-foreground">General</h4>
+                             <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="roc-period" className="text-sm font-medium text-muted-foreground">ROC Period</label>
+                                    <Input
+                                        id="roc-period"
+                                        type="number"
+                                        value={localPeriods.roc}
+                                        onChange={(e) => handlePeriodChange('roc', e.target.value)}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="rsi-period" className="text-sm font-medium text-muted-foreground">RSI Period</label>
+                                    <Input
+                                        id="rsi-period"
+                                        type="number"
+                                        value={localPeriods.rsi}
+                                        onChange={(e) => handlePeriodChange('rsi', e.target.value)}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                             </div>
+                             <h4 className="text-md font-semibold text-foreground pt-2">Bollinger Bands</h4>
+                             <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="bbands-period" className="text-sm font-medium text-muted-foreground">Period</label>
+                                    <Input
+                                        id="bbands-period"
+                                        type="number"
+                                        value={localPeriods.bbands.period}
+                                        onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="bbands-stddev" className="text-sm font-medium text-muted-foreground">Std. Dev.</label>
+                                    <Input
+                                        id="bbands-stddev"
+                                        type="number"
+                                        step="0.1"
+                                        value={localPeriods.bbands.stdDev}
+                                        onChange={(e) => handlePeriodChange('bbands', e.target.value, 'stdDev')}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                             </div>
                         </div>
+
+                        <div className="space-y-4">
+                             <h4 className="text-md font-semibold text-foreground">MACD Periods</h4>
+                             <div className="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label htmlFor="macd-fast" className="text-sm font-medium text-muted-foreground">Fast</label>
+                                    <Input
+                                        id="macd-fast"
+                                        type="number"
+                                        value={localPeriods.macd.fast}
+                                        onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="macd-slow" className="text-sm font-medium text-muted-foreground">Slow</label>
+                                    <Input
+                                        id="macd-slow"
+                                        type="number"
+                                        value={localPeriods.macd.slow}
+                                        onChange={(e) => handlePeriodChange('macd', e.target.value, 'slow')}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                                 <div>
+                                    <label htmlFor="macd-signal" className="text-sm font-medium text-muted-foreground">Signal</label>
+                                    <Input
+                                        id="macd-signal"
+                                        type="number"
+                                        value={localPeriods.macd.signal}
+                                        onChange={(e) => handlePeriodChange('macd', e.target.value, 'signal')}
+                                        className="w-full h-9 text-sm mt-1"
+                                    />
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
                         <Button onClick={handleUpdateClick} disabled={loading} size="sm">
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw />}
                             {loading ? 'Calculating...' : 'Update Indicators'}
                         </Button>
                     </div>
+
                      {error && (
                         <Alert variant="destructive" className="mt-4">
                           <AlertCircle className="h-4 w-4" />
@@ -236,3 +312,5 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </Card>
     );
 }
+
+    
