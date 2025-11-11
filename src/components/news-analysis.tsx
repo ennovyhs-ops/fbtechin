@@ -11,8 +11,6 @@ import { fetchNewsSentiment } from '@/app/actions';
 
 interface NewsAnalysisProps {
   ticker: string;
-  news: NewsArticle[] | null;
-  setNewsData: (news: NewsArticle[] | null) => void;
 }
 
 const getImpactInfo = (impact: string): { icon: React.ReactNode, color: string } => {
@@ -23,8 +21,9 @@ const getImpactInfo = (impact: string): { icon: React.ReactNode, color: string }
     }
 }
 
-export function NewsAnalysis({ ticker, news, setNewsData }: NewsAnalysisProps) {
+export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   const [analysis, setAnalysis] = useState<NewsAnalysisType | null>(null);
+  const [news, setNewsData] = useState<NewsArticle[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,5 +140,3 @@ export function NewsAnalysis({ ticker, news, setNewsData }: NewsAnalysisProps) {
   );
 
 }
-
-    

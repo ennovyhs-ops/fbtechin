@@ -224,11 +224,17 @@ export default function Home() {
                       <p>
                         <strong>Primary Data Source:</strong> All end-of-day stock data, forex rates, cryptocurrency prices, and technical indicators are sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>.
                       </p>
-                       <p>
-                        <strong>Ticker Symbols:</strong> Ticker symbols also follow Alpha Vantage's conventions. If you are unsure of a symbol, you can use <a href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener noreferrer" className="text-primary underline">a tool like Yahoo Finance</a> to find the correct one (e.g., "GOOGL" for Google, or "0005.HK" for HSBC).
-                      </p>
+                      <div>
+                        <p><strong>Ticker Examples:</strong> If you are unsure of a symbol, you can use <a href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener noreferrer" className="text-primary underline">a tool like Yahoo Finance</a> to find the correct one. Here are some examples:</p>
+                        <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
+                          <li><span className="font-semibold text-foreground">US Stock:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">AAPL</code> (Apple Inc.)</li>
+                          <li><span className="font-semibold text-foreground">International Stock:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">0700.HK</code> (Tencent)</li>
+                          <li><span className="font-semibold text-foreground">Forex Pair:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">EURUSD</code> (Euro to US Dollar)</li>
+                          <li><span className="font-semibold text-foreground">Cryptocurrency:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">BTCUSD</code> (Bitcoin to US Dollar)</li>
+                        </ul>
+                      </div>
                       <p>
-                        A free API key is used for this service, which has a limit of 25 requests per day.
+                        A free API key is used for this service, which has a limit of 25 requests per day. Each click on "Get Data" uses one request.
                       </p>
                     </div>
                   </DialogContent>
@@ -392,14 +398,12 @@ export default function Home() {
           {submittedTicker && (
             <NewsAnalysis 
                 ticker={submittedTicker}
-                news={newsData}
-                setNewsData={setNewsData}
             />
            )}
           
           {submittedTicker && (
             <div className="animate-in fade-in-50 duration-500 delay-200">
-                <SuggestedQuestions ticker={submittedTicker} news={newsData} />
+                <SuggestedQuestions ticker={submittedTicker} />
             </div>
           )}
 

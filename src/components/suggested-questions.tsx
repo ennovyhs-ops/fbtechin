@@ -11,10 +11,9 @@ import { NewsCard } from '@/components/news-card';
 
 interface SuggestedQuestionsProps {
   ticker: string;
-  news: NewsArticle[] | null;
 }
 
-export function SuggestedQuestions({ ticker, news }: SuggestedQuestionsProps) {
+export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
   const [questions, setQuestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,8 +27,7 @@ export function SuggestedQuestions({ ticker, news }: SuggestedQuestionsProps) {
       const getSuggestions = async () => {
         try {
             const suggestions = await suggestDataExplorationQuestions({
-                ticker,
-                recentNews: news?.map(a => a.title)
+                ticker
             });
             setQuestions(suggestions.questions);
           
@@ -43,16 +41,9 @@ export function SuggestedQuestions({ ticker, news }: SuggestedQuestionsProps) {
 
       getSuggestions();
     }
-  }, [ticker, news]);
+  }, [ticker]);
 
-  const topNews = useMemo(() => {
-    if (!news) return [];
-    return news
-        .filter(article => article.banner_image)
-        .slice(0, 4);
-  }, [news]);
-
-  const showContent = !loading && !error && (questions.length > 0 || topNews.length > 0);
+  const showContent = !loading && !error && questions.length > 0;
 
   return (
     <Card>
@@ -62,7 +53,7 @@ export function SuggestedQuestions({ ticker, news }: SuggestedQuestionsProps) {
           <span>Suggested Exploration</span>
         </CardTitle>
         <CardDescription>
-          AI-powered suggestions and recent news for {ticker}.
+          AI-powered suggestions for your next query about {ticker}.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -75,16 +66,6 @@ export function SuggestedQuestions({ ticker, news }: SuggestedQuestionsProps) {
         {error && <p className="text-sm text-destructive">{error}</p>}
         {showContent && (
             <div className="space-y-4">
-                {topNews.length > 0 && (
-                    <div>
-                        <h3 className="text-md font-semibold mb-2">Recent News</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {topNews.map((article) => (
-                                <NewsCard key={article.url} article={article} />
-                            ))}
-                        </div>
-                    </div>
-                )}
                 {questions.length > 0 && (
                     <div>
                         <h3 className="text-md font-semibold mb-2 pt-2">Follow-up Questions</h3>
