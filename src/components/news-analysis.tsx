@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 interface NewsAnalysisProps {
   ticker: string;
-  news: NewsArticle[];
+  news: NewsArticle[] | null;
 }
 
 const getImpactInfo = (impact: string): { icon: React.ReactNode, color: string } => {
@@ -29,6 +29,7 @@ export function NewsAnalysis({ ticker, news }: NewsAnalysisProps) {
     if (ticker && news && news.length > 0) {
       setLoading(true);
       setError(null);
+      setAnalysis(null);
       analyzeNewsImpact({
         ticker,
         news: news.map(({ title, summary }) => ({ title, summary })),
@@ -40,12 +41,14 @@ export function NewsAnalysis({ ticker, news }: NewsAnalysisProps) {
         .finally(() => {
           setLoading(false);
         });
-    } else {
+    } else if (news === null) { // news is still loading
+        setLoading(true);
+    } else { // news is an empty array
         setLoading(false);
     }
   }, [ticker, news]);
 
-  if (!news || news.length === 0) {
+  if (news && news.length === 0) {
     return null; // Don't render if there's no news
   }
 

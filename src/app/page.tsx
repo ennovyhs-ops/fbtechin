@@ -5,7 +5,7 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
@@ -100,17 +100,18 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       const marketDataPromise = fetchMarketData(ticker);
       const newsPromise = fetchNewsSentiment(ticker);
+      setSubmittedTicker(ticker); // Set submitted ticker immediately for loading states
 
       const [marketResult, newsResult] = await Promise.all([marketDataPromise, newsPromise]);
 
       if (marketResult.error) {
         setError(marketResult.error);
+        setSubmittedTicker(null);
         return;
       } 
       
       if (marketResult.data) {
         setMarketData(marketResult.data);
-        setSubmittedTicker(ticker);
         setCurrency(marketResult.currency || null);
         setRegion(marketResult.region || null);
 
@@ -164,7 +165,8 @@ export default function Home() {
 
   const latestData = marketData?.[0];
 
-  const showSkeleton = !isPending && !marketData && !error && !submittedTicker;
+  const showInitialSkeleton = isPending && !marketData;
+  const isAnalysisRunning = submittedTicker && marketData && !analysisResult;
 
   const apiLimitMessage = error ? parseApiLimit(error) : null;
   const isApiLimitError = !!apiLimitMessage;
@@ -240,7 +242,7 @@ export default function Home() {
         </Card>
 
         <div className="mt-8 space-y-8">
-          {isPending && !submittedTicker && ( // Only show main loader if we are not already showing data
+          {isPending && !marketData && (
             <div className="flex justify-center items-center p-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -342,12 +344,32 @@ export default function Home() {
            </Card>
           )}
 
-          {submittedTicker && !isPending && (
+          {submittedTicker && marketData && (
             <StockAnalysis 
               ticker={submittedTicker} 
               marketData={marketData}
               onAnalysisComplete={setAnalysisResult}
             />
+          )}
+
+          {isAnalysisRunning && analysisResult?.signal !== 'N/A' && latestData && (
+            <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                    <Lightbulb className="h-6 w-6 text-muted-foreground" />
+                    <span>Option Strategy Ideas</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Generating strategies based on the momentum score...
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Thinking...</span>
+                  </div>
+                </CardContent>
+            </Card>
           )}
 
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && (
@@ -370,7 +392,7 @@ export default function Home() {
             />
           )}
 
-          {submittedTicker && newsData && (
+          {submittedTicker && (
             <NewsAnalysis 
                 ticker={submittedTicker}
                 news={newsData}
@@ -384,7 +406,7 @@ export default function Home() {
           )}
 
 
-          {showSkeleton && (
+          {showInitialSkeleton && (
             <div className="space-y-8 animate-pulse">
                 <Card>
                     <CardHeader>
@@ -463,6 +485,17 @@ export default function Home() {
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
                     </CardContent>
+                </Card>
+                
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                            <Newspaper className="h-6 w-6 text-muted-foreground" />
+                            <span>AI News Analysis</span>
+                        </CardTitle>
+                        <CardDescription>AI-powered news analysis will appear here.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-20 bg-muted/80 rounded-md"></CardContent>
                 </Card>
 
                 <Card>
