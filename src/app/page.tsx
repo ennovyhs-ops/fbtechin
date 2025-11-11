@@ -123,11 +123,6 @@ export default function Home() {
     });
   }, [handleCalculateIndicators]);
   
-  const handleSelectSymbol = (symbol: string) => {
-    form.setValue('ticker', symbol);
-    form.handleSubmit(onSubmit)();
-  };
-
   useEffect(() => {
     getApiKey().then(key => {
         setApiKey(key);
@@ -230,7 +225,7 @@ export default function Home() {
                         <strong>Primary Data Source:</strong> All end-of-day stock data, forex rates, cryptocurrency prices, and technical indicators are sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>.
                       </p>
                        <p>
-                        <strong>Ticker Symbols:</strong> Ticker symbols also follow Alpha Vantage's conventions. If you are unsure of a symbol, you can use the search feature in this app or their <a href="https://www.alphavantage.co/symbol_search" target="_blank" rel="noopener noreferrer" className="text-primary underline">official search tool</a> to find the correct one (e.g., "GOOGL" for Google, or "0005.HK" for HSBC).
+                        <strong>Ticker Symbols:</strong> Ticker symbols also follow Alpha Vantage's conventions. If you are unsure of a symbol, you can use <a href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener noreferrer" className="text-primary underline">a tool like Yahoo Finance</a> to find the correct one (e.g., "GOOGL" for Google, or "0005.HK" for HSBC).
                       </p>
                       <p>
                         A free API key is used for this service, which has a limit of 25 requests per day.
@@ -526,5 +521,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
