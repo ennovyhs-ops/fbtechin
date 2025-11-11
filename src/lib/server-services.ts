@@ -1,36 +1,36 @@
 
 'use server';
 
-import type { MarketData, FetchResult, NewsSentimentData } from '@/lib/types';
+import type { MarketData, FetchResult, NewsSentimentData, SearchResult } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
 const BASE_URL = 'https://www.alphavantage.co/query';
 
-async function fetchCurrencyForTicker(ticker: string, apiKey: string): Promise<string> {
+async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{currency: string, region: string}> {
     const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${apiKey}`;
+    const defaultMetadata = { currency: 'USD', region: 'United States' };
     try {
         const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) return 'USD'; 
+        if (!response.ok) return { currency: 'USD', region: '' }; 
 
         const data = await response.json();
         
-        // Find the best match, but be careful of AlphaVantage's fuzzy matching
         const bestMatch = data?.bestMatches?.find((match: any) => match['1. symbol'].toLowerCase() === ticker.toLowerCase());
         
         if (bestMatch) {
-            return bestMatch['8. currency'];
+            return { currency: bestMatch['8. currency'], region: bestMatch['4. region'] };
         }
         
-        // Default for US stocks if no specific match is found
+        // Default for US stocks if no specific match is found and not an international ticker
         if (!ticker.includes('.')) {
-            return 'USD';
+            return defaultMetadata;
         }
 
-        return 'USD'; // Fallback
+        return { currency: 'USD', region: '' }; // Fallback
     } catch (error) {
         console.error("Could not fetch currency for ticker:", error);
-        return 'USD'; // Default to USD on error
+        return { currency: 'USD', region: '' }; // Default to USD on error
     }
 }
 
@@ -46,6 +46,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   let openKey: string, highKey: string, lowKey: string, closeKey: string, volumeKey: string;
   let precision = 2;
   let currency: string | null = null;
+  let region: string | null = null;
 
   if (isCryptoPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
@@ -58,6 +59,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     volumeKey = '5. volume';
     precision = 2;
     currency = to_symbol;
+    region = 'Cryptocurrency';
   } else if (isCurrencyPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     url = `${BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${apiKey}&outputsize=full`;
@@ -69,8 +71,11 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     volumeKey = '5. volume';
     precision = 4;
     currency = to_symbol;
+    region = 'Forex';
   } else {
-    currency = await fetchCurrencyForTicker(ticker, apiKey);
+    const metadata = await fetchTickerMetadata(ticker, apiKey);
+    currency = metadata.currency;
+    region = metadata.region;
     url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     openKey = '1. open';
@@ -109,7 +114,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
       volume: values[volumeKey] || 'N/A',
     }));
 
-    return { data: marketData.slice(0, 730), currency };
+    return { data: marketData.slice(0, 730), currency, region };
   } catch (err) {
     console.error(err);
     return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
@@ -142,4 +147,33 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
   } catch (err) {
     return { error: 'An unexpected error occurred while fetching news.' };
   }
+}
+
+export async function searchSymbolsService(keywords: string): Promise<SearchResult[]> {
+    const apiKey = serverConfig.alphaVantageApiKey;
+    if (!apiKey) {
+        return [];
+    }
+
+    const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${apiKey}`;
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            return [];
+        }
+        const data = await response.json();
+
+        if (data.bestMatches && Array.isArray(data.bestMatches)) {
+            return data.bestMatches.map((match: any) => ({
+                symbol: match['1. symbol'],
+                name: match['2. name'],
+                type: match['3. type'],
+                region: match['4. region'],
+            }));
+        }
+        return [];
+    } catch (error) {
+        return [];
+    }
 }

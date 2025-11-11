@@ -11,6 +11,7 @@ export type MarketData = {
 export type FetchResult = {
   data?: MarketData[] | null;
   currency?: string | null;
+  region?: string | null;
   error?: string | null;
 }
 
@@ -101,4 +102,11 @@ export type IndicatorPeriods = {
     period: number;
     stdDev: number;
   };
+};
+
+export type SearchResult = {
+  symbol: string;
+  name: string;
+  type: string;
+  region: string;
 };

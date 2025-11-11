@@ -5,7 +5,7 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
@@ -48,6 +48,7 @@ export default function Home() {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
+  const [region, setRegion] = useState<string | null>(null);
 
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
@@ -92,6 +93,7 @@ export default function Home() {
     setIndicatorsError(null);
     setAnalysisResult(null);
     setCurrency(null);
+    setRegion(null);
     setIndicatorPeriods(defaultPeriods);
 
     startTransition(async () => {
@@ -110,6 +112,7 @@ export default function Home() {
         setMarketData(marketResult.data);
         setSubmittedTicker(ticker);
         setCurrency(marketResult.currency || null);
+        setRegion(marketResult.region || null);
 
          if (newsResult.articles) {
             setNewsData(newsResult.articles);
@@ -262,10 +265,18 @@ export default function Home() {
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
                </CardTitle>
-               <CardDescription className="flex items-center gap-2 text-sm pt-1">
-                 <Calendar className="h-4 w-4" />
-                 <span>As of {new Date(latestData.date).toDateString()}</span>
-               </CardDescription>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
+                   <div className="flex items-center gap-2">
+                     <Calendar className="h-4 w-4" />
+                     <span>As of {new Date(latestData.date).toDateString()}</span>
+                   </div>
+                   {region && (
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        <span>{region}</span>
+                      </div>
+                   )}
+                </div>
              </CardHeader>
              <CardContent>
                 <div className="flex flex-col gap-4">
@@ -380,10 +391,16 @@ export default function Home() {
                         <CardTitle className="font-headline text-2xl">
                             <div className="h-8 w-48 bg-muted/80 rounded-md"></div>
                         </CardTitle>
-                        <CardDescription className="flex items-center gap-2 text-sm pt-1">
-                            <Calendar className="h-4 w-4" />
-                            <div className="h-5 w-32 bg-muted/80 rounded-md"></div>
-                        </CardDescription>
+                        <div className="flex items-center gap-4 text-sm pt-1">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <div className="h-5 w-32 bg-muted/80 rounded-md"></div>
+                            </div>
+                             <div className="flex items-center gap-2">
+                                <Globe className="h-4 w-4" />
+                                <div className="h-5 w-24 bg-muted/80 rounded-md"></div>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-4">
