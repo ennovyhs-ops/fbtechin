@@ -7,14 +7,6 @@ import { Loader2, Building, Globe, Bitcoin } from 'lucide-react';
 import { searchSymbols } from '@/app/actions';
 import type { SearchResult } from '@/lib/types';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface SymbolSearchProps {
   value: string;
@@ -25,15 +17,15 @@ interface SymbolSearchProps {
 const getIcon = (type: string) => {
     switch (type) {
         case 'Equity':
-            return <Building />;
+            return <Building className="h-4 w-4" />;
         case 'ETF':
-             return <Building />;
+             return <Building className="h-4 w-4" />;
         case 'Forex':
-            return <Globe />;
+            return <Globe className="h-4 w-4" />;
         case 'Cryptocurrency':
-            return <Bitcoin />;
+            return <Bitcoin className="h-4 w-4" />;
         default:
-            return <Building />;
+            return <Building className="h-4 w-4" />;
     }
 }
 
@@ -42,7 +34,7 @@ export function SymbolSearch({ value, onChange, onSelect }: SymbolSearchProps) {
   const [isPending, startTransition] = useTransition();
   const [debouncedValue] = useDebounce(value, 300);
   const [isOpen, setIsOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchResults = useCallback((keywords: string) => {
     startTransition(async () => {
@@ -60,13 +52,23 @@ export function SymbolSearch({ value, onChange, onSelect }: SymbolSearchProps) {
       }
     });
   }, []);
+  
+  useEffect(() => {
+     // Close dropdown if clicked outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     fetchResults(debouncedValue);
   }, [debouncedValue, fetchResults]);
 
   const handleSelect = (symbol: string) => {
-    onChange(symbol); // Update the input field with the selected symbol
     onSelect(symbol);
     setIsOpen(false);
     setSearchResults([]);
@@ -81,9 +83,8 @@ export function SymbolSearch({ value, onChange, onSelect }: SymbolSearchProps) {
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={containerRef}>
         <Input
-            ref={inputRef}
             placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD"
             autoComplete="off"
             value={value}
@@ -95,14 +96,13 @@ export function SymbolSearch({ value, onChange, onSelect }: SymbolSearchProps) {
         {isPending && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
 
        {isOpen && searchResults.length > 0 && (
-         <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg">
-           <div className="p-2 text-sm font-semibold text-muted-foreground">Search Results</div>
+         <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg max-h-80 overflow-y-auto">
+           <div className="p-2 text-sm font-semibold text-muted-foreground border-b">Search Results</div>
            {searchResults.map((result) => (
              <div
                key={result.symbol}
                className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-accent"
                onClick={() => handleSelect(result.symbol)}
-               onMouseDown={(e) => e.preventDefault()} // Prevents input blur on click
              >
                 <div className="text-muted-foreground">{getIcon(result.type)}</div>
                 <div className="flex-grow">
@@ -117,3 +117,5 @@ export function SymbolSearch({ value, onChange, onSelect }: SymbolSearchProps) {
     </div>
   );
 }
+
+    

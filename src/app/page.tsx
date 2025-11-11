@@ -13,7 +13,6 @@ import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
@@ -26,6 +25,7 @@ import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { NewsAnalysis } from '@/components/news-analysis';
+import { SymbolSearch } from '@/components/symbol-search';
 
 
 const FormSchema = z.object({
@@ -128,6 +128,11 @@ export default function Home() {
       }
     });
   }, [handleCalculateIndicators]);
+  
+  const handleSelectSymbol = (symbol: string) => {
+    form.setValue('ticker', symbol);
+    form.handleSubmit(onSubmit)();
+  };
 
   useEffect(() => {
     getApiKey().then(key => {
@@ -193,10 +198,10 @@ export default function Home() {
                     <FormItem>
                       <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g., GOOG, 0005.HK, EURUSD, BTCUSD"
-                          {...field}
-                          onInput={(e) => field.onChange(e.currentTarget.value.toUpperCase())}
+                        <SymbolSearch
+                          value={field.value}
+                          onChange={field.onChange}
+                          onSelect={handleSelectSymbol}
                         />
                       </FormControl>
                       <FormMessage />
@@ -228,7 +233,7 @@ export default function Home() {
                         <strong>Primary Data Source:</strong> All end-of-day stock data, forex rates, cryptocurrency prices, and technical indicators are sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>.
                       </p>
                        <p>
-                        <strong>Ticker Symbols:</strong> Ticker symbols also follow Alpha Vantage's conventions. If you are unsure of a symbol, you can use their <a href="https://www.alphavantage.co/symbol_search" target="_blank" rel="noopener noreferrer" className="text-primary underline">official search tool</a> to find the correct one (e.g., "GOOGL" for Google, or "0005.HK" for HSBC).
+                        <strong>Ticker Symbols:</strong> Ticker symbols also follow Alpha Vantage's conventions. If you are unsure of a symbol, you can use the search feature in this app or their <a href="https://www.alphavantage.co/symbol_search" target="_blank" rel="noopener noreferrer" className="text-primary underline">official search tool</a> to find the correct one (e.g., "GOOGL" for Google, or "0005.HK" for HSBC).
                       </p>
                       <p>
                         A free API key is used for this service, which has a limit of 25 requests per day.
@@ -523,3 +528,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
