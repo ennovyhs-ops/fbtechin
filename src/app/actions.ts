@@ -1,9 +1,9 @@
 
 'use server';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult, NewsSentimentData, IndicatorPeriods, SearchResult } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, FetchResult, NewsSentimentData, IndicatorPeriods } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
-import { fetchMarketDataService, fetchNewsSentimentService, searchSymbolsService } from '@/lib/server-services';
+import { fetchMarketDataService, fetchNewsSentimentService } from '@/lib/server-services';
 import { calculateRSI, calculateMACD, calculateBollingerBands, calculateROC } from '@/lib/technical-analysis';
 
 interface IndicatorsResult {
@@ -24,10 +24,6 @@ export async function fetchMarketData(ticker: string): Promise<FetchResult> {
 
 export async function fetchNewsSentiment(ticker: string): Promise<NewsSentimentData> {
     return fetchNewsSentimentService(ticker);
-}
-
-export async function searchSymbols(keywords: string): Promise<SearchResult[]> {
-    return searchSymbolsService(keywords);
 }
 
 
@@ -86,3 +82,5 @@ export async function calculateAllIndicators(marketData: MarketData[], periods: 
         return { error: `An error occurred during indicator calculation: ${e.message}`};
     }
 }
+
+    

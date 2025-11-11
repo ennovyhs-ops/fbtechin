@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { MarketData, FetchResult, NewsSentimentData, SearchResult } from '@/lib/types';
+import type { MarketData, FetchResult, NewsSentimentData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
@@ -127,7 +127,7 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'API key is not configured.' };
   }
 
-  const url = `${BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=5`;
+  const url = `${BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=50`;
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -149,31 +149,4 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
   }
 }
 
-export async function searchSymbolsService(keywords: string): Promise<SearchResult[]> {
-    const apiKey = serverConfig.alphaVantageApiKey;
-    if (!apiKey) {
-        return [];
-    }
-
-    const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${apiKey}`;
     
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            return [];
-        }
-        const data = await response.json();
-
-        if (data.bestMatches && Array.isArray(data.bestMatches)) {
-            return data.bestMatches.map((match: any) => ({
-                symbol: match['1. symbol'],
-                name: match['2. name'],
-                type: match['3. type'],
-                region: match['4. region'],
-            }));
-        }
-        return [];
-    } catch (error) {
-        return [];
-    }
-}

@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
-import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
+import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +25,7 @@ import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { NewsAnalysis } from '@/components/news-analysis';
-import { SymbolSearch } from '@/components/symbol-search';
+import { Input } from '@/components/ui/input';
 
 
 const FormSchema = z.object({
@@ -98,12 +98,10 @@ export default function Home() {
 
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
-      const marketDataPromise = fetchMarketData(ticker);
-      const newsPromise = fetchNewsSentiment(ticker);
-      setSubmittedTicker(ticker); // Set submitted ticker immediately for loading states
+      setSubmittedTicker(ticker); 
 
-      const [marketResult, newsResult] = await Promise.all([marketDataPromise, newsPromise]);
-
+      const marketResult = await fetchMarketData(ticker);
+      
       if (marketResult.error) {
         setError(marketResult.error);
         setSubmittedTicker(null);
@@ -114,10 +112,6 @@ export default function Home() {
         setMarketData(marketResult.data);
         setCurrency(marketResult.currency || null);
         setRegion(marketResult.region || null);
-
-         if (newsResult.articles) {
-            setNewsData(newsResult.articles);
-        }
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
@@ -197,12 +191,15 @@ export default function Home() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
-                      <FormControl>
-                        <SymbolSearch
-                          value={field.value}
-                          onChange={field.onChange}
-                          onSelect={handleSelectSymbol}
-                        />
+                       <FormControl>
+                          <Input
+                            placeholder="e.g., GOOG, 9988.HK, EURUSD, BTCUSD"
+                            autoComplete="off"
+                            {...field}
+                            onInput={(e) => {
+                                field.onChange(e.currentTarget.value.toUpperCase())
+                            }}
+                          />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -401,6 +398,7 @@ export default function Home() {
             <NewsAnalysis 
                 ticker={submittedTicker}
                 news={newsData}
+                setNewsData={setNewsData}
             />
            )}
           
