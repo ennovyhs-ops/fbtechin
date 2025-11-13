@@ -158,3 +158,21 @@ export const calculateROC = (data: number[], period: number) => {
     }
     return Array(data.length - result.length).fill(NaN).concat(result);
 };
+
+export const calculateMultiROC = (data: number[], periods: number[]) => {
+    const results: Record<string, number[]> = {};
+    const maxPeriod = Math.max(...periods);
+
+    if (data.length <= maxPeriod) {
+        periods.forEach(p => {
+            results[`roc${p}`] = new Array(data.length).fill(NaN);
+        });
+        return results;
+    }
+
+    periods.forEach(period => {
+        results[`roc${period}`] = calculateROC(data, period);
+    });
+
+    return results;
+}
