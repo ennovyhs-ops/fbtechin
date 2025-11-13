@@ -15,27 +15,45 @@ const sma = (data: number[], period: number): number[] => {
 
 // Exponential Moving Average
 const ema = (data: number[], period: number): number[] => {
-    const result: number[] = [];
     const k = 2 / (period + 1);
-    let ema = NaN;
-
-    for (let i = 0; i < data.length; i++) {
-        if (i < period -1) {
-             result.push(NaN);
-             continue;
+    const result: number[] = new Array(data.length).fill(NaN);
+    
+    // Find the first valid data point to start the calculation
+    let firstValidIndex = -1;
+    for(let i = 0; i < data.length; i++) {
+        if(!isNaN(data[i])) {
+            firstValidIndex = i;
+            break;
         }
-        if (i === period - 1) {
-            const chunk = data.slice(0, period);
-            const sum = chunk.reduce((a, b) => a + b, 0);
-            ema = sum / period;
-        } else {
-            // Check if previous ema is a number before calculating
-            if (!isNaN(ema)) {
-                ema = data[i] * k + ema * (1 - k);
-            }
-        }
-        result.push(ema);
     }
+    
+    if (firstValidIndex === -1) {
+        return result; // No valid data
+    }
+    
+    // The first EMA value is a simple moving average of the first 'period' valid points
+    let emaValue: number | undefined;
+    let initialSmaData: number[] = [];
+
+    for (let i = firstValidIndex; i < data.length; i++) {
+         if (isNaN(data[i])) {
+            result[i] = NaN;
+            continue;
+         }
+
+        if (emaValue === undefined) {
+             initialSmaData.push(data[i]);
+             if (initialSmaData.length === period) {
+                const sum = initialSmaData.reduce((a, b) => a + b, 0);
+                emaValue = sum / period;
+                result[i] = emaValue;
+             }
+        } else {
+            emaValue = data[i] * k + emaValue * (1 - k);
+            result[i] = emaValue;
+        }
+    }
+    
     return result;
 };
 
@@ -120,28 +138,20 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
     const emaFast = ema(data, fastPeriod);
     const emaSlow = ema(data, slowPeriod);
     
+    // The MACD Line is the difference between the fast and slow EMAs (this is the DIF)
     const macdLine = emaFast.map((fast, i) => fast - emaSlow[i]);
-    const signalLine = ema(macdLine.filter(v => !isNaN(v)), signalPeriod);
     
-    // Align signalLine with macdLine
-    const alignedSignalLine = new Array(macdLine.length).fill(NaN);
-    let signalIndex = 0;
-    for(let i=0; i < macdLine.length; i++) {
-        if(!isNaN(macdLine[i])) {
-            if(signalIndex < signalLine.length) {
-                alignedSignalLine[i] = signalLine[signalIndex];
-                signalIndex++;
-            }
-        }
-    }
-
-    const histogram = macdLine.map((macd, i) => macd - alignedSignalLine[i]);
+    // The Signal Line is an EMA of the MACD Line (this is the DEA)
+    const signalLine = ema(macdLine, signalPeriod);
+    
+    // The Histogram is the difference between the MACD Line and the Signal Line
+    const histogram = macdLine.map((macd, i) => macd - signalLine[i]);
 
     const result = [];
     for(let i=0; i < data.length; i++) {
         result.push({
             MACD: macdLine[i],
-            signal: alignedSignalLine[i],
+            signal: signalLine[i],
             histogram: histogram[i]
         });
     }
