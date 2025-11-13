@@ -19,38 +19,20 @@ const ema = (data: number[], period: number): number[] => {
     const result: number[] = new Array(data.length).fill(NaN);
     
     // Find the first valid data point to start the calculation
-    let firstValidIndex = -1;
-    for(let i = 0; i < data.length; i++) {
-        if(!isNaN(data[i])) {
-            firstValidIndex = i;
-            break;
-        }
-    }
+    let firstValidIndex = data.findIndex(d => !isNaN(d));
+    if (firstValidIndex === -1) return result; // No valid data
     
-    if (firstValidIndex === -1) {
-        return result; // No valid data
-    }
-    
-    // The first EMA value is a simple moving average of the first 'period' valid points
-    let emaValue: number | undefined;
-    let initialSmaData: number[] = [];
+    // The first EMA value is just the first data point.
+    result[firstValidIndex] = data[firstValidIndex];
 
-    for (let i = firstValidIndex; i < data.length; i++) {
-         if (isNaN(data[i])) {
-            result[i] = NaN;
-            continue;
-         }
-
-        if (emaValue === undefined) {
-             initialSmaData.push(data[i]);
-             if (initialSmaData.length === period) {
-                const sum = initialSmaData.reduce((a, b) => a + b, 0);
-                emaValue = sum / period;
-                result[i] = emaValue;
-             }
+    for (let i = firstValidIndex + 1; i < data.length; i++) {
+        if (isNaN(data[i])) {
+            result[i] = NaN; // Propagate NaNs
+        } else if (isNaN(result[i-1])) {
+             // If previous EMA was NaN, restart with current price
+            result[i] = data[i];
         } else {
-            emaValue = data[i] * k + emaValue * (1 - k);
-            result[i] = emaValue;
+            result[i] = data[i] * k + result[i-1] * (1 - k);
         }
     }
     
@@ -138,13 +120,8 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
     const emaFast = ema(data, fastPeriod);
     const emaSlow = ema(data, slowPeriod);
     
-    // The MACD Line is the difference between the fast and slow EMAs (this is the DIF)
     const macdLine = emaFast.map((fast, i) => fast - emaSlow[i]);
-    
-    // The Signal Line is an EMA of the MACD Line (this is the DEA)
     const signalLine = ema(macdLine, signalPeriod);
-    
-    // The Histogram is the difference between the MACD Line and the Signal Line
     const histogram = macdLine.map((macd, i) => macd - signalLine[i]);
 
     const result = [];

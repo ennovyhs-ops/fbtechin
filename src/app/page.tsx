@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, useCallback, useRef } from 'react';
@@ -7,7 +8,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
-import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
+import { fetchMarketData, getApiKey, calculateIndicatorsApi } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,7 +57,6 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
-  const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
@@ -69,10 +69,10 @@ export default function Home() {
     },
   });
 
-  const handleCalculateIndicators = useCallback(async (data: MarketData[], periods: IndicatorPeriods) => {
+  const handleCalculateIndicators = useCallback(async (ticker: string, periods: IndicatorPeriods) => {
       setIndicatorsLoading(true);
       setIndicatorsError(null);
-      const indicatorsResult = await calculateAllIndicators(data, periods);
+      const indicatorsResult = await calculateIndicatorsApi(ticker, periods);
       if (indicatorsResult.error) {
         setIndicatorsError(indicatorsResult.error);
         setIndicatorData(null);
@@ -94,7 +94,7 @@ export default function Home() {
       
       const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
       if (!isForexOrCrypto) {
-          await handleCalculateIndicators(data, defaultPeriods);
+          await handleCalculateIndicators(ticker, defaultPeriods);
       } else {
           setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
       }
@@ -136,7 +136,7 @@ export default function Home() {
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
-            await handleCalculateIndicators(marketResult.data, defaultPeriods);
+            await handleCalculateIndicators(ticker, defaultPeriods);
         } else {
             setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
         }
@@ -175,7 +175,7 @@ export default function Home() {
 
                 const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
                 if (missingHeaders.length > 0) {
-                     throw new Error(`Missing required CSV headers: date, close.`);
+                     throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}.`);
                 }
                 
                 [...requiredHeaders, ...optionalHeaders].forEach(header => {
@@ -186,7 +186,7 @@ export default function Home() {
                     const values = line.split(',');
                     const closeValue = values[headerMap['close']];
                      if (!closeValue || !values[headerMap['date']]) {
-                        throw new Error(`Row ${index + 2} is missing required data.`);
+                        throw new Error(`Row ${index + 2} is missing required data for date or close.`);
                     }
                     return {
                         date: values[headerMap['date']],
@@ -202,11 +202,18 @@ export default function Home() {
                     setError('CSV file is empty or in an invalid format.');
                     return;
                 }
-
-                const tickerFromFile = file.name.split('.')[0].toUpperCase();
+                
+                // For CSV uploads, we still need a ticker for the API calls for indicators
+                const tickerFromFile = file.name.split(/[\._\s]/)[0].toUpperCase();
                 form.setValue('ticker', tickerFromFile);
                 setSubmittedTicker(tickerFromFile);
-                await processMarketData(data, tickerFromFile);
+                
+                // We set market data for display, but calculations will use API data
+                setMarketData(data);
+                setCurrency('USD'); // Assume USD for CSV uploads
+                setRegion('Uploaded Data');
+                
+                await handleCalculateIndicators(tickerFromFile, defaultPeriods);
 
             } catch (err: any) {
                 setError(`Error parsing CSV: ${err.message}.`);
@@ -248,15 +255,14 @@ export default function Home() {
 
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
-    if (marketData) {
-      handleCalculateIndicators(marketData, newPeriods);
+    if (submittedTicker) {
+      handleCalculateIndicators(submittedTicker, newPeriods);
     }
   }
 
   const latestData = marketData?.[0];
 
   const showInitialSkeleton = isPending && !marketData;
-  const isAnalysisRunning = submittedTicker && marketData && !analysisResult;
 
   const apiLimitMessage = error ? parseApiLimit(error) : null;
   const isApiLimitError = !!apiLimitMessage;
@@ -271,7 +277,7 @@ export default function Home() {
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
-            <CardDescription>Enter a symbol to fetch data, or upload your own CSV file for analysis.</CardDescription>
+            <CardDescription>Enter a symbol to fetch live data, or upload a CSV file. The file name (before extension) will be used as the ticker for analysis.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -310,7 +316,7 @@ export default function Home() {
                         />
                         <div className="flex flex-col items-center">
                             <p className="text-xs text-muted-foreground mb-1 text-center">
-                              {uploadedFileName ? `File: ${uploadedFileName}` : 'Required: date, close.'}
+                              Required: date, close.
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -341,15 +347,15 @@ export default function Home() {
                     </DialogHeader>
                     <div className="space-y-4 text-sm overflow-y-auto pr-4">
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Data Input</h3>
+                        <h3 className="font-semibold text-foreground mb-2">Data Input & Indicator Calculation</h3>
                         <p className="text-muted-foreground">
-                            You can either fetch live data by entering a ticker symbol or upload your own historical data via a CSV file. The CSV must have 'date' and 'close' columns. 'open', 'high', 'low', and 'volume' are optional.
+                            You can either fetch live market data by entering a ticker or upload your own close-price data via a CSV file. For uploads, the filename (e.g., "SPY.csv") is used as the ticker. In both cases, **all technical indicators (RSI, MACD, etc.) are calculated using official Alpha Vantage API endpoints** to ensure accuracy. This means each analysis consumes several API calls from your daily limit.
                         </p>
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Efficient API Usage</h3>
                         <p className="text-muted-foreground">
-                          Each click on "Get Data" uses only **one** API request to fetch historical price data. All subsequent AI analysis and indicator calculations are performed on this data locally. This allows you to analyze up to **25 different symbols per day** with a free API key.
+                          Each full analysis (market data + indicators) uses multiple API requests. With a free API key (25 requests/day), you can analyze approximately **4-5 different symbols per day**.
                         </p>
                       </div>
                        <div>
@@ -370,7 +376,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Customizable Indicators</h3>
                         <p className="text-muted-foreground">
-                          You can freely adjust the periods for ROC, RSI, MACD, and Bollinger Bands. Clicking "Update" recalculates the indicators using the already-fetched data without using another API call.
+                          You can freely adjust the periods for ROC, RSI, MACD, and Bollinger Bands. Clicking "Update" re-fetches all indicator data from the API with the new settings.
                         </p>
                       </div>
                     </div>
@@ -404,7 +410,7 @@ export default function Home() {
                         </ul>
                       </div>
                       <p>
-                        A free API key is used for this service, which has a limit of 25 requests per day. Each click on "Get Data" uses one request.
+                        A free API key is used for this service, which has a limit of 25 requests per day. Each full analysis uses multiple requests.
                       </p>
                     </div>
                   </DialogContent>
@@ -531,26 +537,6 @@ export default function Home() {
                 analysis={analysisResult}
                 currency={currency}
             />
-          )}
-
-          {isAnalysisRunning && analysisResult?.signal !== 'N/A' && latestData && (
-            <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-                    <Lightbulb className="h-6 w-6 text-muted-foreground" />
-                    <span>Option Strategy Ideas</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Generating strategies based on the momentum score...
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Thinking...</span>
-                  </div>
-                </CardContent>
-            </Card>
           )}
 
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
