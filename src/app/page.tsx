@@ -308,13 +308,13 @@ export default function Home() {
                             accept=".csv"
                             className="hidden"
                         />
+                         <p className="text-xs text-muted-foreground mb-2 text-center">
+                          {uploadedFileName ? `File: ${uploadedFileName}` : 'Required: date, close.'}
+                        </p>
                         <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending}>
                             <Upload className="mr-2 h-4 w-4" />
                             {uploadedFileName ? 'New CSV' : 'Upload CSV'}
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-2 text-center">
-                          {uploadedFileName ? `File: ${uploadedFileName}` : 'Required: date, close.'}
-                        </p>
                    </div>
                 </div>
               </CardContent>
@@ -713,5 +713,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
