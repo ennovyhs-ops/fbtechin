@@ -46,8 +46,8 @@ export function MomentumScoreExplanation() {
               <TableCell className="text-right">±0.3</TableCell>
             </TableRow>
              <TableRow>
-              <TableCell>Volume</TableCell>
-              <TableCell>Confirms the trend if volume is above average on an "up day" (bullish) or "down day" (bearish).</TableCell>
+              <TableCell>Volume Momentum</TableCell>
+              <TableCell>Looks for signs of accumulation (buying) or distribution (selling) by analyzing high-volume days over the last 10 days.</TableCell>
               <TableCell className="text-right">±0.1</TableCell>
             </TableRow>
           </TableBody>

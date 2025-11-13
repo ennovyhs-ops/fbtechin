@@ -152,17 +152,36 @@ export async function analyzeStockMomentum(
         }
     }
 
-    // Step 4: Volume
-    const volumes = data.slice(0, 20).map(d => parseFloat(d.volume));
-    const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
-    const latestVolume = parseFloat(data[0].volume);
-    const isVolumeUp = latestVolume > avgVolume;
-    const isUpDay = parseFloat(data[0].close) > parseFloat(data[0].open);
-    if (isVolumeUp && isUpDay) {
-        totalScore += 0.1;
-    } else if (isVolumeUp && !isUpDay) {
-        totalScore -= 0.1;
+    // Step 4: Volume-Weighted Momentum (Institutional Confirmation)
+    if (data.length >= 20) {
+        const recentData = data.slice(0, 10); // Analyze last 10 days
+        const volumes = data.slice(0, 20).map(d => parseFloat(d.volume));
+        const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
+
+        let highVolUpDays = 0;
+        let highVolDownDays = 0;
+
+        for (const day of recentData) {
+            const isUpDay = parseFloat(day.close) > parseFloat(day.open);
+            const isHighVolume = parseFloat(day.volume) > avgVolume * 1.1; // 10% above average
+
+            if (isHighVolume) {
+                if (isUpDay) {
+                    highVolUpDays++;
+                } else {
+                    highVolDownDays++;
+                }
+            }
+        }
+        
+        // Check for clear signs of accumulation or distribution
+        if (highVolUpDays > highVolDownDays && highVolUpDays > 1) { // Accumulation
+            totalScore += 0.1;
+        } else if (highVolDownDays > highVolUpDays && highVolDownDays > 1) { // Distribution
+            totalScore -= 0.1;
+        }
     }
+
 
     // Step 5: MACD
     const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
