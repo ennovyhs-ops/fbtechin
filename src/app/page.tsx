@@ -211,14 +211,14 @@ export default function Home() {
                       <HelpCircle className="ml-2" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-h-[90vh] flex flex-col">
                     <DialogHeader>
                       <DialogTitle>Application Guide</DialogTitle>
                       <DialogDescription>
                         This guide explains the app's features and how it uses AI to provide financial insights.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 text-sm">
+                    <div className="space-y-4 text-sm overflow-y-auto pr-4">
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Efficient API Usage</h3>
                         <p className="text-muted-foreground">
