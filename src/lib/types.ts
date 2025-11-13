@@ -59,7 +59,8 @@ export type OptionStrategy = {
 };
 
 export type OptionStrategySuggestion = {
-  strategies: OptionStrategy[];
+  aiStrategies: OptionStrategy[];
+  deterministicStrategies: OptionStrategy[];
   disclaimer: string;
 };
 

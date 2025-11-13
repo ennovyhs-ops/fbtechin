@@ -1,10 +1,10 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow to suggest stock option strategies based on a momentum signal.
- * It attempts to use an AI model first and falls back to a deterministic calculation if the AI fails.
+ * @fileOverview This file defines a Genkit flow to suggest stock option strategies.
+ * It runs both an AI model and a deterministic calculation in parallel for comparison.
  *
- * - suggestOptionStrategies - A function that takes ticker, analysis, and market data to return potential option strategies.
+ * - suggestOptionStrategies - A function that returns potential option strategies from both systems.
  * - SuggestOptionStrategiesInput - The input type for the suggestOptionStrategies function.
  * - SuggestOptionStrategiesOutput - The output type for the suggestOptionStrategies function.
  */
@@ -12,7 +12,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { MarketData } from '@/lib/types';
-import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 import { suggestOptionStrategiesDeterministic } from './suggest-option-strategies-deterministic';
 
 const SuggestOptionStrategiesInputSchema = z.object({
@@ -30,7 +29,8 @@ const OptionStrategySchema = z.object({
 });
 
 const SuggestOptionStrategiesOutputSchema = z.object({
-  strategies: z.array(OptionStrategySchema).describe('An array of 2-3 suggested option strategies.'),
+  aiStrategies: z.array(OptionStrategySchema).describe('An array of 2-3 AI-suggested option strategies.'),
+  deterministicStrategies: z.array(OptionStrategySchema).describe('An array of deterministically-suggested option strategies.'),
   disclaimer: z.string().describe('A mandatory disclaimer that this is not financial advice.')
 });
 export type SuggestOptionStrategiesOutput = z.infer<typeof SuggestOptionStrategiesOutputSchema>;
@@ -38,34 +38,46 @@ export type SuggestOptionStrategiesOutput = z.infer<typeof SuggestOptionStrategi
 export async function suggestOptionStrategies(
   input: SuggestOptionStrategiesInput
 ): Promise<SuggestOptionStrategiesOutput> {
-  try {
-    // First, try the AI-powered flow
     const aiInput = {
         ticker: input.ticker,
         latestClose: input.latestClose,
         signal: input.analysis.signal,
     };
-    const { output } = await suggestOptionStrategiesPrompt(aiInput);
-    if (!output || output.strategies.length === 0) {
-        throw new Error("AI returned no strategies.");
-    }
-    return output;
-  } catch (error) {
-    console.warn("AI option strategy suggestion failed, falling back to deterministic model. Error:", error);
-    // If AI fails, fall back to the deterministic calculation
+    
     const deterministicInput = {
         ticker: input.ticker,
         totalScore: input.analysis.totalScore,
         marketData: input.marketData,
     };
-    return suggestOptionStrategiesDeterministic(deterministicInput);
-  }
+
+    // Run both AI and deterministic flows in parallel
+    const [aiResult, deterministicResult] = await Promise.all([
+        suggestOptionStrategiesPrompt(aiInput).catch(e => {
+          console.error("AI suggestion failed:", e);
+          return { output: { strategies: [], disclaimer: "" } }; // Return empty on failure
+        }),
+        suggestOptionStrategiesDeterministic(deterministicInput).catch(e => {
+            console.error("Deterministic suggestion failed:", e);
+            return { strategies: [], disclaimer: "" }; // Return empty on failure
+        })
+    ]);
+
+    const aiStrategies = aiResult?.output?.strategies || [];
+    const deterministicStrategies = deterministicResult?.strategies || [];
+    
+    const disclaimer = aiResult?.output?.disclaimer || deterministicResult?.disclaimer || "This is not financial advice. Options trading involves significant risk.";
+
+    return {
+      aiStrategies,
+      deterministicStrategies,
+      disclaimer,
+    };
 }
 
 const suggestOptionStrategiesPrompt = ai.definePrompt({
   name: 'suggestOptionStrategiesPrompt',
   input: { schema: z.object({ ticker: z.string(), signal: z.string(), latestClose: z.string() }) },
-  output: { schema: SuggestOptionStrategiesOutputSchema },
+  output: { schema: SuggestOptionStrategiesOutputSchema.pick({ strategies: true, disclaimer: true }) },
   prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price. The momentum signal is based on daily data with indicators over the last 14-26 days, so the strategies should be for a short-to-medium term outlook.
 
 **Ticker:** {{ticker}}
