@@ -180,15 +180,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm w-full">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="text-blue-400 h-5 w-5" />
-                                <div><p className="text-muted-foreground">DIF (MACD Line)</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD, currency)}</p></div>
+                                <div><p className="text-muted-foreground">DIF</p><p className="font-semibold text-base">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p></div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <TrendingDown className="text-orange-400 h-5 w-5" />
-                                <div><p className="text-muted-foreground">DEA (Signal Line)</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD_Signal, currency)}</p></div>
+                                <div><p className="text-muted-foreground">DEA</p><p className="font-semibold text-base">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p></div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Minus className="text-gray-400 h-5 w-5" />
-                                <div><p className="text-muted-foreground">Histogram</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD_Hist, currency)}</p></div>
+                                <div><p className="text-muted-foreground">MACD</p><p className="font-semibold text-base">{latestMacd?.MACD_Hist ? parseFloat(latestMacd.MACD_Hist).toFixed(3) : 'N/A'}</p></div>
                             </div>
                         </div>
                     </div>
@@ -247,5 +247,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </Card>
     );
 }
+
+    
 
     
