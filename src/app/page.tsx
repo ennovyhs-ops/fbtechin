@@ -8,7 +8,8 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
-import { fetchMarketData, getApiKey, calculateIndicatorsApi } from '@/app/actions';
+import { fetchMarketData, getApiKey } from '@/app/actions';
+import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,36 +70,47 @@ export default function Home() {
     },
   });
 
-  const handleCalculateIndicators = useCallback(async (ticker: string, periods: IndicatorPeriods) => {
-      setIndicatorsLoading(true);
-      setIndicatorsError(null);
-      const indicatorsResult = await calculateIndicatorsApi(ticker, periods);
-      if (indicatorsResult.error) {
-        setIndicatorsError(indicatorsResult.error);
-        setIndicatorData(null);
-      } else {
+  const calculateIndicators = useCallback((data: MarketData[], periods: IndicatorPeriods) => {
+    setIndicatorsLoading(true);
+    setIndicatorsError(null);
+    try {
+        const closePrices = data.map(d => parseFloat(d.close)).reverse(); // Reverse for chronological order
+        
+        const rsi = calculateRSI(closePrices, periods.rsi);
+        const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal);
+        const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev);
+        const roc = calculateROC(closePrices, periods.roc);
+
+        const formatNumber = (num: number | null | undefined, precision: number = 2): string | null => {
+            if (num === null || num === undefined || isNaN(num)) return null;
+            return num.toFixed(precision);
+        };
+        
+        // Combine into dated results, reversing back to descending order
+        const dates = data.map(d => d.date);
+        
         setIndicatorData({
-          rsi: indicatorsResult.rsi || [],
-          macd: indicatorsResult.macd || [],
-          bbands: indicatorsResult.bbands || [],
-          roc: indicatorsResult.roc || [],
+            rsi: rsi.reverse().map((val, i) => ({ date: dates[i], RSI: formatNumber(val) })),
+            macd: macd.reverse().map((val, i) => ({ 
+                date: dates[i],
+                MACD: formatNumber(val.MACD),
+                MACD_Signal: formatNumber(val.signal),
+                MACD_Hist: formatNumber(val.histogram)
+            })),
+            bbands: bbands.reverse().map((val, i) => ({
+                date: dates[i],
+                'Real Upper Band': formatNumber(val.upper),
+                'Real Middle Band': formatNumber(val.middle),
+                'Real Lower Band': formatNumber(val.lower)
+            })),
+             roc: roc.reverse().map((val, i) => ({ date: dates[i], ROC: formatNumber(val) })),
         });
-      }
-      setIndicatorsLoading(false);
+    } catch (e: any) {
+        setIndicatorsError(e.message || 'Failed to calculate indicators.');
+        setIndicatorData(null);
+    }
+    setIndicatorsLoading(false);
   }, []);
-  
-  const processMarketData = useCallback(async (data: MarketData[], ticker: string) => {
-      setMarketData(data);
-      setCurrency(null); // Assuming CSV doesn't provide currency, can be improved
-      setRegion('Uploaded Data');
-      
-      const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
-      if (!isForexOrCrypto) {
-          await handleCalculateIndicators(ticker, defaultPeriods);
-      } else {
-          setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
-      }
-  }, [handleCalculateIndicators]);
 
   const resetState = () => {
     setError(null);
@@ -136,13 +148,13 @@ export default function Home() {
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
-            await handleCalculateIndicators(ticker, defaultPeriods);
+            calculateIndicators(marketResult.data, defaultPeriods);
         } else {
             setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
         }
       }
     });
-  }, [handleCalculateIndicators]);
+  }, [calculateIndicators]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -203,17 +215,15 @@ export default function Home() {
                     return;
                 }
                 
-                // For CSV uploads, we still need a ticker for the API calls for indicators
                 const tickerFromFile = file.name.split(/[\._\s]/)[0].toUpperCase();
                 form.setValue('ticker', tickerFromFile);
                 setSubmittedTicker(tickerFromFile);
                 
-                // We set market data for display, but calculations will use API data
                 setMarketData(data);
                 setCurrency('USD'); // Assume USD for CSV uploads
                 setRegion('Uploaded Data');
                 
-                await handleCalculateIndicators(tickerFromFile, defaultPeriods);
+                calculateIndicators(data, defaultPeriods);
 
             } catch (err: any) {
                 setError(`Error parsing CSV: ${err.message}.`);
@@ -255,8 +265,8 @@ export default function Home() {
 
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
-    if (submittedTicker) {
-      handleCalculateIndicators(submittedTicker, newPeriods);
+    if (submittedTicker && marketData) {
+      calculateIndicators(marketData, newPeriods);
     }
   }
 
@@ -277,7 +287,7 @@ export default function Home() {
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
-            <CardDescription>Enter a symbol to fetch live data, or upload a CSV file. The file name (before extension) will be used as the ticker for analysis.</CardDescription>
+            <CardDescription>Enter a symbol to fetch live data, or upload a CSV file with historical data.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -349,19 +359,19 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Data Input & Indicator Calculation</h3>
                         <p className="text-muted-foreground">
-                            You can either fetch live market data by entering a ticker or upload your own close-price data via a CSV file. For uploads, the filename (e.g., "SPY.csv") is used as the ticker. In both cases, **all technical indicators (RSI, MACD, etc.) are calculated using official Alpha Vantage API endpoints** to ensure accuracy. This means each analysis consumes several API calls from your daily limit.
+                            You can fetch live market data from Alpha Vantage by entering a ticker, or upload your own close-price data via a CSV file. For uploads, the filename (e.g., "SPY.csv") is used as the ticker. In both cases, technical indicators (RSI, MACD, etc.) are calculated in your browser.
                         </p>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Efficient API Usage</h3>
+                        <h3 className="font-semibold text-foreground mb-2">API Usage</h3>
                         <p className="text-muted-foreground">
-                          Each full analysis (market data + indicators) uses multiple API requests. With a free API key (25 requests/day), you can analyze approximately **4-5 different symbols per day**.
+                          A free Alpha Vantage API key (25 requests/day) is used for fetching live data and news. Each search for a new ticker costs 1-2 API requests. Uploading a CSV file does not use any API requests for market data, but news analysis for an uploaded ticker still requires one.
                         </p>
                       </div>
                        <div>
                         <h3 className="font-semibold text-foreground mb-2">On-Demand News Analysis</h3>
                         <p className="text-muted-foreground">
-                          To further conserve your API quota, news is not fetched automatically. You can choose to load news and generate an AI impact analysis for a specific stock by clicking the **"Load News & Analysis"** button, which costs one additional API request.
+                          To conserve your API quota, news is not fetched automatically. You can choose to load news and generate an AI impact analysis for a specific stock by clicking the **"Load News & Analysis"** button, which costs one additional API request.
                         </p>
                       </div>
                       <div>
@@ -376,7 +386,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Customizable Indicators</h3>
                         <p className="text-muted-foreground">
-                          You can freely adjust the periods for ROC, RSI, MACD, and Bollinger Bands. Clicking "Update" re-fetches all indicator data from the API with the new settings.
+                          You can freely adjust the periods for ROC, RSI, MACD, and Bollinger Bands. Clicking "Update" re-calculates all indicators in your browser instantly.
                         </p>
                       </div>
                     </div>

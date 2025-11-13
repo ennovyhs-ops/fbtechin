@@ -1,70 +1,96 @@
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
 // Simple Moving Average
 const sma = (data: number[], period: number): number[] => {
-    const result: number[] = [];
-    for (let i = 0; i <= data.length - period; i++) {
-        const chunk = data.slice(i, i + period);
-        const sum = chunk.reduce((a, b) => a + b, 0);
+    const result: number[] = new Array(period - 1).fill(NaN);
+    if (data.length < period) return new Array(data.length).fill(NaN);
+    
+    let sum = 0;
+    for (let i = 0; i < period; i++) {
+        sum += data[i];
+    }
+    result.push(sum / period);
+
+    for (let i = period; i < data.length; i++) {
+        sum -= data[i - period];
+        sum += data[i];
         result.push(sum / period);
     }
-    // Pad with leading nulls to match original data length
-    return Array(data.length - result.length).fill(NaN).concat(result);
+    return result;
 };
 
 // Exponential Moving Average
 const ema = (data: number[], period: number): number[] => {
-    const k = 2 / (period + 1);
-    const result: number[] = new Array(data.length).fill(NaN);
-    
-    // Find the first valid data point to start the calculation
-    let firstValidIndex = data.findIndex(d => !isNaN(d));
-    if (firstValidIndex === -1) return result; // No valid data
-    
-    // The first EMA value is just the first data point.
-    result[firstValidIndex] = data[firstValidIndex];
+    if (data.length < period) return new Array(data.length).fill(NaN);
 
-    for (let i = firstValidIndex + 1; i < data.length; i++) {
-        if (isNaN(data[i])) {
-            result[i] = NaN; // Propagate NaNs
-        } else if (isNaN(result[i-1])) {
-             // If previous EMA was NaN, restart with current price
-            result[i] = data[i];
-        } else {
-            result[i] = data[i] * k + result[i-1] * (1 - k);
-        }
+    const result: (number | null)[] = new Array(data.length).fill(null);
+    const k = 2 / (period + 1);
+
+    // Find the first valid data point to start the calculation
+    let firstValidIndex = data.findIndex(d => d !== null && !isNaN(d));
+    if (firstValidIndex === -1 || firstValidIndex + period > data.length) {
+        return new Array(data.length).fill(NaN); // Not enough data
     }
     
-    return result;
+    // Initial value is the SMA of the first 'period' values
+    let sum = 0;
+    for(let i = firstValidIndex; i < firstValidIndex + period; i++) {
+        sum += data[i];
+    }
+    result[firstValidIndex + period - 1] = sum / period;
+    
+    // Subsequent values use the EMA formula
+    for (let i = firstValidIndex + period; i < data.length; i++) {
+         if (data[i] === null || isNaN(data[i])) {
+            result[i] = result[i-1]; // carry forward last value if data is missing
+            continue;
+         }
+         const prevEma = result[i-1];
+         if (prevEma === null) {
+            // Should not happen after correct initialization, but as a safeguard
+            let tempSmaSum = 0;
+            for(let j = i - period + 1; j <= i; j++) {
+                tempSmaSum += data[j];
+            }
+            result[i] = tempSmaSum / period;
+         } else {
+            result[i] = (data[i] * k) + (prevEma * (1 - k));
+         }
+    }
+    
+    return result.map(val => val === null ? NaN : val);
 };
 
 
 // Standard Deviation
 const stdDev = (data: number[], period: number): number[] => {
-    const result: number[] = [];
-    for (let i = 0; i <= data.length - period; i++) {
-        const chunk = data.slice(i, i + period);
+    const result: number[] = new Array(period-1).fill(NaN);
+    if (data.length < period) return new Array(data.length).fill(NaN);
+
+    for (let i = period - 1; i < data.length; i++) {
+        const chunk = data.slice(i - period + 1, i + 1);
         const mean = chunk.reduce((a, b) => a + b, 0) / period;
         const sqDiffs = chunk.map(val => (val - mean) ** 2);
         const avgSqDiff = sqDiffs.reduce((a, b) => a + b, 0) / period;
         result.push(Math.sqrt(avgSqDiff));
     }
-     return Array(data.length - result.length).fill(NaN).concat(result);
+    return result;
 };
 
 export const calculateBollingerBands = (data: number[], period: number, stdDevMultiplier: number) => {
     const middleBand = sma(data, period);
     const sd = stdDev(data, period);
-    const upperBand = middleBand.map((mid, i) => mid + sd[i] * stdDevMultiplier);
-    const lowerBand = middleBand.map((mid, i) => mid - sd[i] * stdDevMultiplier);
 
     const result = [];
     for(let i=0; i < data.length; i++) {
+        const mid = middleBand[i];
+        const s = sd[i];
         result.push({
-            middle: middleBand[i],
-            upper: upperBand[i],
-            lower: lowerBand[i]
+            middle: mid,
+            upper: mid + s * stdDevMultiplier,
+            lower: mid - s * stdDevMultiplier,
         });
     }
     return result;
@@ -120,7 +146,7 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
     const emaFast = ema(data, fastPeriod);
     const emaSlow = ema(data, slowPeriod);
     
-    const macdLine = emaFast.map((fast, i) => fast - emaSlow[i]);
+    const macdLine = emaSlow.map((slow, i) => emaFast[i] - slow);
     const signalLine = ema(macdLine, signalPeriod);
     const histogram = macdLine.map((macd, i) => macd - signalLine[i]);
 
@@ -138,12 +164,12 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
 
 
 export const calculateROC = (data: number[], period: number) => {
-    const result: number[] = [];
+    const result: number[] = new Array(period).fill(NaN);
     for (let i = period; i < data.length; i++) {
         const roc = ((data[i] - data[i - period]) / data[i - period]) * 100;
         result.push(roc);
     }
-    return Array(data.length - result.length).fill(NaN).concat(result);
+    return result;
 };
 
 export const calculateMultiROC = (data: number[], periods: number[]) => {

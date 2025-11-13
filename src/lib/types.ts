@@ -22,14 +22,14 @@ export type RsiData = {
 
 export type RocData = {
   date:string;
-  'ROC': string | null;
+  ROC: string | null;
 }
 
 export type MacdData = {
   date: string;
-  'MACD_Hist': string | null;
-  'MACD_Signal': string | null;
-  'MACD': string | null;
+  MACD_Hist: string | null;
+  MACD_Signal: string | null;
+  MACD: string | null;
 }
 
 export type BbandsData = {
@@ -104,5 +104,3 @@ export type IndicatorPeriods = {
     stdDev: number;
   };
 };
-
-    
