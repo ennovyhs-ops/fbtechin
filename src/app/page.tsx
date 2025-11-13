@@ -300,16 +300,6 @@ export default function Home() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-4 self-center sm:self-auto pt-2 sm:pt-0">
-                        <div className="hidden sm:flex flex-col items-center h-full pt-6">
-                           <div className="w-px h-full bg-border"></div>
-                        </div>
-                        <span className="text-xs text-muted-foreground font-semibold">OR</span>
-                        <div className="hidden sm:flex flex-col items-center h-full pt-6">
-                           <div className="w-px h-full bg-border"></div>
-                        </div>
-                   </div>
-
                     <div className="flex flex-col items-center justify-center sm:pt-7 w-full sm:w-auto">
                         <input
                             type="file"
@@ -723,3 +713,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
