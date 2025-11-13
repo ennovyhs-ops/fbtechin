@@ -5,10 +5,10 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
-import { fetchMarketData, getApiKey, calculateAllIndicators } from '@/app/actions';
+import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +42,6 @@ const defaultPeriods: IndicatorPeriods = {
 export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
-  const [newsData, setNewsData] = useState<NewsArticle[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
@@ -86,7 +85,6 @@ export default function Home() {
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     setError(null);
     setMarketData(null);
-    setNewsData(null);
     setSubmittedTicker(null);
     setIsHistoryExpanded(false);
     setIndicatorData(null);
@@ -206,6 +204,50 @@ export default function Home() {
                   {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isPending ? 'Retrieving Data...' : 'Get Data'}
                 </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                     <Button variant="outline">
+                      How It Works
+                      <HelpCircle className="ml-2" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Application Guide</DialogTitle>
+                      <DialogDescription>
+                        This guide explains the app's features and how it uses AI to provide financial insights.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 text-sm">
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">Efficient API Usage</h3>
+                        <p className="text-muted-foreground">
+                          Each click on "Get Data" uses only **one** API request to fetch historical price data. All subsequent AI analysis and indicator calculations are performed on this data locally. This allows you to analyze up to **25 different symbols per day** with a free API key.
+                        </p>
+                      </div>
+                       <div>
+                        <h3 className="font-semibold text-foreground mb-2">On-Demand News Analysis</h3>
+                        <p className="text-muted-foreground">
+                          To further conserve your API quota, news is not fetched automatically. You can choose to load news and generate an AI impact analysis for a specific stock by clicking the **"Load News & Analysis"** button, which costs one additional API request.
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">AI-Powered Analysis</h3>
+                         <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
+                          <li><span className="font-semibold text-foreground">AI Momentum Score:</span> A proprietary score (-1.0 to +1.0) is calculated using multiple technical indicators to provide a single, clear momentum signal.</li>
+                          <li><span className="font-semibold text-foreground">AI Option Strategies:</span> Based on the momentum score, the AI suggests suitable option strategies with a rationale.</li>
+                          <li><span className="font-semibold text-foreground">AI News Impact:</span> When you load news, the AI analyzes the articles to provide a summary and a predicted impact (Bullish, Bearish, or Neutral).</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">Customizable Indicators</h3>
+                        <p className="text-muted-foreground">
+                          You can freely adjust the periods for ROC, RSI, MACD, and Bollinger Bands. Clicking "Update" recalculates the indicators using the already-fetched data without using another API call.
+                        </p>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Dialog>
                   <DialogTrigger asChild>
                      <Button variant="outline">
