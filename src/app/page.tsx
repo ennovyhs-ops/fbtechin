@@ -175,7 +175,7 @@ export default function Home() {
 
                 const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
                 if (missingHeaders.length > 0) {
-                     throw new Error(`Missing required CSV headers: ${missingHeaders.join(', ')}.`);
+                     throw new Error(`Missing required CSV headers: date, close.`);
                 }
                 
                 [...requiredHeaders, ...optionalHeaders].forEach(header => {
@@ -276,7 +276,7 @@ export default function Home() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent>
-                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                  <div className="flex flex-col sm:flex-row items-end gap-4">
                     <div className="flex-grow w-full">
                        <FormField
                           control={form.control}
@@ -300,21 +300,23 @@ export default function Home() {
                         />
                     </div>
 
-                    <div className="flex flex-col items-center justify-center sm:pt-7 w-full sm:w-auto">
-                        <input
+                    <div className="flex items-center gap-2">
+                         <input
                             type="file"
                             ref={fileInputRef}
                             onChange={handleFileUpload}
                             accept=".csv"
                             className="hidden"
                         />
-                         <p className="text-xs text-muted-foreground mb-2 text-center">
-                          {uploadedFileName ? `File: ${uploadedFileName}` : 'Required: date, close.'}
-                        </p>
-                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            {uploadedFileName ? 'New CSV' : 'Upload CSV'}
-                        </Button>
+                        <div className="flex flex-col items-center">
+                            <p className="text-xs text-muted-foreground mb-1 text-center">
+                              {uploadedFileName ? `File: ${uploadedFileName}` : 'Required: date, close.'}
+                            </p>
+                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
+                                <Upload className="mr-2 h-4 w-4" />
+                                {uploadedFileName ? 'New CSV' : 'Upload CSV'}
+                            </Button>
+                        </div>
                    </div>
                 </div>
               </CardContent>
