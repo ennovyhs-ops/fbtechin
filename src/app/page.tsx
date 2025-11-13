@@ -5,7 +5,7 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
@@ -21,6 +21,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { isCurrencyPair, isCryptoPair, parseApiLimit, formatCurrency } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
+import { PricePrediction } from '@/components/price-prediction';
 import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
@@ -236,6 +237,7 @@ export default function Home() {
                         <h3 className="font-semibold text-foreground mb-2">AI-Powered Analysis</h3>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">AI Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated using multiple technical indicators to provide a single, clear momentum signal.</li>
+                          <li><span className="font-semibold text-foreground">AI Price Target:</span> A projected price target based on the momentum score and recent volatility.</li>
                           <li><span className="font-semibold text-foreground">AI Option Strategies:</span> Based on the momentum score, the AI suggests suitable option strategies with a rationale.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When you load news, the AI analyzes the articles to provide a summary and a predicted impact (Bullish, Bearish, or Neutral).</li>
                         </ul>
@@ -398,6 +400,14 @@ export default function Home() {
             />
           )}
 
+          {analysisResult && marketData && analysisResult.signal !== 'N/A' && (
+             <PricePrediction 
+                marketData={marketData}
+                analysis={analysisResult}
+                currency={currency}
+            />
+          )}
+
           {isAnalysisRunning && analysisResult?.signal !== 'N/A' && latestData && (
             <Card>
               <CardHeader>
@@ -495,6 +505,17 @@ export default function Home() {
                             <span>Calculated Momentum Score</span>
                         </CardTitle>
                         <CardDescription>A proprietary score based on ROC, Bollinger Bands, RSI, MACD, and Volume analysis.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                            <Target className="h-6 w-6 text-muted-foreground" />
+                            <span>AI Price Target</span>
+                        </CardTitle>
+                        <CardDescription>A projected price target based on the momentum score and recent volatility.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
                 </Card>
