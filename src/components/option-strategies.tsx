@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Lightbulb, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
-import type { OptionStrategySuggestion } from '@/lib/types';
+import type { OptionStrategySuggestion, MarketData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -15,19 +15,20 @@ interface OptionStrategiesProps {
   ticker: string;
   analysis: AnalyzeStockMomentumOutput;
   latestClose: string;
+  marketData: MarketData[];
 }
 
-export function OptionStrategies({ ticker, analysis, latestClose }: OptionStrategiesProps) {
+export function OptionStrategies({ ticker, analysis, latestClose, marketData }: OptionStrategiesProps) {
   const [suggestions, setSuggestions] = useState<OptionStrategySuggestion | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   useEffect(() => {
-    if (ticker && analysis?.signal && latestClose) {
+    if (ticker && analysis?.signal && latestClose && marketData) {
       setLoading(true);
       setError(null);
-      suggestOptionStrategies({ ticker, signal: analysis.signal, latestClose })
+      suggestOptionStrategies({ ticker, analysis, latestClose, marketData })
         .then(response => {
           setSuggestions(response);
         })
@@ -38,7 +39,7 @@ export function OptionStrategies({ ticker, analysis, latestClose }: OptionStrate
           setLoading(false);
         });
     }
-  }, [ticker, analysis, latestClose]);
+  }, [ticker, analysis, latestClose, marketData]);
 
   if (loading) {
     return (

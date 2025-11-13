@@ -428,11 +428,12 @@ export default function Home() {
             </Card>
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && latestData && (
+          {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
             <OptionStrategies 
                 ticker={submittedTicker!} 
                 analysis={analysisResult}
                 latestClose={latestData.close}
+                marketData={marketData}
             />
           )}
           

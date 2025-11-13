@@ -2,21 +2,27 @@
 
 /**
  * @fileOverview This file defines a Genkit flow to suggest stock option strategies based on a momentum signal.
+ * It attempts to use an AI model first and falls back to a deterministic calculation if the AI fails.
  *
- * - suggestOptionStrategies - A function that takes a ticker and momentum analysis signal and returns potential option strategies.
+ * - suggestOptionStrategies - A function that takes ticker, analysis, and market data to return potential option strategies.
  * - SuggestOptionStrategiesInput - The input type for the suggestOptionStrategies function.
  * - SuggestOptionStrategiesOutput - The output type for the suggestOptionStrategies function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import type { MarketData } from '@/lib/types';
+import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
+import { suggestOptionStrategiesDeterministic } from './suggest-option-strategies-deterministic';
 
 const SuggestOptionStrategiesInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
-  signal: z.string().describe("The momentum signal (e.g., '🚀 STRONG BULLISH', '🚨 STRONG BEARISH')."),
-  latestClose: z.string().describe("The latest closing price of the stock, to be used as a reference for strike prices.")
+  latestClose: z.string().describe("The latest closing price of the stock, to be used as a reference for strike prices."),
+  analysis: z.any(), // Using any for simplicity with complex nested Zod types
+  marketData: z.array(z.any()),
 });
 export type SuggestOptionStrategiesInput = z.infer<typeof SuggestOptionStrategiesInputSchema>;
+
 
 const OptionStrategySchema = z.object({
     name: z.string().describe('The name of the option strategy (e.g., "Covered Call", "Protective Put").'),
@@ -32,12 +38,33 @@ export type SuggestOptionStrategiesOutput = z.infer<typeof SuggestOptionStrategi
 export async function suggestOptionStrategies(
   input: SuggestOptionStrategiesInput
 ): Promise<SuggestOptionStrategiesOutput> {
-  return suggestOptionStrategiesFlow(input);
+  try {
+    // First, try the AI-powered flow
+    const aiInput = {
+        ticker: input.ticker,
+        latestClose: input.latestClose,
+        signal: input.analysis.signal,
+    };
+    const { output } = await suggestOptionStrategiesPrompt(aiInput);
+    if (!output || output.strategies.length === 0) {
+        throw new Error("AI returned no strategies.");
+    }
+    return output;
+  } catch (error) {
+    console.warn("AI option strategy suggestion failed, falling back to deterministic model. Error:", error);
+    // If AI fails, fall back to the deterministic calculation
+    const deterministicInput = {
+        ticker: input.ticker,
+        totalScore: input.analysis.totalScore,
+        marketData: input.marketData,
+    };
+    return suggestOptionStrategiesDeterministic(deterministicInput);
+  }
 }
 
 const suggestOptionStrategiesPrompt = ai.definePrompt({
   name: 'suggestOptionStrategiesPrompt',
-  input: { schema: SuggestOptionStrategiesInputSchema },
+  input: { schema: z.object({ ticker: z.string(), signal: z.string(), latestClose: z.string() }) },
   output: { schema: SuggestOptionStrategiesOutputSchema },
   prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price. The momentum signal is based on daily data with indicators over the last 14-26 days, so the strategies should be for a short-to-medium term outlook.
 
@@ -61,14 +88,4 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
 `,
 });
 
-const suggestOptionStrategiesFlow = ai.defineFlow(
-  {
-    name: 'suggestOptionStrategiesFlow',
-    inputSchema: SuggestOptionStrategiesInputSchema,
-    outputSchema: SuggestOptionStrategiesOutputSchema,
-  },
-  async (input) => {
-    const { output } = await suggestOptionStrategiesPrompt(input);
-    return output!;
-  }
-);
+// We don't define a flow with ai.defineFlow because we are manually handling the fallback logic in the exported function.
