@@ -205,11 +205,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')} className="w-full h-8 text-sm" />
+                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')} className="w-20 h-8 text-sm" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev</label>
-                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'stdDev')} className="w-full h-8 text-sm" />
+                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'stdDev')} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
                         </div>
