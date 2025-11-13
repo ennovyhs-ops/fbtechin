@@ -140,6 +140,7 @@ export async function analyzeStockMomentum(
         totalScore -= 0.1;
     }
 
+    // RSI Divergence
     if (data.length >= 11 && rsi.length >= data.length) {
         const rsiReversed = [...rsi].reverse();
         const priceLow5 = parseFloat(data[5].low);
@@ -218,9 +219,14 @@ export async function analyzeStockMomentum(
     const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
     totalScore += isMacdBullish ? 0.2 : -0.2;
 
+    // MACD Crossover
     const isMacdCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
     if (isMacdCrossoverBullish) {
         totalScore += 0.1;
+    }
+    const isMacdCrossoverBearish = prevMacd.MACD! >= prevMacd.signal! && latestMacd.MACD! < latestMacd.signal!;
+    if (isMacdCrossoverBearish) {
+        totalScore -= 0.1;
     }
 
     // Normalize score to be within -1 and 1, just in case
