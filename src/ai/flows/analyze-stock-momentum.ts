@@ -182,8 +182,31 @@ export async function analyzeStockMomentum(
         }
     }
 
+    // Step 5: Volatility Context (Bollinger Band Squeeze)
+    if (bbands.length >= 20) {
+        const recentBbands = [...bbands].reverse().slice(-20); // Last 20 periods
+        const bandWidths = recentBbands.map(b => 
+            (b && !isNaN(b.upper) && !isNaN(b.lower) && b.middle > 0) 
+            ? (b.upper - b.lower) / b.middle 
+            : NaN
+        ).filter(bw => !isNaN(bw));
+        
+        if (bandWidths.length > 0) {
+            const currentBandwidth = bandWidths[bandWidths.length - 1];
+            const minBandwidth = Math.min(...bandWidths);
 
-    // Step 5: MACD
+            // Is the current bandwidth near the minimum of the recent period? (i.e., a "squeeze")
+            if (currentBandwidth < minBandwidth * 1.1) {
+                if (isRocPositive && isRsiBullish) { // Squeeze with bullish bias
+                    totalScore += 0.1;
+                } else if (!isRocPositive && !isRsiBullish) { // Squeeze with bearish bias
+                    totalScore -= 0.1;
+                }
+            }
+        }
+    }
+
+    // Step 6: MACD
     const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
     totalScore += isMacdBullish ? 0.2 : -0.2;
 

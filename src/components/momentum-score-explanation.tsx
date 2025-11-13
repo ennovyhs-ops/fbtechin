@@ -50,6 +50,11 @@ export function MomentumScoreExplanation() {
               <TableCell>Looks for signs of accumulation (buying) or distribution (selling) by analyzing high-volume days over the last 10 days.</TableCell>
               <TableCell className="text-right">±0.1</TableCell>
             </TableRow>
+             <TableRow>
+              <TableCell>Volatility Context</TableCell>
+              <TableCell>Detects a Bollinger Band "squeeze" (low volatility), which can signal a stronger potential breakout. Adds points if momentum aligns with the squeeze direction.</TableCell>
+              <TableCell className="text-right">±0.1</TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </div>
