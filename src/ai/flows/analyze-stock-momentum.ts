@@ -59,6 +59,31 @@ export async function analyzeStockMomentum(
     if (!marketData || marketData.length < 50) { // Need enough data for all indicators
         return { error: "Insufficient market data for analysis. At least 50 days of data are required." };
     }
+    
+    // Check if data is synthesized (close-only)
+    const isSynthesizedData = marketData.every(d => d.open === d.close && d.high === d.close && d.low === d.close);
+    
+    // Define weights
+    let weights = {
+        multiRoc: 0.30,
+        volume: 0.20,
+        bbands: 0.15,
+        rsi: 0.15,
+        macd: 0.20
+    };
+
+    // If data is synthesized, Volume-Price Confirmation is not possible. Redistribute its weight.
+    if (isSynthesizedData) {
+        const redistributedWeight = weights.volume / 4;
+        weights = {
+            multiRoc: weights.multiRoc + redistributedWeight,
+            volume: 0, // Set volume weight to 0
+            bbands: weights.bbands + redistributedWeight,
+            rsi: weights.rsi + redistributedWeight,
+            macd: weights.macd + redistributedWeight,
+        };
+    }
+
 
     // Pre-calculation logic
     const reversedData = [...marketData].reverse();
@@ -122,17 +147,20 @@ export async function analyzeStockMomentum(
     const isRoc50Bullish = latestRoc50 > 0;
 
     if (isRoc5Bullish && isRoc22Bullish && isRoc50Bullish) {
-        totalScore += 0.3; // Strong bullish alignment
+        totalScore += weights.multiRoc; // Strong bullish alignment
     } else if (!isRoc5Bullish && !isRoc22Bullish && !isRoc50Bullish) {
-        totalScore -= 0.3; // Strong bearish alignment
+        totalScore -= weights.multiRoc; // Strong bearish alignment
     } else {
         // Mixed signals, partial score based on longer-term trends
-        totalScore += isRoc50Bullish ? 0.1 : -0.1;
-        totalScore += isRoc22Bullish ? 0.05 : -0.05;
+        let rocScore = 0;
+        rocScore += isRoc50Bullish ? 0.5 : -0.5;
+        rocScore += isRoc22Bullish ? 0.3 : -0.3;
+        rocScore += isRoc5Bullish ? 0.2 : -0.2;
+        totalScore += weights.multiRoc * (rocScore);
     }
 
-    // Step 2: Volume-Price Confirmation (Weight: 20%)
-    if (data.length >= 20) {
+    // Step 2: Volume-Price Confirmation (Weight: 20%) - Skipped if data is synthesized
+    if (!isSynthesizedData && data.length >= 20) {
         const recentData = data.slice(0, 10);
         const volumes = data.slice(0, 20).map(d => parseFloat(d.volume));
         const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
@@ -142,7 +170,7 @@ export async function analyzeStockMomentum(
 
         for (const day of recentData) {
             const isUpDay = parseFloat(day.close) > parseFloat(day.open);
-            const isHighVolume = parseFloat(day.volume) > avgVolume * 1.2; // Use 1.2 for stronger confirmation
+            const isHighVolume = parseFloat(day.volume) > avgVolume * 1.2;
 
             if (isHighVolume) {
                 if (isUpDay) highVolUpDays++;
@@ -151,24 +179,22 @@ export async function analyzeStockMomentum(
         }
         
         if (highVolUpDays > highVolDownDays + 1) { // Clear Accumulation
-            totalScore += 0.2;
+            totalScore += weights.volume;
         } else if (highVolDownDays > highVolUpDays + 1) { // Clear Distribution
-            totalScore -= 0.2;
+            totalScore -= weights.volume;
         }
     }
+
 
     // Step 3: Bollinger Bands Position & Volatility Context (Weight: 15%)
     const latestClose = parseFloat(data[0].close);
     const { upper: upperBand, lower: lowerBand, middle: middleBand } = latestBbands;
     const priceAboveMiddleBand = latestClose > middleBand;
-    totalScore += priceAboveMiddleBand ? 0.075 : -0.075; // BB Position
+    totalScore += priceAboveMiddleBand ? (weights.bbands * 0.5) : -(weights.bbands * 0.5);
     
     // Breakout signal
-    if (latestClose > upperBand) {
-        totalScore += 0.05; 
-    } else if (latestClose < lowerBand) {
-        totalScore -= 0.05;
-    }
+    if (latestClose > upperBand) totalScore += (weights.bbands * 0.33); 
+    else if (latestClose < lowerBand) totalScore -= (weights.bbands * 0.33);
     
     // Volatility (Squeeze)
     if (bbands.length >= 20) {
@@ -178,55 +204,53 @@ export async function analyzeStockMomentum(
             const currentBandwidth = bandWidths[bandWidths.length - 1];
             const minBandwidth = Math.min(...bandWidths);
             if (currentBandwidth < minBandwidth * 1.15) { // Squeeze is active
-                if (isRoc22Bullish) totalScore += 0.025; // Squeeze with bullish bias
-                else totalScore -= 0.025; // Squeeze with bearish bias
+                if (isRoc22Bullish) totalScore += (weights.bbands * 0.17);
+                else totalScore -= (weights.bbands * 0.17);
             }
         }
     }
 
     // Step 4: RSI Strength & Divergence (Weight: 15%)
-    if (latestRsi > 60) totalScore += 0.1; // Strong bullish
-    else if (latestRsi > 50) totalScore += 0.05; // Mild bullish
-    else if (latestRsi < 40) totalScore -= 0.1; // Strong bearish
-    else if (latestRsi < 50) totalScore -= 0.05; // Mild bearish
+    if (latestRsi > 60) totalScore += (weights.rsi * 0.66);
+    else if (latestRsi > 50) totalScore += (weights.rsi * 0.33);
+    else if (latestRsi < 40) totalScore -= (weights.rsi * 0.66);
+    else if (latestRsi < 50) totalScore -= (weights.rsi * 0.33);
 
     // Divergence (last 10 days)
     if (data.length >= 11 && rsi.length >= data.length) {
-        const priceSlice = data.slice(0, 10).map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low) }));
+        const priceSlice = data.slice(0, 10).map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) }));
         const rsiSlice = [...rsi].reverse().slice(0, 10);
         
-        const priceLow5 = priceSlice[5].low;
-        const priceLow0 = priceSlice[0].low;
+        const priceLow5 = isSynthesizedData ? priceSlice[5].close : priceSlice[5].low;
+        const priceLow0 = isSynthesizedData ? priceSlice[0].close : priceSlice[0].low;
         const rsiLow5 = rsiSlice[5];
         const rsiLow0 = rsiSlice[0];
 
         if (priceLow0 < priceLow5 && rsiLow0 > rsiLow5) {
-            totalScore += 0.05; // Bullish divergence
+            totalScore += (weights.rsi * 0.34); // Bullish divergence
         }
         
-        const priceHigh5 = priceSlice[5].high;
-        const priceHigh0 = priceSlice[0].high;
+        const priceHigh5 = isSynthesizedData ? priceSlice[5].close : priceSlice[5].high;
+        const priceHigh0 = isSynthesizedData ? priceSlice[0].close : priceSlice[0].high;
         const rsiHigh5 = rsiSlice[5];
         const rsiHigh0 = rsiSlice[0];
 
         if (priceHigh0 > priceHigh5 && rsiHigh0 < rsiHigh5) {
-            totalScore -= 0.05; // Bearish divergence
+            totalScore -= (weights.rsi * 0.34); // Bearish divergence
         }
     }
 
     // Step 5: MACD Trend Acceleration (Weight: 20%)
-    // MACD state
     const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
-    totalScore += isMacdBullish ? 0.1 : -0.1;
+    totalScore += isMacdBullish ? (weights.macd * 0.5) : -(weights.macd * 0.5);
 
-    // MACD Crossover
     const isMacdCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
     if (isMacdCrossoverBullish) {
-        totalScore += 0.1;
+        totalScore += (weights.macd * 0.5);
     }
     const isMacdCrossoverBearish = prevMacd.MACD! >= prevMacd.signal! && latestMacd.MACD! < latestMacd.signal!;
     if (isMacdCrossoverBearish) {
-        totalScore -= 0.1;
+        totalScore -= (weights.macd * 0.5);
     }
 
 

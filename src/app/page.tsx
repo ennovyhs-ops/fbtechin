@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
@@ -168,27 +168,29 @@ export default function Home() {
                 }
                 
                 const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
-                const requiredHeaders = ['date', 'open', 'high', 'low', 'close'];
                 const headerMap: { [key: string]: number } = {};
                 
+                const requiredHeaders = ['date', 'close'];
+                const optionalHeaders = ['open', 'high', 'low', 'volume'];
+
                 const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
                 if (missingHeaders.length > 0) {
                      throw new Error(`Missing required headers: ${missingHeaders.join(', ')}.`);
                 }
-
-                requiredHeaders.forEach(header => {
-                    headerMap[header] = headerLine.indexOf(header);
+                
+                [...requiredHeaders, ...optionalHeaders].forEach(header => {
+                    headerMap[header] = headerLine.indexOf(header); // Will be -1 if not found
                 });
-                headerMap['volume'] = headerLine.indexOf('volume'); // Will be -1 if not found
                 
                 const data: MarketData[] = lines.slice(1).map((line, index) => {
                     const values = line.split(',');
+                    const closeValue = values[headerMap['close']];
                     return {
                         date: values[headerMap['date']],
-                        open: values[headerMap['open']],
-                        high: values[headerMap['high']],
-                        low: values[headerMap['low']],
-                        close: values[headerMap['close']],
+                        close: closeValue,
+                        open: headerMap['open'] !== -1 ? values[headerMap['open']] : closeValue,
+                        high: headerMap['high'] !== -1 ? values[headerMap['high']] : closeValue,
+                        low: headerMap['low'] !== -1 ? values[headerMap['low']] : closeValue,
                         volume: headerMap['volume'] !== -1 ? values[headerMap['volume']] : '0',
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Ensure descending order
@@ -310,7 +312,7 @@ export default function Home() {
                             {uploadedFileName ? 'Upload a Different CSV' : 'Upload CSV File'}
                         </Button>
                         {uploadedFileName && <p className="text-sm text-muted-foreground mt-2">File: {uploadedFileName}</p>}
-                        <p className="text-xs text-muted-foreground mt-2 text-center">Required headers: date, open, high, low, close.<br/>Optional: volume. Dates will be auto-sorted.</p>
+                        <p className="text-xs text-muted-foreground mt-2 text-center">Required: date, close. Optional: open, high, low, volume.</p>
                    </div>
                 </div>
               </CardContent>
