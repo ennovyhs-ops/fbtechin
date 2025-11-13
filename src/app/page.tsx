@@ -175,7 +175,7 @@ export default function Home() {
 
                 const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
                 if (missingHeaders.length > 0) {
-                     throw new Error(`Missing required headers: ${missingHeaders.join(', ')}.`);
+                     throw new Error(`Missing required CSV headers: ${missingHeaders.join(', ')}.`);
                 }
                 
                 [...requiredHeaders, ...optionalHeaders].forEach(header => {
@@ -185,6 +185,9 @@ export default function Home() {
                 const data: MarketData[] = lines.slice(1).map((line, index) => {
                     const values = line.split(',');
                     const closeValue = values[headerMap['close']];
+                     if (!closeValue || !values[headerMap['date']]) {
+                        throw new Error(`Row ${index + 2} is missing required data.`);
+                    }
                     return {
                         date: values[headerMap['date']],
                         close: closeValue,
@@ -206,7 +209,7 @@ export default function Home() {
                 await processMarketData(data, tickerFromFile);
 
             } catch (err: any) {
-                setError(`Error parsing CSV: ${err.message}. Please check file format and headers.`);
+                setError(`Error parsing CSV: ${err.message}.`);
             }
         };
         reader.readAsText(file);
@@ -273,33 +276,41 @@ export default function Home() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="ticker"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
-                         <FormControl>
-                            <Input
-                              placeholder="e.g., GOOG, 9988.HK, EURUSD, BTCUSD"
-                              autoComplete="off"
-                              {...field}
-                              onInput={(e) => {
-                                  field.onChange(e.currentTarget.value.toUpperCase())
-                              }}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <div className="flex items-center gap-2">
-                        <div className="flex-grow border-t border-muted"></div>
-                        <span className="text-xs text-muted-foreground">OR</span>
-                        <div className="flex-grow border-t border-muted"></div>
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    <div className="flex-grow w-full">
+                       <FormField
+                          control={form.control}
+                          name="ticker"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
+                               <FormControl>
+                                  <Input
+                                    placeholder="e.g., GOOG, 9988.HK, EURUSD"
+                                    autoComplete="off"
+                                    {...field}
+                                    onInput={(e) => {
+                                        field.onChange(e.currentTarget.value.toUpperCase())
+                                    }}
+                                  />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:gap-4 self-center sm:self-auto pt-2 sm:pt-0">
+                        <div className="hidden sm:flex flex-col items-center h-full pt-6">
+                           <div className="w-px h-full bg-border"></div>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-semibold">OR</span>
+                        <div className="hidden sm:flex flex-col items-center h-full pt-6">
+                           <div className="w-px h-full bg-border"></div>
+                        </div>
                    </div>
-                   <div className="flex flex-col items-center">
+
+                    <div className="flex flex-col items-center justify-center sm:pt-7 w-full sm:w-auto">
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -309,10 +320,11 @@ export default function Home() {
                         />
                         <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending}>
                             <Upload className="mr-2 h-4 w-4" />
-                            {uploadedFileName ? 'Upload a Different CSV' : 'Upload CSV File'}
+                            {uploadedFileName ? 'New CSV' : 'Upload CSV'}
                         </Button>
-                        {uploadedFileName && <p className="text-sm text-muted-foreground mt-2">File: {uploadedFileName}</p>}
-                        <p className="text-xs text-muted-foreground mt-2 text-center">Required: date, close. Optional: open, high, low, volume.</p>
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
+                          {uploadedFileName ? `File: ${uploadedFileName}` : 'Required: date, close.'}
+                        </p>
                    </div>
                 </div>
               </CardContent>
@@ -339,7 +351,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Data Input</h3>
                         <p className="text-muted-foreground">
-                            You can either fetch live data by entering a ticker symbol or upload your own historical data via a CSV file.
+                            You can either fetch live data by entering a ticker symbol or upload your own historical data via a CSV file. The CSV must have 'date' and 'close' columns. 'open', 'high', 'low', and 'volume' are optional.
                         </p>
                       </div>
                       <div>
