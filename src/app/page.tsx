@@ -162,17 +162,26 @@ export default function Home() {
 
             try {
                 const lines = text.split('\n').filter(line => line.trim() !== '');
+                if (lines.length < 2) {
+                    setError('CSV file must contain a header row and at least one data row.');
+                    return;
+                }
+                
                 const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
-                const requiredHeaders = ['date', 'open', 'high', 'low', 'close', 'volume'];
+                const requiredHeaders = ['date', 'open', 'high', 'low', 'close'];
                 const headerMap: { [key: string]: number } = {};
                 
+                const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
+                if (missingHeaders.length > 0) {
+                     throw new Error(`Missing required headers: ${missingHeaders.join(', ')}.`);
+                }
+
                 requiredHeaders.forEach(header => {
-                    const index = headerLine.indexOf(header);
-                    if (index === -1) throw new Error(`Missing required header: ${header}`);
-                    headerMap[header] = index;
+                    headerMap[header] = headerLine.indexOf(header);
                 });
+                headerMap['volume'] = headerLine.indexOf('volume'); // Will be -1 if not found
                 
-                const data: MarketData[] = lines.slice(1).map(line => {
+                const data: MarketData[] = lines.slice(1).map((line, index) => {
                     const values = line.split(',');
                     return {
                         date: values[headerMap['date']],
@@ -180,7 +189,7 @@ export default function Home() {
                         high: values[headerMap['high']],
                         low: values[headerMap['low']],
                         close: values[headerMap['close']],
-                        volume: values[headerMap['volume']],
+                        volume: headerMap['volume'] !== -1 ? values[headerMap['volume']] : '0',
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Ensure descending order
 
@@ -189,12 +198,13 @@ export default function Home() {
                     return;
                 }
 
-                form.setValue('ticker', file.name.split('.')[0].toUpperCase());
-                setSubmittedTicker(file.name.split('.')[0].toUpperCase());
-                await processMarketData(data, file.name.split('.')[0].toUpperCase());
+                const tickerFromFile = file.name.split('.')[0].toUpperCase();
+                form.setValue('ticker', tickerFromFile);
+                setSubmittedTicker(tickerFromFile);
+                await processMarketData(data, tickerFromFile);
 
             } catch (err: any) {
-                setError(`Error parsing CSV: ${err.message}. Please ensure the file has the required headers: date, open, high, low, close, volume.`);
+                setError(`Error parsing CSV: ${err.message}. Please check file format and headers.`);
             }
         };
         reader.readAsText(file);
@@ -300,7 +310,7 @@ export default function Home() {
                             {uploadedFileName ? 'Upload a Different CSV' : 'Upload CSV File'}
                         </Button>
                         {uploadedFileName && <p className="text-sm text-muted-foreground mt-2">File: {uploadedFileName}</p>}
-                        <p className="text-xs text-muted-foreground mt-2">Requires headers: date, open, high, low, close, volume</p>
+                        <p className="text-xs text-muted-foreground mt-2 text-center">Required headers: date, open, high, low, close.<br/>Optional: volume. Dates will be auto-sorted.</p>
                    </div>
                 </div>
               </CardContent>
@@ -699,5 +709,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
