@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { NewsAnalysis } from '@/components/news-analysis';
 import { Input } from '@/components/ui/input';
+import { MomentumScoreExplanation } from '@/components/momentum-score-explanation';
 
 
 const FormSchema = z.object({
@@ -56,6 +57,7 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
+  const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -234,10 +236,21 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">AI-Powered Analysis</h3>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">AI Momentum Score:</span> A proprietary score (-1.0 to +1.0) is calculated using multiple technical indicators to provide a single, clear momentum signal.</li>
+                          <li><span className="font-semibold text-foreground">AI Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated using multiple technical indicators to provide a single, clear momentum signal.</li>
                           <li><span className="font-semibold text-foreground">AI Option Strategies:</span> Based on the momentum score, the AI suggests suitable option strategies with a rationale.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When you load news, the AI analyzes the articles to provide a summary and a predicted impact (Bullish, Bearish, or Neutral).</li>
                         </ul>
+                         <Collapsible open={isExplanationExpanded} onOpenChange={setIsExplanationExpanded} className="w-full mt-4">
+                            <CollapsibleTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    How is the Momentum Score calculated?
+                                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-200 ${isExplanationExpanded ? 'rotate-180' : ''}`} />
+                                </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <MomentumScoreExplanation />
+                            </CollapsibleContent>
+                          </Collapsible>
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Customizable Indicators</h3>

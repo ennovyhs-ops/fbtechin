@@ -43,7 +43,6 @@ const actionGlossary: Record<string, { title: string; description: string; }> = 
 export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockAnalysisProps) {
   const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
 
   useEffect(() => {
     if (ticker && marketData) {
@@ -188,19 +187,6 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockA
             <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
         </div>
       </CardContent>
-      <CardFooter>
-          <Collapsible open={isExplanationExpanded} onOpenChange={setIsExplanationExpanded} className="w-full">
-            <CollapsibleTrigger asChild>
-                <Button variant="outline" size="sm">
-                    How is this calculated?
-                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-200 ${isExplanationExpanded ? 'rotate-180' : ''}`} />
-                </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <MomentumScoreExplanation />
-            </CollapsibleContent>
-          </Collapsible>
-      </CardFooter>
     </Card>
   );
 }
