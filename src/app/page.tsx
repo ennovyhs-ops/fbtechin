@@ -1,11 +1,10 @@
-
 'use client';
 
-import { useState, useTransition, useEffect, useCallback } from 'react';
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, NewsArticle, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData, getApiKey, calculateAllIndicators, fetchNewsSentiment } from '@/app/actions';
@@ -58,6 +57,10 @@ export default function Home() {
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
   const [isExplanationExpanded, setIsExplanationExpanded] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -84,7 +87,20 @@ export default function Home() {
       setIndicatorsLoading(false);
   }, []);
   
-  const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
+  const processMarketData = useCallback(async (data: MarketData[], ticker: string) => {
+      setMarketData(data);
+      setCurrency(null); // Assuming CSV doesn't provide currency, can be improved
+      setRegion('Uploaded Data');
+      
+      const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
+      if (!isForexOrCrypto) {
+          await handleCalculateIndicators(data, defaultPeriods);
+      } else {
+          setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [] });
+      }
+  }, [handleCalculateIndicators]);
+
+  const resetState = () => {
     setError(null);
     setMarketData(null);
     setSubmittedTicker(null);
@@ -95,6 +111,11 @@ export default function Home() {
     setCurrency(null);
     setRegion(null);
     setIndicatorPeriods(defaultPeriods);
+    setUploadedFileName(null);
+  };
+  
+  const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
+    resetState();
 
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
@@ -122,6 +143,66 @@ export default function Home() {
       }
     });
   }, [handleCalculateIndicators]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    resetState();
+    setUploadedFileName(file.name);
+
+    startTransition(async () => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const text = e.target?.result;
+            if (typeof text !== 'string') {
+                setError('Failed to read the file.');
+                return;
+            }
+
+            try {
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+                const requiredHeaders = ['date', 'open', 'high', 'low', 'close', 'volume'];
+                const headerMap: { [key: string]: number } = {};
+                
+                requiredHeaders.forEach(header => {
+                    const index = headerLine.indexOf(header);
+                    if (index === -1) throw new Error(`Missing required header: ${header}`);
+                    headerMap[header] = index;
+                });
+                
+                const data: MarketData[] = lines.slice(1).map(line => {
+                    const values = line.split(',');
+                    return {
+                        date: values[headerMap['date']],
+                        open: values[headerMap['open']],
+                        high: values[headerMap['high']],
+                        low: values[headerMap['low']],
+                        close: values[headerMap['close']],
+                        volume: values[headerMap['volume']],
+                    };
+                }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Ensure descending order
+
+                if(data.length === 0) {
+                    setError('CSV file is empty or in an invalid format.');
+                    return;
+                }
+
+                form.setValue('ticker', file.name.split('.')[0].toUpperCase());
+                setSubmittedTicker(file.name.split('.')[0].toUpperCase());
+                await processMarketData(data, file.name.split('.')[0].toUpperCase());
+
+            } catch (err: any) {
+                setError(`Error parsing CSV: ${err.message}. Please ensure the file has the required headers: date, open, high, low, close, volume.`);
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Reset file input to allow re-uploading the same file
+    event.target.value = '';
+  };
   
   useEffect(() => {
     getApiKey().then(key => {
@@ -174,41 +255,63 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Search Market Data</CardTitle>
-            <CardDescription>Enter a stock ticker, currency pair or crypto symbol to retrieve end-of-day market data.</CardDescription>
+            <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
+            <CardDescription>Enter a symbol to fetch data, or upload your own CSV file for analysis.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent>
-                <FormField
-                  control={form.control}
-                  name="ticker"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
-                       <FormControl>
-                          <Input
-                            placeholder="e.g., GOOG, 9988.HK, EURUSD, BTCUSD"
-                            autoComplete="off"
-                            {...field}
-                            onInput={(e) => {
-                                field.onChange(e.currentTarget.value.toUpperCase())
-                            }}
-                          />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="ticker"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
+                         <FormControl>
+                            <Input
+                              placeholder="e.g., GOOG, 9988.HK, EURUSD, BTCUSD"
+                              autoComplete="off"
+                              {...field}
+                              onInput={(e) => {
+                                  field.onChange(e.currentTarget.value.toUpperCase())
+                              }}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <div className="flex items-center gap-2">
+                        <div className="flex-grow border-t border-muted"></div>
+                        <span className="text-xs text-muted-foreground">OR</span>
+                        <div className="flex-grow border-t border-muted"></div>
+                   </div>
+                   <div className="flex flex-col items-center">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileUpload}
+                            accept=".csv"
+                            className="hidden"
+                        />
+                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            {uploadedFileName ? 'Upload a Different CSV' : 'Upload CSV File'}
+                        </Button>
+                        {uploadedFileName && <p className="text-sm text-muted-foreground mt-2">File: {uploadedFileName}</p>}
+                        <p className="text-xs text-muted-foreground mt-2">Requires headers: date, open, high, low, close, volume</p>
+                   </div>
+                </div>
               </CardContent>
-              <CardFooter className="flex items-center gap-2">
+              <CardFooter className="flex flex-wrap items-center gap-2">
                 <Button type="submit" disabled={isPending || !apiKey}>
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isPending ? 'Retrieving Data...' : 'Get Data'}
+                  {isPending && !uploadedFileName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  {isPending && !uploadedFileName ? 'Retrieving Data...' : 'Get Data'}
                 </Button>
                 <Dialog>
                   <DialogTrigger asChild>
-                     <Button variant="outline">
+                     <Button type="button" variant="outline">
                       How It Works
                       <HelpCircle className="ml-2" />
                     </Button>
@@ -221,6 +324,12 @@ export default function Home() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 text-sm overflow-y-auto pr-4">
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">Data Input</h3>
+                        <p className="text-muted-foreground">
+                            You can either fetch live data by entering a ticker symbol or upload your own historical data via a CSV file.
+                        </p>
+                      </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Efficient API Usage</h3>
                         <p className="text-muted-foreground">
@@ -253,7 +362,7 @@ export default function Home() {
                 </Dialog>
                 <Dialog>
                   <DialogTrigger asChild>
-                     <Button variant="outline">
+                     <Button type="button" variant="outline">
                       Data Sources
                       <Info className="ml-2" />
                     </Button>
@@ -371,7 +480,7 @@ export default function Home() {
                     <div className="flex flex-col sm:flex-row items-start gap-2">
                         <CollapsibleTrigger asChild>
                             <Button variant="outline" className="w-full sm:w-auto">
-                                {isHistoryExpanded ? 'Hide' : 'Show'} 2-Year History
+                                {isHistoryExpanded ? 'Hide' : 'Show'} History
                                 {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
                             </Button>
                         </CollapsibleTrigger>
@@ -449,7 +558,7 @@ export default function Home() {
             />
           )}
 
-          {submittedTicker && (
+          {submittedTicker && !uploadedFileName && (
             <NewsAnalysis 
                 ticker={submittedTicker}
             />
@@ -590,3 +699,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
