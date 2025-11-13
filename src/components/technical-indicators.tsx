@@ -165,15 +165,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
-                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-14 h-8 text-sm" />
+                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-16 h-8 text-sm" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">Slow</label>
-                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handlePeriodChange('macd', e.target.value, 'slow')} className="w-14 h-8 text-sm" />
+                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handlePeriodChange('macd', e.target.value, 'slow')} className="w-16 h-8 text-sm" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Signal</label>
-                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handlePeriodChange('macd', e.target.value, 'signal')} className="w-14 h-8 text-sm" />
+                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handlePeriodChange('macd', e.target.value, 'signal')} className="w-16 h-8 text-sm" />
                                 </div>
                             </div>
                         </div>
