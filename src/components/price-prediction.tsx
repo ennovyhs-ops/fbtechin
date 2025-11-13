@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import type { MarketData } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PricePredictionProps {
   marketData: MarketData[];
@@ -16,12 +17,12 @@ interface PricePredictionProps {
   currency: string | null;
 }
 
-const getConfidenceInfo = (confidence: string): { color: string, label: string } => {
+const getConfidenceInfo = (confidence: string): { color: string, label: string, explanation: string } => {
     switch (confidence) {
-        case 'High': return { color: 'text-green-400', label: 'High Confidence' };
-        case 'Moderate': return { color: 'text-yellow-400', label: 'Moderate Confidence' };
-        case 'Low': return { color: 'text-orange-400', label: 'Low Confidence' };
-        default: return { color: 'text-muted-foreground', label: 'Very Low Confidence' };
+        case 'High': return { color: 'text-green-400', label: 'High Confidence', explanation: "Derived from a 'Strong' momentum signal. The technical indicators are strongly aligned." };
+        case 'Moderate': return { color: 'text-yellow-400', label: 'Moderate Confidence', explanation: "Derived from a 'Moderate' momentum signal. There is a good level of indicator alignment." };
+        case 'Low': return { color: 'text-orange-400', label: 'Low Confidence', explanation: "Derived from a 'Mild' momentum signal. The technical indicators are not strongly aligned; interpret with caution." };
+        default: return { color: 'text-muted-foreground', label: 'Very Low Confidence', explanation: "Derived from a 'Neutral' momentum signal. There is no clear directional edge; the prediction is highly uncertain." };
     }
 }
 
@@ -110,10 +111,19 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
                         <span className="text-sm text-muted-foreground">{prediction.timeframe}</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Gauge className={`h-5 w-5 ${confidenceInfo.color}`} />
-                    <span className={`font-semibold text-sm ${confidenceInfo.color}`}>{confidenceInfo.label}</span>
-                </div>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <div className="flex items-center gap-2 cursor-help">
+                                <Gauge className={`h-5 w-5 ${confidenceInfo.color}`} />
+                                <span className={`font-semibold text-sm ${confidenceInfo.color}`}>{confidenceInfo.label}</span>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{confidenceInfo.explanation}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
              <p className="text-sm text-muted-foreground text-center sm:text-left">{prediction.interpretation}</p>
         </div>
