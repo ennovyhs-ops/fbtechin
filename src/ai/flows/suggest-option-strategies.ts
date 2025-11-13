@@ -48,6 +48,7 @@ export async function suggestOptionStrategies(
         ticker: input.ticker,
         totalScore: input.analysis.totalScore,
         marketData: input.marketData,
+        latestClose: input.latestClose,
     };
 
     // Run both AI and deterministic flows in parallel
