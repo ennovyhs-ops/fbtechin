@@ -26,7 +26,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { NewsAnalysis } from '@/components/news-analysis';
 import { Input } from '@/components/ui/input';
-import { MomentumScoreExplanation } from '@/components/momentum-score-explanation';
 
 
 const FormSchema = z.object({
@@ -240,17 +239,6 @@ export default function Home() {
                           <li><span className="font-semibold text-foreground">AI Option Strategies:</span> Based on the momentum score, the AI suggests suitable option strategies with a rationale.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When you load news, the AI analyzes the articles to provide a summary and a predicted impact (Bullish, Bearish, or Neutral).</li>
                         </ul>
-                         <Collapsible open={isExplanationExpanded} onOpenChange={setIsExplanationExpanded} className="w-full mt-4">
-                            <CollapsibleTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                    How is the Momentum Score calculated?
-                                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-200 ${isExplanationExpanded ? 'rotate-180' : ''}`} />
-                                </Button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <MomentumScoreExplanation />
-                            </CollapsibleContent>
-                          </Collapsible>
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Customizable Indicators</h3>
