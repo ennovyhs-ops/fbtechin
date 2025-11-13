@@ -129,9 +129,16 @@ export async function analyzeStockMomentum(
         totalScore -= 0.1;
     }
 
-    // Step 3: RSI
-    const isRsiBullish = latestRsi > 50;
-    totalScore += isRsiBullish ? 0.1 : -0.1;
+    // Step 3: RSI Strength & Alignment
+    if (latestRsi > 60) { // Strong bullish alignment
+        totalScore += 0.2;
+    } else if (latestRsi > 50) { // Mild bullish
+        totalScore += 0.1;
+    } else if (latestRsi < 40) { // Strong bearish alignment
+        totalScore -= 0.2;
+    } else if (latestRsi < 50) { // Mild bearish
+        totalScore -= 0.1;
+    }
 
     if (data.length >= 11 && rsi.length >= data.length) {
         const rsiReversed = [...rsi].reverse();
@@ -196,6 +203,7 @@ export async function analyzeStockMomentum(
             const minBandwidth = Math.min(...bandWidths);
 
             // Is the current bandwidth near the minimum of the recent period? (i.e., a "squeeze")
+            const isRsiBullish = latestRsi > 50;
             if (currentBandwidth < minBandwidth * 1.1) {
                 if (isRocPositive && isRsiBullish) { // Squeeze with bullish bias
                     totalScore += 0.1;

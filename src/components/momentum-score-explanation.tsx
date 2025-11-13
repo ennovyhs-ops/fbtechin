@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -37,8 +36,8 @@ export function MomentumScoreExplanation() {
             </TableRow>
              <TableRow>
               <TableCell>RSI</TableCell>
-              <TableCell>Uses the RSI level (>50 is bullish) and checks for bullish or bearish divergence against price.</TableCell>
-              <TableCell className="text-right">±0.2</TableCell>
+              <TableCell>Uses RSI level for alignment (>60 strong bullish, <40 strong bearish) and checks for bullish/bearish divergence against price.</TableCell>
+              <TableCell className="text-right">±0.3</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>MACD</TableCell>
@@ -60,7 +59,7 @@ export function MomentumScoreExplanation() {
       </div>
 
        <p className="pt-2 text-xs">
-        Note: The points from each indicator are summed to produce the final score, which then determines the signal, interpretation, and suggested trading action based on predefined thresholds.
+        Note: The points from each indicator are summed to produce the final score, which then determines the signal, interpretation, and suggested trading action based on predefined thresholds. The maximum possible score is capped at ±1.0.
       </p>
     </div>
   );
