@@ -9,11 +9,13 @@
 
 import { z } from 'zod';
 import type { MarketData } from '@/lib/types';
+import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 
 const PredictPriceTargetOutputSchema = z.object({
   priceTarget: z.number().describe("The calculated short-term price target."),
   timeframe: z.string().describe("The estimated timeframe for this prediction (e.g., 'in the next 3-4 weeks')."),
   interpretation: z.string().describe("A brief explanation of what the price target means."),
+  confidence: z.string().describe("The confidence level of the prediction (e.g., 'High', 'Moderate', 'Low')."),
 });
 export type PredictPriceTargetOutput = z.infer<typeof PredictPriceTargetOutputSchema>;
 
@@ -26,9 +28,16 @@ const calculateStdDev = (data: number[]): number => {
     return Math.sqrt(variance);
 };
 
+const getConfidenceFromSignal = (signal: string): string => {
+    if (signal.includes('STRONG')) return 'High';
+    if (signal.includes('MODERATE')) return 'Moderate';
+    if (signal.includes('MILD')) return 'Low';
+    return 'Very Low';
+};
+
 export async function predictPriceTarget(
   marketData: MarketData[],
-  totalScore: number,
+  analysis: AnalyzeStockMomentumOutput,
 ): Promise<PredictPriceTargetOutput | { error: string }> {
   try {
     if (!marketData || marketData.length < 50) {
@@ -36,6 +45,7 @@ export async function predictPriceTarget(
     }
 
     const currentPrice = parseFloat(marketData[0].close);
+    const totalScore = analysis.totalScore;
     const trendStrength = Math.abs(totalScore);
     
     // Use last 22 days of closing prices for volatility calculation
@@ -55,11 +65,13 @@ export async function predictPriceTarget(
     
     const direction = totalScore > 0 ? "upward" : "downward";
     const timeframe = "in the next 3-4 weeks";
+    const confidence = getConfidenceFromSignal(analysis.signal);
 
     return {
         priceTarget: roundedPriceTarget,
         timeframe,
-        interpretation: `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${timeframe}. This is a projection, not a guarantee.`
+        interpretation: `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${timeframe}. This is a projection, not a guarantee.`,
+        confidence
     };
 
   } catch (e: any) {

@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Target, Loader2, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { Target, Loader2, AlertCircle, TrendingUp, TrendingDown, Gauge } from 'lucide-react';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,15 @@ interface PricePredictionProps {
   currency: string | null;
 }
 
+const getConfidenceInfo = (confidence: string): { color: string, label: string } => {
+    switch (confidence) {
+        case 'High': return { color: 'text-green-400', label: 'High Confidence' };
+        case 'Moderate': return { color: 'text-yellow-400', label: 'Moderate Confidence' };
+        case 'Low': return { color: 'text-orange-400', label: 'Low Confidence' };
+        default: return { color: 'text-muted-foreground', label: 'Very Low Confidence' };
+    }
+}
+
 export function PricePrediction({ marketData, analysis, currency }: PricePredictionProps) {
   const [prediction, setPrediction] = useState<PredictPriceTargetOutput | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +32,7 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
   useEffect(() => {
     if (marketData && analysis) {
       setLoading(true);
-      predictPriceTarget(marketData, analysis.totalScore)
+      predictPriceTarget(marketData, analysis)
         .then(setPrediction)
         .catch(() => {
           setPrediction({ error: 'Could not generate price prediction at this time.' });
@@ -78,6 +87,7 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
   const isUp = prediction.priceTarget > parseFloat(marketData[0].close);
   const color = isUp ? 'text-green-400' : 'text-red-400';
   const Icon = isUp ? TrendingUp : TrendingDown;
+  const confidenceInfo = getConfidenceInfo(prediction.confidence);
 
   return (
     <Card className="animate-in fade-in-50 duration-500 delay-400">
@@ -91,15 +101,21 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-lg bg-muted/50">
-            <div className="flex items-center gap-3">
-                <Icon className={`h-6 w-6 ${color}`} />
-                <div className="flex flex-col">
-                    <span className={`font-bold text-2xl ${color}`}>{formatCurrency(prediction.priceTarget, currency)}</span>
-                    <span className="text-sm text-muted-foreground">{prediction.timeframe}</span>
+        <div className="space-y-4 rounded-lg bg-muted/50 p-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <Icon className={`h-6 w-6 ${color}`} />
+                    <div className="flex flex-col">
+                        <span className={`font-bold text-2xl ${color}`}>{formatCurrency(prediction.priceTarget, currency)}</span>
+                        <span className="text-sm text-muted-foreground">{prediction.timeframe}</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Gauge className={`h-5 w-5 ${confidenceInfo.color}`} />
+                    <span className={`font-semibold text-sm ${confidenceInfo.color}`}>{confidenceInfo.label}</span>
                 </div>
             </div>
-             <p className="text-sm text-muted-foreground text-center sm:text-right max-w-xs">{prediction.interpretation}</p>
+             <p className="text-sm text-muted-foreground text-center sm:text-left">{prediction.interpretation}</p>
         </div>
       </CardContent>
     </Card>
