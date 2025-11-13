@@ -165,26 +165,26 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
-                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-16 h-8 text-sm" />
+                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-14 h-8 text-sm" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">Slow</label>
-                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handlePeriodChange('macd', e.target.value, 'slow')} className="w-16 h-8 text-sm" />
+                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handlePeriodChange('macd', e.target.value, 'slow')} className="w-14 h-8 text-sm" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Signal</label>
-                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handlePeriodChange('macd', e.target.value, 'signal')} className="w-16 h-8 text-sm" />
+                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handlePeriodChange('macd', e.target.value, 'signal')} className="w-14 h-8 text-sm" />
                                 </div>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm w-full">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="text-blue-400 h-5 w-5" />
-                                <div><p className="text-muted-foreground">MACD</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD, currency)}</p></div>
+                                <div><p className="text-muted-foreground">DIF (MACD Line)</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD, currency)}</p></div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <TrendingDown className="text-orange-400 h-5 w-5" />
-                                <div><p className="text-muted-foreground">Signal</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD_Signal, currency)}</p></div>
+                                <div><p className="text-muted-foreground">DEA (Signal Line)</p><p className="font-semibold text-base">{formatCurrency(latestMacd?.MACD_Signal, currency)}</p></div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Minus className="text-gray-400 h-5 w-5" />
@@ -205,11 +205,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')} className="w-20 h-8 text-sm" />
+                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')} className="w-16 h-8 text-sm" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev</label>
-                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'stdDev')} className="w-20 h-8 text-sm" />
+                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'stdDev')} className="w-16 h-8 text-sm" />
                                 </div>
                             </div>
                         </div>
