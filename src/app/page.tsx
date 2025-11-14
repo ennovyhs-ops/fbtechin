@@ -22,7 +22,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { isCurrencyPair, isCryptoPair, parseApiLimit, formatCurrency } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
-import { PricePrediction } from '@/components/price-prediction';
 import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
@@ -538,14 +537,7 @@ export default function Home() {
               ticker={submittedTicker} 
               marketData={marketData}
               onAnalysisComplete={setAnalysisResult}
-            />
-          )}
-
-          {analysisResult && marketData && analysisResult.signal !== 'N/A' && (
-             <PricePrediction 
-                marketData={marketData}
-                analysis={analysisResult}
-                currency={currency}
+              currency={currency}
             />
           )}
 
