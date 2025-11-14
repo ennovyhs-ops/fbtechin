@@ -44,15 +44,11 @@ async function fetchMarketDataFromFMP(ticker: string, apiKey: string): Promise<F
         const response = await fetch(url, { cache: 'no-store' });
         const data = await response.json();
 
-        if (!response.ok) {
+        if (!response.ok || data['Error Message']) {
             const errorMessage = data?.['Error Message'] || `Failed to fetch data from FMP for ${ticker}. Status: ${response.status}`;
             return { error: `Financial Modeling Prep: ${errorMessage}` };
         }
 
-        if (data['Error Message']) {
-            return { error: `Financial Modeling Prep: ${data['Error Message']}` };
-        }
-        
         // The data structure can be data.historical for stocks, or just data for forex/crypto
         const historicalData = Array.isArray(data) ? data : data.historical;
 
@@ -173,7 +169,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
       volume: values[volumeKey] || 'N/A',
     }));
 
-    return { data: marketData.slice(0, 730), currency, region };
+    return { data: marketData.slice(0, 730), currency, region: `Alpha Vantage (${region})` };
   } catch (err: any) {
     console.error(`Primary fetch failed for ${ticker}:`, err.message);
     const fmpApiKey = serverConfig.financialModelingPrepApiKey;
