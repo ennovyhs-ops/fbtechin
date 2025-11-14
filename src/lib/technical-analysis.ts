@@ -23,44 +23,22 @@ const sma = (data: number[], period: number): number[] => {
 
 // Exponential Moving Average
 const ema = (data: number[], period: number): number[] => {
-    if (data.length < period) return new Array(data.length).fill(NaN);
-
-    const result: (number | null)[] = new Array(data.length).fill(null);
+    const result: number[] = new Array(data.length).fill(NaN);
     const k = 2 / (period + 1);
+    
+    if (data.length > 0) {
+        result[0] = data[0]; // Start with the first data point
 
-    // Find the first valid data point to start the calculation
-    let firstValidIndex = data.findIndex(d => d !== null && !isNaN(d));
-    if (firstValidIndex === -1 || firstValidIndex + period > data.length) {
-        return new Array(data.length).fill(NaN); // Not enough data
-    }
-    
-    // Initial value is the SMA of the first 'period' values
-    let sum = 0;
-    for(let i = firstValidIndex; i < firstValidIndex + period; i++) {
-        sum += data[i];
-    }
-    result[firstValidIndex + period - 1] = sum / period;
-    
-    // Subsequent values use the EMA formula
-    for (let i = firstValidIndex + period; i < data.length; i++) {
-         if (data[i] === null || isNaN(data[i])) {
-            result[i] = result[i-1]; // carry forward last value if data is missing
-            continue;
-         }
-         const prevEma = result[i-1];
-         if (prevEma === null) {
-            // Should not happen after correct initialization, but as a safeguard
-            let tempSmaSum = 0;
-            for(let j = i - period + 1; j <= i; j++) {
-                tempSmaSum += data[j];
+        for (let i = 1; i < data.length; i++) {
+            if (isNaN(result[i-1])) {
+                 // If previous EMA is NaN, try to re-seed from current data point.
+                 result[i] = data[i];
+            } else {
+                 result[i] = (data[i] * k) + (result[i-1] * (1 - k));
             }
-            result[i] = tempSmaSum / period;
-         } else {
-            result[i] = (data[i] * k) + (prevEma * (1 - k));
-         }
+        }
     }
-    
-    return result.map(val => val === null ? NaN : val);
+    return result;
 };
 
 
@@ -149,9 +127,17 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
     const emaFast = ema(data, fastPeriod);
     const emaSlow = ema(data, slowPeriod);
     
-    const macdLine = emaSlow.map((slow, i) => emaFast[i] - slow);
+    const macdLine = emaFast.map((fast, i) => {
+        if(isNaN(fast) || isNaN(emaSlow[i])) return NaN;
+        return fast - emaSlow[i];
+    });
+
     const signalLine = ema(macdLine, signalPeriod);
-    const histogram = macdLine.map((macd, i) => macd - signalLine[i]);
+
+    const histogram = macdLine.map((macd, i) => {
+        if(isNaN(macd) || isNaN(signalLine[i])) return NaN;
+        return macd - signalLine[i];
+    });
 
     const result = [];
     for(let i=0; i < data.length; i++) {
@@ -192,4 +178,5 @@ export const calculateMultiROC = (data: number[], periods: number[]) => {
 
     return results;
 }
+
 
