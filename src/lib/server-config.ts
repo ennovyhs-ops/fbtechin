@@ -4,8 +4,10 @@
 
 type ServerConfig = {
     alphaVantageApiKey: string | null;
+    financialModelingPrepApiKey: string | null;
 }
 
 export const serverConfig: ServerConfig = {
     alphaVantageApiKey: process.env.ALPHAVANTAGE_API_KEY || null,
+    financialModelingPrepApiKey: process.env.FINANCIALMODELINGPREP_API_KEY || null,
 };

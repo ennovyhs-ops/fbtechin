@@ -5,10 +5,12 @@ import type { MarketData, FetchResult, NewsSentimentData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
-const BASE_URL = 'https://www.alphavantage.co/query';
+const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
+const FMP_BASE_URL = 'https://financialmodelingprep.com/api/v3';
+
 
 async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{currency: string, region: string}> {
-    const url = `${BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${apiKey}`;
+    const url = `${ALPHA_VANTAGE_BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${apiKey}`;
     const defaultMetadata = { currency: 'USD', region: 'United States' };
     try {
         const response = await fetch(url, { cache: 'no-store' });
@@ -34,10 +36,42 @@ async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{cur
     }
 }
 
+async function fetchMarketDataFromFMP(ticker: string, apiKey: string): Promise<FetchResult> {
+    const url = `${FMP_BASE_URL}/historical-price-full/${ticker}?apikey=${apiKey}`;
+    try {
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) {
+            return { error: 'Failed to fetch data from Financial Modeling Prep.' };
+        }
+
+        const data = await response.json();
+        if (!data || data['Error Message'] || !data.historical) {
+            return { error: `Financial Modeling Prep: No data found for symbol "${ticker}".` };
+        }
+
+        const marketData: MarketData[] = data.historical.map((day: any) => ({
+            date: day.date,
+            open: day.open.toFixed(2),
+            high: day.high.toFixed(2),
+            low: day.low.toFixed(2),
+            close: day.close.toFixed(2),
+            volume: day.volume.toString(),
+        }));
+
+        const currency = isCurrencyPair(ticker) || isCryptoPair(ticker) ? getCurrencyOrCryptoPair(ticker).to_symbol : 'USD';
+        
+        return { data: marketData.slice(0, 730), currency, region: "Financial Modeling Prep" };
+
+    } catch (err) {
+        console.error("FMP Fetch Error:", err);
+        return { error: 'An unexpected error occurred while fetching data from Financial Modeling Prep.' };
+    }
+}
+
 
 export async function fetchMarketDataService(ticker: string): Promise<FetchResult> {
-  const apiKey = serverConfig.alphaVantageApiKey;
-  if (!apiKey) {
+  const avApiKey = serverConfig.alphaVantageApiKey;
+  if (!avApiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
   
@@ -50,7 +84,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
 
   if (isCryptoPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
-    url = `${BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${apiKey}&outputsize=full`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Digital Currency Daily)';
     openKey = `1a. open (${to_symbol})`;
     highKey = `2a. high (${to_symbol})`;
@@ -62,7 +96,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     region = 'Cryptocurrency';
   } else if (isCurrencyPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
-    url = `${BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${apiKey}&outputsize=full`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series FX (Daily)';
     openKey = '1. open';
     highKey = '2. high';
@@ -73,10 +107,10 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     currency = to_symbol;
     region = 'Forex';
   } else {
-    const metadata = await fetchTickerMetadata(ticker, apiKey);
+    const metadata = await fetchTickerMetadata(ticker, avApiKey);
     currency = metadata.currency;
     region = metadata.region;
-    url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apiKey}&outputsize=full`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     openKey = '1. open';
     highKey = '2. high';
@@ -89,21 +123,30 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   try {
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
-      return { error: 'Failed to fetch data from the provider. The service may be temporarily unavailable.' };
+      throw new Error('Alpha Vantage service may be temporarily unavailable.');
     }
 
     const data = await response.json();
 
-    if (data['Note']) {
-        return { error: data['Note'] };
+    // Check for API limit or other critical errors from Alpha Vantage
+    if (data['Note'] || data['Information'] || data['Error Message']) {
+      const errorMessage = data['Note'] || data['Information'] || data['Error Message'];
+      console.warn(`Alpha Vantage API issue for ${ticker}: ${errorMessage}. Attempting fallback.`);
+      
+      const fmpApiKey = serverConfig.financialModelingPrepApiKey;
+      if (fmpApiKey) {
+        console.log(`Falling back to Financial Modeling Prep for ${ticker}.`);
+        return await fetchMarketDataFromFMP(ticker, fmpApiKey);
+      } else {
+         return { error: `${errorMessage} (Fallback API not configured.)` };
+      }
     }
     
     const timeSeries = data[timeSeriesKey];
-    
-    if (data['Error Message'] || data['Information'] || !timeSeries) {
-      const errorMessage = data['Error Message'] || data['Information'] || `No data found for symbol "${ticker}". Please check if the symbol is correct and listed.`;
-      return { error: `${errorMessage}` };
+    if (!timeSeries) {
+      throw new Error(`No data found for symbol "${ticker}" from Alpha Vantage.`);
     }
+
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
       date,
@@ -115,9 +158,14 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     }));
 
     return { data: marketData.slice(0, 730), currency, region };
-  } catch (err) {
-    console.error(err);
-    return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
+  } catch (err: any) {
+    console.error(`Primary fetch failed for ${ticker}:`, err.message);
+    const fmpApiKey = serverConfig.financialModelingPrepApiKey;
+    if (fmpApiKey) {
+      console.log(`Falling back to Financial Modeling Prep for ${ticker}.`);
+      return await fetchMarketDataFromFMP(ticker, fmpApiKey);
+    }
+    return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again. (Fallback unavailable)' };
   }
 }
 
@@ -127,7 +175,7 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'API key is not configured.' };
   }
 
-  const url = `${BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=50`;
+  const url = `${ALPHA_VANTAGE_BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=50`;
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -148,5 +196,3 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'An unexpected error occurred while fetching news.' };
   }
 }
-
-    
