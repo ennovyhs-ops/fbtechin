@@ -37,31 +37,36 @@ async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{cur
 }
 
 async function fetchMarketDataFromFMP(ticker: string, apiKey: string): Promise<FetchResult> {
-    const url = `${FMP_BASE_URL}/historical-price-full/${ticker}?apikey=${apiKey}`;
+    const endpoint = isCurrencyPair(ticker) || isCryptoPair(ticker) ? 'historical-chart/1day' : 'historical-price-full';
+    const url = `${FMP_BASE_URL}/${endpoint}/${ticker}?apikey=${apiKey}`;
+    
     try {
         const response = await fetch(url, { cache: 'no-store' });
+        const data = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData?.['Error Message'] || 'Failed to fetch data from Financial Modeling Prep.';
+            const errorMessage = data?.['Error Message'] || `Failed to fetch data from FMP for ${ticker}. Status: ${response.status}`;
             return { error: `Financial Modeling Prep: ${errorMessage}` };
         }
 
-        const data = await response.json();
         if (data['Error Message']) {
             return { error: `Financial Modeling Prep: ${data['Error Message']}` };
         }
+        
+        // The data structure can be data.historical for stocks, or just data for forex/crypto
+        const historicalData = Array.isArray(data) ? data : data.historical;
 
-        if (!data || !data.historical) {
+        if (!historicalData || historicalData.length === 0) {
             return { error: `Financial Modeling Prep: No data found for symbol "${ticker}".` };
         }
 
-        const marketData: MarketData[] = data.historical.map((day: any) => ({
+        const marketData: MarketData[] = historicalData.map((day: any) => ({
             date: day.date,
             open: day.open.toFixed(2),
             high: day.high.toFixed(2),
             low: day.low.toFixed(2),
             close: day.close.toFixed(2),
-            volume: day.volume.toString(),
+            volume: (day.volume ?? 0).toString(),
         }));
 
         const currency = isCurrencyPair(ticker) || isCryptoPair(ticker) ? getCurrencyOrCryptoPair(ticker).to_symbol : 'USD';
@@ -150,6 +155,11 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     
     const timeSeries = data[timeSeriesKey];
     if (!timeSeries) {
+      const fmpApiKey = serverConfig.financialModelingPrepApiKey;
+      if (fmpApiKey) {
+        console.log(`No data from AV for ${ticker}. Falling back to Financial Modeling Prep.`);
+        return await fetchMarketDataFromFMP(ticker, fmpApiKey);
+      }
       throw new Error(`No data found for symbol "${ticker}" from Alpha Vantage.`);
     }
 
