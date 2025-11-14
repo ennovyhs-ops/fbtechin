@@ -17,13 +17,11 @@ interface PricePredictionProps {
   currency: string | null;
 }
 
-const getConfidenceInfo = (confidence: string): { color: string, label: string, explanation: string } => {
-    switch (confidence) {
-        case 'High': return { color: 'text-green-400', label: 'High Confidence', explanation: "Derived from a 'Strong' momentum signal. The technical indicators are strongly aligned, suggesting a higher probability for the projected price move." };
-        case 'Moderate': return { color: 'text-yellow-400', label: 'Moderate Confidence', explanation: "Derived from a 'Moderate' momentum signal. There is a good level of indicator alignment, but some conflicting signals may exist." };
-        case 'Low': return { color: 'text-orange-400', label: 'Low Confidence', explanation: "Derived from a 'Mild' momentum signal. Technical indicators are not strongly aligned, suggesting the trend is weak or unclear. Interpret this prediction with caution." };
-        default: return { color: 'text-muted-foreground', label: 'Very Low Confidence', explanation: "Derived from a 'Neutral' momentum signal. There is no clear directional edge, and the market may be choppy. This prediction is highly uncertain." };
-    }
+const getSignalInfoForPrediction = (signal: string): { color: string, explanation: string } => {
+    if (signal.includes('STRONG')) return { color: 'text-green-400', explanation: "'Strong' signals indicate that multiple key technical indicators are aligned, pointing to a high-conviction trend." };
+    if (signal.includes('MODERATE')) return { color: 'text-yellow-400', explanation: "'Moderate' signals suggest a good level of indicator alignment, but some conflicting signals may exist." };
+    if (signal.includes('MILD')) return { color: 'text-orange-400', explanation: "'Mild' signals suggest that technical indicators are not strongly aligned and the trend is weak or unclear. Interpret with caution." };
+    return { color: 'text-muted-foreground', explanation: "'Neutral' signals indicate no clear directional edge; the market may be choppy or range-bound." };
 }
 
 export function PricePrediction({ marketData, analysis, currency }: PricePredictionProps) {
@@ -88,7 +86,7 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
   const isUp = prediction.priceTarget > parseFloat(marketData[0].close);
   const color = isUp ? 'text-green-400' : 'text-red-400';
   const Icon = isUp ? TrendingUp : TrendingDown;
-  const confidenceInfo = getConfidenceInfo(prediction.confidence);
+  const signalInfo = getSignalInfoForPrediction(analysis.signal);
 
   return (
     <Card className="animate-in fade-in-50 duration-500 delay-400">
@@ -114,13 +112,13 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div className="flex items-center gap-2 cursor-help">
-                                <Gauge className={`h-5 w-5 ${confidenceInfo.color}`} />
-                                <span className={`font-semibold text-sm ${confidenceInfo.color}`}>{confidenceInfo.label}</span>
+                             <div className="flex items-center gap-2 cursor-help text-right">
+                                <Gauge className={`h-5 w-5 ${signalInfo.color}`} />
+                                <span className={`font-semibold text-sm ${signalInfo.color} whitespace-nowrap`}>{analysis.signal}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p className="max-w-xs">{confidenceInfo.explanation}</p>
+                            <p className="max-w-xs">{signalInfo.explanation}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

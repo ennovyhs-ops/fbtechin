@@ -15,7 +15,6 @@ const PredictPriceTargetOutputSchema = z.object({
   priceTarget: z.number().describe("The calculated short-term price target."),
   timeframe: z.string().describe("The estimated timeframe for this prediction (e.g., 'in the next 3-4 weeks')."),
   interpretation: z.string().describe("A brief explanation of what the price target means."),
-  confidence: z.string().describe("The confidence level of the prediction (e.g., 'High', 'Moderate', 'Low')."),
 });
 export type PredictPriceTargetOutput = z.infer<typeof PredictPriceTargetOutputSchema>;
 
@@ -26,13 +25,6 @@ const calculateStdDev = (data: number[]): number => {
     const mean = data.reduce((a, b) => a + b) / n;
     const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n;
     return Math.sqrt(variance);
-};
-
-const getConfidenceFromSignal = (signal: string): string => {
-    if (signal.includes('STRONG')) return 'High';
-    if (signal.includes('MODERATE')) return 'Moderate';
-    if (signal.includes('MILD')) return 'Low';
-    return 'Very Low';
 };
 
 const getVariableTimeframe = (trendStrength: number): { timeframe: string, multiplier: number } => {
@@ -80,7 +72,6 @@ export async function predictPriceTarget(
     const roundedPriceTarget = parseFloat(priceTarget.toFixed(2));
     
     const direction = totalScore > 0 ? "upward" : "downward";
-    const confidence = getConfidenceFromSignal(analysis.signal);
     
     let interpretation = `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${timeframe}. This is a projection, not a guarantee.`;
     if (totalScore < 0.1 && totalScore > -0.1) {
@@ -92,7 +83,6 @@ export async function predictPriceTarget(
         priceTarget: roundedPriceTarget,
         timeframe,
         interpretation,
-        confidence
     };
 
   } catch (e: any) {
