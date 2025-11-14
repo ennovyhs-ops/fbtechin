@@ -102,14 +102,17 @@ export const calculateRSI = (prices: number[], period: number): number[] => {
 
     let gainSum = 0;
     let lossSum = 0;
+    const changes: number[] = [];
+    for (let i = 1; i < prices.length; i++) {
+        changes.push(prices[i] - prices[i-1]);
+    }
 
     // Calculate initial average gain and loss
-    for (let i = 1; i <= period; i++) {
-        const change = prices[i] - prices[i - 1];
-        if (change > 0) {
-            gainSum += change;
+    for (let i = 0; i < period; i++) {
+        if (changes[i] > 0) {
+            gainSum += changes[i];
         } else {
-            lossSum -= change;
+            lossSum -= changes[i];
         }
     }
 
@@ -119,9 +122,9 @@ export const calculateRSI = (prices: number[], period: number): number[] => {
     let rs = avgLoss === 0 ? Infinity : avgGain / avgLoss;
     rsi[period] = 100 - (100 / (1 + rs));
 
-    // Calculate subsequent RSI values
-    for (let i = period + 1; i < prices.length; i++) {
-        const change = prices[i] - prices[i - 1];
+    // Calculate subsequent RSI values using Wilder's smoothing method
+    for (let i = period; i < changes.length; i++) {
+        const change = changes[i];
         let currentGain = 0;
         let currentLoss = 0;
 
@@ -135,7 +138,7 @@ export const calculateRSI = (prices: number[], period: number): number[] => {
         avgLoss = (avgLoss * (period - 1) + currentLoss) / period;
 
         rs = avgLoss === 0 ? Infinity : avgGain / avgLoss;
-        rsi[i] = 100 - (100 / (1 + rs));
+        rsi[i + 1] = 100 - (100 / (1 + rs));
     }
 
     return rsi;
@@ -189,3 +192,4 @@ export const calculateMultiROC = (data: number[], periods: number[]) => {
 
     return results;
 }
+
