@@ -19,10 +19,10 @@ interface PricePredictionProps {
 
 const getConfidenceInfo = (confidence: string): { color: string, label: string, explanation: string } => {
     switch (confidence) {
-        case 'High': return { color: 'text-green-400', label: 'High Confidence', explanation: "Derived from a 'Strong' momentum signal. The technical indicators are strongly aligned." };
-        case 'Moderate': return { color: 'text-yellow-400', label: 'Moderate Confidence', explanation: "Derived from a 'Moderate' momentum signal. There is a good level of indicator alignment." };
-        case 'Low': return { color: 'text-orange-400', label: 'Low Confidence', explanation: "Derived from a 'Mild' momentum signal. The technical indicators are not strongly aligned; interpret with caution." };
-        default: return { color: 'text-muted-foreground', label: 'Very Low Confidence', explanation: "Derived from a 'Neutral' momentum signal. There is no clear directional edge; the prediction is highly uncertain." };
+        case 'High': return { color: 'text-green-400', label: 'High Confidence', explanation: "Derived from a 'Strong' momentum signal. The technical indicators are strongly aligned, suggesting a higher probability for the projected price move." };
+        case 'Moderate': return { color: 'text-yellow-400', label: 'Moderate Confidence', explanation: "Derived from a 'Moderate' momentum signal. There is a good level of indicator alignment, but some conflicting signals may exist." };
+        case 'Low': return { color: 'text-orange-400', label: 'Low Confidence', explanation: "Derived from a 'Mild' momentum signal. Technical indicators are not strongly aligned, suggesting the trend is weak or unclear. Interpret this prediction with caution." };
+        default: return { color: 'text-muted-foreground', label: 'Very Low Confidence', explanation: "Derived from a 'Neutral' momentum signal. There is no clear directional edge, and the market may be choppy. This prediction is highly uncertain." };
     }
 }
 
@@ -120,7 +120,7 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{confidenceInfo.explanation}</p>
+                            <p className="max-w-xs">{confidenceInfo.explanation}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
