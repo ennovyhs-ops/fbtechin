@@ -153,6 +153,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   const { icon, color } = getSignalInfo(analysis.signal);
   const actionExplanation = actionGlossary[analysis.tradeAction];
   const isPredictionError = !prediction || 'error' in prediction;
+  const signalInfo = getSignalInfoForPrediction(analysis.signal);
 
   const PriceTargetContent = () => {
     if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Calculating...</div>;
@@ -161,7 +162,6 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     const isUp = (prediction as PredictPriceTargetOutput).priceTarget > parseFloat(marketData![0].close);
     const predColor = isUp ? 'text-green-400' : 'text-red-400';
     const PredIcon = isUp ? TrendingUp : TrendingDown;
-    const signalInfo = getSignalInfoForPrediction(analysis.signal);
 
     return (
       <div className="space-y-4">
@@ -173,22 +173,13 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                      <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
                 </div>
             </div>
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                         <div className="flex flex-col items-end cursor-help">
-                            <div className="flex items-center gap-2">
-                                <Gauge className={`h-5 w-5 ${color}`} />
-                                <span className={`font-semibold text-sm ${color} whitespace-nowrap`}>{analysis.signal}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground">Score: {analysis.totalScore.toFixed(2)}</p>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p className="max-w-xs">{signalInfo.explanation}</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+             <div className="flex flex-col items-end">
+                <div className="flex items-center gap-2">
+                    <Gauge className={`h-5 w-5 ${color}`} />
+                    <span className={`font-semibold text-sm ${color} whitespace-nowrap`}>{analysis.signal}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Score: {analysis.totalScore.toFixed(2)}</p>
+            </div>
         </div>
          <p className="text-sm text-muted-foreground text-center sm:text-left">{(prediction as PredictPriceTargetOutput).interpretation}</p>
       </div>
@@ -211,13 +202,23 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             {/* Momentum Score Section */}
             <div className="flex flex-col gap-4">
                 <h3 className="font-semibold text-center text-sm text-muted-foreground">Momentum Score</h3>
-                <div className={`flex items-center gap-3 ${color} self-center`}>
-                    {icon}
-                    <div className="flex flex-col items-center">
-                        <span className="font-semibold text-lg">{analysis.signal}</span>
-                        <span className="text-sm opacity-80">{analysis.interpretation}</span>
-                    </div>
-                </div>
+                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className={`flex items-center gap-3 ${color} self-center cursor-help`}>
+                                {icon}
+                                <div className="flex flex-col items-center">
+                                    <span className="font-semibold text-lg">{analysis.signal}</span>
+                                    <span className="text-sm opacity-80">{analysis.interpretation}</span>
+                                </div>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="max-w-xs">{signalInfo.explanation}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
                 <div className="text-center">
                     <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">Total Score (-1 to 1)</p>
@@ -263,3 +264,5 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     </Card>
   );
 }
+
+    
