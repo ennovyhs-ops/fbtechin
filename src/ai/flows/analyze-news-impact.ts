@@ -8,7 +8,7 @@
  * - AnalyzeNewsImpactOutput - The output type for the analyzeNewsImpact function.
  */
 
-import { ai } from '@/ai';
+import { ai } from '@/ai/index';
 import { z } from 'zod';
 
 const AnalyzeNewsImpactInputSchema = z.object({
