@@ -6,7 +6,6 @@ import { serverConfig } from '@/lib/server-config';
 import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
-const FMP_BASE_URL = 'https://financialmodelingprep.com/api/v3';
 
 
 async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{currency: string, region: string}> {
@@ -33,45 +32,6 @@ async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{cur
     } catch (error) {
         console.error("Could not fetch currency for ticker:", error);
         return { currency: 'USD', region: '' }; // Default to USD on error
-    }
-}
-
-async function fetchMarketDataFromFMP(ticker: string, apiKey: string): Promise<FetchResult> {
-    const endpoint = isCurrencyPair(ticker) || isCryptoPair(ticker) ? 'historical-chart/1day' : 'historical-price-full';
-    const url = `${FMP_BASE_URL}/${endpoint}/${ticker}?apikey=${apiKey}`;
-    
-    try {
-        const response = await fetch(url, { cache: 'no-store' });
-        const data = await response.json();
-
-        if (!response.ok || data['Error Message']) {
-            const errorMessage = data?.['Error Message'] || `Failed to fetch data from FMP for ${ticker}. Status: ${response.status}`;
-            return { error: `Financial Modeling Prep: ${errorMessage}` };
-        }
-
-        // The data structure can be data.historical for stocks, or just data for forex/crypto
-        const historicalData = Array.isArray(data) ? data : data.historical;
-
-        if (!historicalData || historicalData.length === 0) {
-            return { error: `Financial Modeling Prep: No data found for symbol "${ticker}".` };
-        }
-
-        const marketData: MarketData[] = historicalData.map((day: any) => ({
-            date: day.date,
-            open: day.open.toFixed(2),
-            high: day.high.toFixed(2),
-            low: day.low.toFixed(2),
-            close: day.close.toFixed(2),
-            volume: (day.volume ?? 0).toString(),
-        }));
-
-        const currency = isCurrencyPair(ticker) || isCryptoPair(ticker) ? getCurrencyOrCryptoPair(ticker).to_symbol : 'USD';
-        
-        return { data: marketData.slice(0, 730), currency, region: "Financial Modeling Prep" };
-
-    } catch (err) {
-        console.error("FMP Fetch Error:", err);
-        return { error: 'An unexpected error occurred while fetching data from Financial Modeling Prep.' };
     }
 }
 
@@ -138,24 +98,11 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     // Check for API limit or other critical errors from Alpha Vantage
     if (data['Note'] || data['Information'] || data['Error Message']) {
       const errorMessage = data['Note'] || data['Information'] || data['Error Message'];
-      console.warn(`Alpha Vantage API issue for ${ticker}: ${errorMessage}. Attempting fallback.`);
-      
-      const fmpApiKey = serverConfig.financialModelingPrepApiKey;
-      if (fmpApiKey) {
-        console.log(`Falling back to Financial Modeling Prep for ${ticker}.`);
-        return await fetchMarketDataFromFMP(ticker, fmpApiKey);
-      } else {
-         return { error: `${errorMessage} (Fallback API not configured.)` };
-      }
+      return { error: errorMessage };
     }
     
     const timeSeries = data[timeSeriesKey];
     if (!timeSeries) {
-      const fmpApiKey = serverConfig.financialModelingPrepApiKey;
-      if (fmpApiKey) {
-        console.log(`No data from AV for ${ticker}. Falling back to Financial Modeling Prep.`);
-        return await fetchMarketDataFromFMP(ticker, fmpApiKey);
-      }
       throw new Error(`No data found for symbol "${ticker}" from Alpha Vantage.`);
     }
 
@@ -172,12 +119,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     return { data: marketData.slice(0, 730), currency, region: `Alpha Vantage (${region})` };
   } catch (err: any) {
     console.error(`Primary fetch failed for ${ticker}:`, err.message);
-    const fmpApiKey = serverConfig.financialModelingPrepApiKey;
-    if (fmpApiKey) {
-      console.log(`Falling back to Financial Modeling Prep for ${ticker}.`);
-      return await fetchMarketDataFromFMP(ticker, fmpApiKey);
-    }
-    return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again. (Fallback unavailable)' };
+    return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
   }
 }
 
