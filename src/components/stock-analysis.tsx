@@ -172,7 +172,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                      <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
                 </div>
             </div>
-             <p className="text-sm text-muted-foreground text-center mt-2 max-w-sm">{(prediction as PredictPriceTargetOutput).interpretation}</p>
+             <p className="text-sm text-muted-foreground mt-2 max-w-sm">{(prediction as PredictPriceTargetOutput).interpretation}</p>
         </div>
     );
   }
@@ -223,6 +223,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         <div className="space-y-2 text-center pt-2">
             <div className="flex items-center justify-center gap-2">
                 <h3 className="font-semibold text-sm">Suggested Action:</h3>
+                <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
                 {actionExplanation && (
                     <Dialog>
                         <DialogTrigger asChild>
@@ -241,11 +242,8 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                     </Dialog>
                 )}
             </div>
-            <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-    
