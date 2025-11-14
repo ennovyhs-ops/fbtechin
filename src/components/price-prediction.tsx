@@ -106,15 +106,18 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
                     <Icon className={`h-6 w-6 ${color}`} />
                     <div className="flex flex-col">
                         <span className={`font-bold text-2xl ${color}`}>{formatCurrency(prediction.priceTarget, currency)}</span>
-                        <span className="text-sm text-muted-foreground">{prediction.timeframe}</span>
+                         <span className="text-sm text-muted-foreground">{prediction.timeframe}</span>
                     </div>
                 </div>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <div className="flex items-center gap-2 cursor-help text-right">
-                                <Gauge className={`h-5 w-5 ${signalInfo.color}`} />
-                                <span className={`font-semibold text-sm ${signalInfo.color} whitespace-nowrap`}>{analysis.signal}</span>
+                             <div className="flex flex-col items-end cursor-help">
+                                <div className="flex items-center gap-2">
+                                    <Gauge className={`h-5 w-5 ${signalInfo.color}`} />
+                                    <span className={`font-semibold text-sm ${signalInfo.color} whitespace-nowrap`}>{analysis.signal}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Score: {analysis.totalScore.toFixed(2)}</p>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -129,5 +132,3 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
     </Card>
   );
 }
-
-    
