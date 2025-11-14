@@ -79,7 +79,7 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
   name: 'suggestOptionStrategiesPrompt',
   input: { schema: z.object({ ticker: z.string(), signal: z.string(), latestClose: z.string() }) },
   output: { schema: SuggestOptionStrategiesOutputSchema.pick({ strategies: true, disclaimer: true }) },
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash',
   prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price. The momentum signal is based on daily data with indicators over the last 14-26 days, so the strategies should be for a short-to-medium term outlook.
 
 **Ticker:** {{ticker}}
