@@ -162,20 +162,29 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     const isUp = (prediction as PredictPriceTargetOutput).priceTarget > parseFloat(marketData![0].close);
     const predColor = isUp ? 'text-green-400' : 'text-red-400';
     const PredIcon = isUp ? TrendingUp : TrendingDown;
+    const { icon: SignalIcon, color: signalColor } = getSignalInfo(analysis.signal);
 
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-                <PredIcon className={`h-6 w-6 ${predColor}`} />
-                <div className="flex flex-col">
-                    <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency((prediction as PredictPriceTargetOutput).priceTarget, currency)}</span>
-                     <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
+        <div className="flex flex-col gap-4">
+            <h3 className="font-semibold text-center text-sm text-muted-foreground">AI Price Target</h3>
+             <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <PredIcon className={`h-6 w-6 ${predColor}`} />
+                    <div className="flex flex-col items-center">
+                        <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency((prediction as PredictPriceTargetOutput).priceTarget, currency)}</span>
+                         <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end">
+                    <div className={`flex items-center gap-1.5 font-semibold text-sm ${signalColor}`}>
+                       {SignalIcon}
+                       <span>{analysis.signal}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-right">Score: {analysis.totalScore.toFixed(2)}</p>
                 </div>
             </div>
+             <p className="text-sm text-muted-foreground text-center">{(prediction as PredictPriceTargetOutput).interpretation}</p>
         </div>
-         <p className="text-sm text-muted-foreground text-center sm:text-left">{(prediction as PredictPriceTargetOutput).interpretation}</p>
-      </div>
     );
   }
 
@@ -191,9 +200,9 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         </CardDescription>
       </CardHeader>
       <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-muted/50 rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* Momentum Score Section */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
                 <h3 className="font-semibold text-center text-sm text-muted-foreground">Momentum Score</h3>
                  <TooltipProvider>
                     <Tooltip>
@@ -241,13 +250,8 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                 </div>
             </div>
             
-             <div className="hidden md:block">
-                <Separator orientation="vertical" />
-            </div>
-
             {/* Price Target Section */}
-            <div className="flex flex-col gap-4">
-                 <h3 className="font-semibold text-center text-sm text-muted-foreground">AI Price Target</h3>
+            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
                  <div className="flex-grow flex items-center justify-center">
                     <PriceTargetContent />
                  </div>
