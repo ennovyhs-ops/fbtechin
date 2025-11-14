@@ -8,7 +8,7 @@ import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-moment
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
 import { formatCurrency } from '@/lib/utils';
@@ -162,28 +162,17 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     const isUp = (prediction as PredictPriceTargetOutput).priceTarget > parseFloat(marketData![0].close);
     const predColor = isUp ? 'text-green-400' : 'text-red-400';
     const PredIcon = isUp ? TrendingUp : TrendingDown;
-    const { icon: SignalIcon, color: signalColor } = getSignalInfo(analysis.signal);
 
     return (
-        <div className="flex flex-col gap-4">
-            <h3 className="font-semibold text-center text-sm text-muted-foreground">AI Price Target</h3>
-             <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-3">
-                    <PredIcon className={`h-6 w-6 ${predColor}`} />
-                    <div className="flex flex-col items-center">
-                        <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency((prediction as PredictPriceTargetOutput).priceTarget, currency)}</span>
-                         <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
-                    </div>
-                </div>
-                <div className="flex flex-col items-end">
-                    <div className={`flex items-center gap-1.5 font-semibold text-sm ${signalColor}`}>
-                       {SignalIcon}
-                       <span>{analysis.signal}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground text-right">Score: {analysis.totalScore.toFixed(2)}</p>
+        <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3">
+                <PredIcon className={`h-6 w-6 ${predColor}`} />
+                <div className="flex flex-col items-center">
+                    <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency((prediction as PredictPriceTargetOutput).priceTarget, currency)}</span>
+                     <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
                 </div>
             </div>
-             <p className="text-sm text-muted-foreground text-center">{(prediction as PredictPriceTargetOutput).interpretation}</p>
+             <p className="text-sm text-muted-foreground text-center mt-2 max-w-sm">{(prediction as PredictPriceTargetOutput).interpretation}</p>
         </div>
     );
   }
@@ -199,20 +188,18 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
           A proprietary momentum score and a derived short-term price target.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            {/* Momentum Score Section */}
-            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
-                <h3 className="font-semibold text-center text-sm text-muted-foreground">Momentum Score</h3>
-                 <TooltipProvider>
+      <CardContent className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
+            {/* Left side: Momentum Score */}
+            <div className="flex flex-col items-center gap-2">
+                <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score</h3>
+                <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
+                <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className={`flex items-center gap-3 ${color} self-center cursor-help`}>
+                            <div className={`flex items-center gap-1.5 font-semibold text-md ${color} cursor-help`}>
                                 {icon}
-                                <div className="flex flex-col items-center">
-                                    <span className="font-semibold text-lg">{analysis.signal}</span>
-                                    <span className="text-sm opacity-80">{analysis.interpretation}</span>
-                                </div>
+                                <span>{analysis.signal}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -220,44 +207,45 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
+                 <p className="text-sm text-muted-foreground">{analysis.interpretation}</p>
+            </div>
 
-                <div className="text-center">
-                    <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">Total Score (-1 to 1)</p>
-                </div>
+            <Separator orientation="vertical" className="h-24 hidden md:block" />
+            <Separator orientation="horizontal" className="w-full md:hidden" />
+
+            {/* Right side: Price Target & Action */}
+             <div className="flex flex-col items-center gap-4">
+                 <h3 className="font-semibold text-sm text-muted-foreground -mb-2">AI Price Target</h3>
+                 <PriceTargetContent />
             </div>
-            
-            {/* Price Target Section */}
-            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
-                 <div className="flex-grow flex flex-col justify-center">
-                    <PriceTargetContent />
-                 </div>
-                 <div className="space-y-2 mt-auto pt-4">
-                    <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-sm">Suggested Action:</h3>
-                        {actionExplanation && (
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <button className="text-muted-foreground hover:text-foreground">
-                                        <Info className="h-4 w-4" />
-                                    </button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>{actionExplanation.title}</DialogTitle>
-                                        <DialogDescription>
-                                            {actionExplanation.description}
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                </DialogContent>
-                            </Dialog>
-                        )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
-                </div>
+        </div>
+
+        <div className="space-y-2 text-center pt-2">
+            <div className="flex items-center justify-center gap-2">
+                <h3 className="font-semibold text-sm">Suggested Action:</h3>
+                {actionExplanation && (
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <button className="text-muted-foreground hover:text-foreground">
+                                <Info className="h-4 w-4" />
+                            </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{actionExplanation.title}</DialogTitle>
+                                <DialogDescription>
+                                    {actionExplanation.description}
+                                </DialogDescription>
+                            </DialogHeader>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </div>
+            <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
         </div>
       </CardContent>
     </Card>
   );
 }
+
+    
