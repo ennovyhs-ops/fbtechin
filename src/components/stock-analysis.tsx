@@ -173,13 +173,6 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                      <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
                 </div>
             </div>
-             <div className="flex flex-col items-end">
-                <div className="flex items-center gap-2">
-                    <Gauge className={`h-5 w-5 ${color}`} />
-                    <span className={`font-semibold text-sm ${color} whitespace-nowrap`}>{analysis.signal}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Score: {analysis.totalScore.toFixed(2)}</p>
-            </div>
         </div>
          <p className="text-sm text-muted-foreground text-center sm:text-left">{(prediction as PredictPriceTargetOutput).interpretation}</p>
       </div>
@@ -264,5 +257,3 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     </Card>
   );
 }
-
-    
