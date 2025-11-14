@@ -206,10 +206,10 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
           A proprietary momentum score and a derived short-term price target.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-muted/50 rounded-lg p-4">
             {/* Momentum Score Section */}
-            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
+            <div className="flex flex-col gap-4">
                 <h3 className="font-semibold text-center text-sm text-muted-foreground">Momentum Score</h3>
                 <div className={`flex items-center gap-3 ${color} self-center`}>
                     {icon}
@@ -247,8 +247,12 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                 </div>
             </div>
             
+             <div className="hidden md:block">
+                <Separator orientation="vertical" />
+            </div>
+
             {/* Price Target Section */}
-            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
+            <div className="flex flex-col gap-4">
                  <h3 className="font-semibold text-center text-sm text-muted-foreground">AI Price Target</h3>
                  <div className="flex-grow flex items-center justify-center">
                     <PriceTargetContent />
