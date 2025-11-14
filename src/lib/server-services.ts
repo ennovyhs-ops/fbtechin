@@ -41,11 +41,17 @@ async function fetchMarketDataFromFMP(ticker: string, apiKey: string): Promise<F
     try {
         const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) {
-            return { error: 'Failed to fetch data from Financial Modeling Prep.' };
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData?.['Error Message'] || 'Failed to fetch data from Financial Modeling Prep.';
+            return { error: `Financial Modeling Prep: ${errorMessage}` };
         }
 
         const data = await response.json();
-        if (!data || data['Error Message'] || !data.historical) {
+        if (data['Error Message']) {
+            return { error: `Financial Modeling Prep: ${data['Error Message']}` };
+        }
+
+        if (!data || !data.historical) {
             return { error: `Financial Modeling Prep: No data found for symbol "${ticker}".` };
         }
 
