@@ -94,10 +94,10 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
-                    <span>AI Momentum & Price Analysis</span>
+                    <span>AI Analysis for {ticker}</span>
                 </CardTitle>
                 <CardDescription>
-                    The AI is running a detailed scoring model and price projection for {ticker}...
+                    The AI is running a detailed scoring model and price projection...
                 </CardDescription>
             </CardHeader>
             <CardContent>

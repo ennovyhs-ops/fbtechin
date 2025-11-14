@@ -616,22 +616,11 @@ export default function Home() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                             <Zap className="h-6 w-6 text-muted-foreground" />
-                            <span>Calculated Momentum Score</span>
+                            <span>AI Analysis</span>
                         </CardTitle>
-                        <CardDescription>A proprietary score based on ROC, Bollinger Bands, RSI, MACD, and Volume analysis.</CardDescription>
+                        <CardDescription>A proprietary momentum score and a derived short-term price target.</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-                            <Target className="h-6 w-6 text-muted-foreground" />
-                            <span>AI Price Target</span>
-                        </CardTitle>
-                        <CardDescription>A projected price target based on the momentum score and recent volatility.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-24 bg-muted/80 rounded-md"></CardContent>
+                    <CardContent className="h-48 bg-muted/80 rounded-md"></CardContent>
                 </Card>
 
                  <Card>
@@ -703,5 +692,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
