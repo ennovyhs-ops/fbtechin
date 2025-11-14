@@ -162,7 +162,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Activity className="text-muted-foreground h-5 w-5 flex-shrink-0" />
                                 <h3 className="font-semibold text-sm text-muted-foreground">Moving Average Convergence Divergence (MACD)</h3>
                             </div>
-                            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-end">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
                                     <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-16 h-8 text-sm" />
