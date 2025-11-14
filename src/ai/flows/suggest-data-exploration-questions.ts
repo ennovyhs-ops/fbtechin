@@ -9,7 +9,7 @@
  * - SuggestDataExplorationQuestionsOutput - The output type for the suggestDataExplorationQuestions function.
  */
 
-import {ai} from '@/ai/genkit';
+import {ai} from '@/ai';
 import {z} from 'genkit';
 
 const SuggestDataExplorationQuestionsInputSchema = z.object({

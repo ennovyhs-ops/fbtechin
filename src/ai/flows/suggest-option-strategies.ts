@@ -10,7 +10,7 @@
  * - SuggestOptionStrategiesOutput - The output type for the suggestOptionStrategies function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai';
 import { z } from 'zod';
 import type { MarketData } from '@/lib/types';
 import { suggestOptionStrategiesDeterministic } from './suggest-option-strategies-deterministic';
