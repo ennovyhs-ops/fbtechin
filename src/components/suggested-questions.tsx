@@ -1,13 +1,11 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BrainCircuit, Loader2 } from 'lucide-react';
 import { suggestDataExplorationQuestions } from '@/ai/flows/suggest-data-exploration-questions';
-import type { NewsArticle } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { NewsCard } from '@/components/news-card';
 
 interface SuggestedQuestionsProps {
   ticker: string;

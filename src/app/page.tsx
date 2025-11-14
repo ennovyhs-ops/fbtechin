@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useTransition, useEffect, useCallback, useRef } from 'react';
+import { useState, useTransition, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
-import { fetchMarketData, getApiKey } from '@/app/actions';
+import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
@@ -235,12 +234,6 @@ export default function Home() {
     event.target.value = '';
   };
   
-  useEffect(() => {
-    getApiKey().then(key => {
-        setApiKey(key);
-    });
-  }, []);
-  
   const handleExport = () => {
     if (!marketData || !submittedTicker) return;
 
@@ -336,7 +329,7 @@ export default function Home() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-wrap items-center gap-2">
-                <Button type="submit" disabled={isPending || !apiKey}>
+                <Button type="submit" disabled={isPending}>
                   {isPending && !uploadedFileName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isPending && !uploadedFileName ? 'Retrieving Data...' : 'Get Data'}
                 </Button>

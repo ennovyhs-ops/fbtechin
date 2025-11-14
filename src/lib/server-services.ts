@@ -51,7 +51,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
 
   if (isCryptoPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
+    url = `${ALPHA_VANTage_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Digital Currency Daily)';
     openKey = `1a. open (${to_symbol})`;
     highKey = `2a. high (${to_symbol})`;
