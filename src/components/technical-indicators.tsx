@@ -125,9 +125,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <p className="font-semibold text-lg">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex items-center gap-2">
                             <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                            <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-full sm:w-20 h-8 text-sm" />
+                            <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-20 h-8 text-sm" />
                         </div>
                     </div>
 
@@ -147,9 +147,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 'bg-muted text-muted-foreground'
                             }`}>{rsiStatus}</p>
                         </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex items-center gap-2">
                             <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                            <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-full sm:w-20 h-8 text-sm" />
+                            <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-20 h-8 text-sm" />
                         </div>
                     </div>
 
@@ -251,3 +251,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     
 
 
+
+
+    
