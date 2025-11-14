@@ -35,6 +35,20 @@ const getConfidenceFromSignal = (signal: string): string => {
     return 'Very Low';
 };
 
+const getVariableTimeframe = (trendStrength: number): { timeframe: string, multiplier: number } => {
+    if (trendStrength >= 0.7) { // Strong signal
+        return { timeframe: "in the next 1-3 weeks", multiplier: 2.5 };
+    }
+    if (trendStrength >= 0.4) { // Moderate signal
+        return { timeframe: "in the next 3-5 weeks", multiplier: 3.0 };
+    }
+    if (trendStrength >= 0.1) { // Mild signal
+        return { timeframe: "in the next 4-8 weeks", multiplier: 3.5 };
+    }
+    // Neutral
+    return { timeframe: "is uncertain due to neutral momentum", multiplier: 1.0 };
+}
+
 export async function predictPriceTarget(
   marketData: MarketData[],
   analysis: AnalyzeStockMomentumOutput,
@@ -55,8 +69,10 @@ export async function predictPriceTarget(
     // Normalize volatility as a percentage of current price
     const avgVolatilityMove = (priceStdDev / currentPrice) * 100;
 
-    // Project the move using trend strength, volatility, and a multiplier
-    const projectedMovePercent = trendStrength * avgVolatilityMove * 3;
+    const { timeframe, multiplier } = getVariableTimeframe(trendStrength);
+
+    // Project the move using trend strength, volatility, and a dynamic multiplier
+    const projectedMovePercent = trendStrength * avgVolatilityMove * multiplier;
 
     // Apply the projected move to the current price in the direction of the trend
     const priceTarget = currentPrice * (1 + (Math.sign(totalScore) * projectedMovePercent) / 100);
@@ -64,13 +80,18 @@ export async function predictPriceTarget(
     const roundedPriceTarget = parseFloat(priceTarget.toFixed(2));
     
     const direction = totalScore > 0 ? "upward" : "downward";
-    const timeframe = "in the next 3-4 weeks";
     const confidence = getConfidenceFromSignal(analysis.signal);
+    
+    let interpretation = `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${timeframe}. This is a projection, not a guarantee.`;
+    if (totalScore < 0.1 && totalScore > -0.1) {
+        interpretation = "The current momentum is neutral, making a directional price prediction unreliable at this time."
+    }
+
 
     return {
         priceTarget: roundedPriceTarget,
         timeframe,
-        interpretation: `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${timeframe}. This is a projection, not a guarantee.`,
+        interpretation,
         confidence
     };
 
