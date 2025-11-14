@@ -162,7 +162,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Activity className="text-muted-foreground h-5 w-5 flex-shrink-0" />
                                 <h3 className="font-semibold text-sm text-muted-foreground">Moving Average Convergence Divergence (MACD)</h3>
                             </div>
-                            <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-end">
+                            <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
                                     <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-16 h-8 text-sm" />
@@ -202,7 +202,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground flex-shrink-0"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>
                                 <h3 className="font-semibold text-sm text-muted-foreground">Bollinger Bands®</h3>
                             </div>
-                            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end">
                                 <div className="flex items-center gap-1.5">
                                     <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
                                     <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')} className="w-16 h-8 text-sm" />
@@ -249,3 +249,4 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 }
 
     
+
