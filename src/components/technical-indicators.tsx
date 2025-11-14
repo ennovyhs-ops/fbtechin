@@ -157,7 +157,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                     
                     {/* MACD */}
                     <div className="flex flex-col items-start gap-4">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 w-full">
+                        <div className="flex flex-col gap-2 w-full">
                              <div className="flex items-center gap-4">
                                 <Activity className="text-muted-foreground h-5 w-5 flex-shrink-0" />
                                 <h3 className="font-semibold text-sm text-muted-foreground">Moving Average Convergence Divergence (MACD)</h3>
@@ -249,4 +249,5 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 }
 
     
+
 
