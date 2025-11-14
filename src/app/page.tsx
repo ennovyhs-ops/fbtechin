@@ -292,7 +292,7 @@ export default function Home() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent>
-                  <div className="flex flex-col sm:flex-row items-end gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
                     <div className="flex-grow w-full">
                        <FormField
                           control={form.control}
@@ -316,7 +316,7 @@ export default function Home() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                          <input
                             type="file"
                             ref={fileInputRef}
@@ -324,7 +324,7 @@ export default function Home() {
                             accept=".csv"
                             className="hidden"
                         />
-                        <div className="flex flex-col items-center">
+                        <div className="w-full">
                             <p className="text-xs text-muted-foreground mb-1 text-center">
                               Required: date, close.
                             </p>
@@ -456,7 +456,7 @@ export default function Home() {
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
                </CardTitle>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground pt-1">
                    <div className="flex items-center gap-2">
                      <Calendar className="h-4 w-4" />
                      <span>As of {new Date(latestData.date).toDateString()}</span>
@@ -711,3 +711,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

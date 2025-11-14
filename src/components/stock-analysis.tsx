@@ -190,3 +190,5 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete }: StockA
     </Card>
   );
 }
+
+    

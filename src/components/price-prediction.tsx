@@ -131,3 +131,5 @@ export function PricePrediction({ marketData, analysis, currency }: PricePredict
     </Card>
   );
 }
+
+    
