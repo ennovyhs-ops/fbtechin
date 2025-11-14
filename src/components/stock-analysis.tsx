@@ -225,6 +225,13 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                     <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">Total Score (-1 to 1)</p>
                 </div>
+            </div>
+            
+            {/* Price Target Section */}
+            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
+                 <div className="flex-grow flex flex-col justify-center">
+                    <PriceTargetContent />
+                 </div>
                  <div className="space-y-2 mt-auto pt-4">
                     <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-sm">Suggested Action:</h3>
@@ -248,13 +255,6 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                     </div>
                     <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
                 </div>
-            </div>
-            
-            {/* Price Target Section */}
-            <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-4">
-                 <div className="flex-grow flex items-center justify-center">
-                    <PriceTargetContent />
-                 </div>
             </div>
         </div>
       </CardContent>
