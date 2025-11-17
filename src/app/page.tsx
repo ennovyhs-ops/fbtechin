@@ -318,7 +318,7 @@ export default function Home() {
                         />
                         <div className="w-full">
                             <p className="text-xs text-muted-foreground mb-1 text-center">
-                              Required: date, close.
+                              Required: date, close. Optional: open, high, low, volume.
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
