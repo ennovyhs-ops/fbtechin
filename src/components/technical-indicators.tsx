@@ -149,7 +149,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="flex items-center gap-4">
                                 <Target className="text-muted-foreground h-5 w-5 flex-shrink-0" />
                                 <div>
-                                    <h3 className="font-semibold text-sm text-muted-foreground">Relative Strength Index (RSI)</h3>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <h3 className="font-semibold text-sm text-muted-foreground cursor-help underline decoration-dotted">Relative Strength Index (RSI)</h3>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" align="start" className="max-w-xs">
+                                            <p className="font-bold mb-1">Relative Strength Index (RSI)</p>
+                                            <p>A momentum oscillator that measures the speed and change of price movements on a scale of 0 to 100.</p>
+                                            <p className="mt-2"><span className="font-semibold">Interpretation:</span> A value over 70 is typically considered 'overbought' (potential for a pullback), while a value under 30 is considered 'oversold' (potential for a bounce). These are not sell/buy signals on their own.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                     <p className="font-semibold text-lg">{latestRsi?.RSI ?? 'N/A'}</p>
                                 </div>
                                 <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
@@ -171,7 +180,20 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="flex flex-col gap-2 w-full">
                                 <div className="flex items-center gap-4">
                                     <Activity className="text-muted-foreground h-5 w-5 flex-shrink-0" />
-                                    <h3 className="font-semibold text-sm text-muted-foreground">Moving Average Convergence Divergence (MACD)</h3>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <h3 className="font-semibold text-sm text-muted-foreground cursor-help underline decoration-dotted">Moving Average Convergence Divergence (MACD)</h3>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" align="start" className="max-w-xs">
+                                            <p className="font-bold mb-1">Moving Average Convergence Divergence (MACD)</p>
+                                            <p>A trend-following momentum indicator that shows the relationship between two exponential moving averages (EMAs) of a security’s price.</p>
+                                            <ul className="list-disc pl-4 mt-2 space-y-1">
+                                                <li><span className="font-semibold">MACD Line (DIF):</span> The difference between the 12-period and 26-period EMAs. It shows short-term momentum.</li>
+                                                <li><span className="font-semibold">Signal Line (DEA):</span> A 9-period EMA of the MACD Line. It acts as a trigger for buy and sell signals.</li>
+                                                <li><span className="font-semibold">Histogram (MACD):</span> The difference between the MACD Line and the Signal Line. It shows the strength of the momentum.</li>
+                                            </ul>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                                 <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end">
                                     <div className="flex items-center gap-1.5">
@@ -211,7 +233,18 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 w-full">
                                 <div className="flex items-center gap-4">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground flex-shrink-0"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>
-                                    <h3 className="font-semibold text-sm text-muted-foreground">Bollinger Bands®</h3>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <h3 className="font-semibold text-sm text-muted-foreground cursor-help underline decoration-dotted">Bollinger Bands®</h3>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" align="start" className="max-w-xs">
+                                            <p className="font-bold mb-1">Bollinger Bands®</p>
+                                            <p>A volatility indicator consisting of a middle band (a simple moving average) and two outer bands that are a set number of standard deviations away.</p>
+                                            <ul className="list-disc pl-4 mt-2 space-y-1">
+                                                <li><span className="font-semibold">Interpretation:</span> When the bands are wide, volatility is high. When they are narrow (a "squeeze"), volatility is low and a significant price move may be coming. Prices are considered high at the upper band and low at the lower band.</li>
+                                            </ul>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                                 <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end">
                                     <div className="flex items-center gap-1.5">
@@ -266,4 +299,5 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
 
     
+
 
