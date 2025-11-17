@@ -102,4 +102,13 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
 `,
 });
 
-// We don't define a flow with ai.defineFlow because we are manually handling the fallback logic in the exported function.
+const suggestOptionStrategiesFlow = ai.defineFlow(
+  {
+    name: 'suggestOptionStrategiesFlow',
+    inputSchema: SuggestOptionStrategiesInputSchema,
+    outputSchema: SuggestOptionStrategiesOutputSchema,
+  },
+  async (input) => {
+    return suggestOptionStrategies(input);
+  }
+);
