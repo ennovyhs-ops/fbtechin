@@ -11,7 +11,6 @@
 
 import { ai } from '@/ai/index';
 import { z } from 'zod';
-import type { MarketData } from '@/lib/types';
 
 const SuggestOptionStrategiesInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
@@ -42,7 +41,12 @@ export async function suggestOptionStrategies(
     };
     
     const { output } = await suggestOptionStrategiesPrompt(aiInput);
-    return output!;
+    
+    if (!output) {
+      throw new Error("AI failed to generate option strategies.");
+    }
+    
+    return output;
 }
 
 const suggestOptionStrategiesPrompt = ai.definePrompt({
