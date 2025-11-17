@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useTransition, useCallback, useRef } from 'react';
@@ -357,7 +358,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">API Usage</h3>
                         <p className="text-muted-foreground">
-                          A free Alpha Vantage API key (25 requests/day) is used for fetching live data and news. Each search for a new ticker costs 1-2 API requests. Uploading a CSV file does not use any API requests for market data, but news analysis for an uploaded ticker still requires one.
+                          A free Alpha Vantage API key (25 requests/day) is used for fetching live data and news. Clicking "Get Data" for a stock ticker uses **2** API requests (1 for search, 1 for data), while forex/crypto pairs use **1** request. Clicking "Load News & Analysis" uses **1** additional request. Uploading a CSV file for market data does not use any API requests.
                         </p>
                       </div>
                        <div>
@@ -685,3 +686,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
