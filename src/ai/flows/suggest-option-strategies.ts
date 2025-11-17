@@ -56,18 +56,21 @@ export async function suggestOptionStrategies(
     const [aiResult, deterministicResult] = await Promise.all([
         suggestOptionStrategiesPrompt(aiInput).catch(e => {
           console.error("AI suggestion failed:", e);
-          return { output: { strategies: [], disclaimer: "" } }; // Return empty on failure
+          // Return an object that matches the expected shape, even on failure
+          return { output: { strategies: [], disclaimer: "AI suggestions could not be generated." } }; 
         }),
         suggestOptionStrategiesDeterministic(deterministicInput).catch(e => {
             console.error("Deterministic suggestion failed:", e);
-            return { strategies: [], disclaimer: "" }; // Return empty on failure
+            // Return an object that matches the expected shape, even on failure
+            return { strategies: [], disclaimer: "Rule-based suggestions could not be generated." };
         })
     ]);
 
     const aiStrategies = aiResult?.output?.strategies || [];
     const deterministicStrategies = deterministicResult?.strategies || [];
     
-    const disclaimer = aiResult?.output?.disclaimer || deterministicResult?.disclaimer || "This is not financial advice. Options trading involves significant risk.";
+    // Combine disclaimers or use a default
+    const disclaimer = "This is not financial advice. The strategies presented are for educational purposes only. Options trading involves significant risk and is not suitable for all investors. Consult a qualified financial advisor before making any trading decisions.";
 
     return {
       aiStrategies,

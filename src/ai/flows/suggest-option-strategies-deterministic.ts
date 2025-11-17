@@ -79,34 +79,32 @@ export async function suggestOptionStrategiesDeterministic(
     const reversedData = [...marketData].reverse();
     const closePrices = reversedData.map(d => parseFloat(d.close));
 
-    if (closePrices.length < 20) {
+    if (closePrices.length < 26) { // Increased requirement for MACD
         return {
             strategies: [],
-            disclaimer: "Not enough historical data to generate rule-based option strategies."
+            disclaimer: "Not enough historical data to generate rule-based option strategies. At least 26 days of data are required for MACD calculation."
         };
     }
     
     // Calculate a reasonable strike distance based on recent volatility
     const recentPrices = closePrices.slice(-20);
     const stdDev = calculateStdDev(recentPrices);
-    const strikeDistance = stdDev / 3; // Use 1/3 of a standard deviation as a starting point for OTM
+    const strikeDistance = stdDev / 2; // Use 1/2 of a standard deviation for strike distance
 
 
     // 1. Calculate Timing Score
     let timingScore = 0;
-    if (closePrices.length >= 26) {
-        const macd = calculateMACD(closePrices, 12, 26, 9);
-        if (macd.length >= 2) {
-            const latestMacd = macd[macd.length-1];
-            const prevMacd = macd[macd.length-2];
+    const macd = calculateMACD(closePrices, 12, 26, 9);
+    if (macd.length >= 2) {
+        const latestMacd = macd[macd.length-1];
+        const prevMacd = macd[macd.length-2];
 
-            if(latestMacd && prevMacd && !isNaN(latestMacd.MACD!) && !isNaN(prevMacd.MACD!) && latestMacd.signal && prevMacd.signal) {
-                const isCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
-                const isCrossoverBearish = prevMacd.MACD! >= prevMacd.signal! && latestMacd.MACD! < latestMacd.signal!;
-                if (isCrossoverBullish || isCrossoverBearish) timingScore += 0.7; // Strong signal
-                else if (latestMacd.MACD! > latestMacd.signal! && totalScore > 0) timingScore += 0.3; // Confirming bullish
-                else if (latestMacd.MACD! < latestMacd.signal! && totalScore < 0) timingScore += 0.3; // Confirming bearish
-            }
+        if(latestMacd && prevMacd && !isNaN(latestMacd.MACD!) && !isNaN(prevMacd.MACD!) && latestMacd.signal && prevMacd.signal) {
+            const isCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
+            const isCrossoverBearish = prevMacd.MACD! >= prevMacd.signal! && latestMacd.MACD! < latestMacd.signal!;
+            if (isCrossoverBullish || isCrossoverBearish) timingScore += 0.7; // Strong signal
+            else if (latestMacd.MACD! > latestMacd.signal! && totalScore > 0) timingScore += 0.3; // Confirming bullish
+            else if (latestMacd.MACD! < latestMacd.signal! && totalScore < 0) timingScore += 0.3; // Confirming bearish
         }
     }
     
@@ -115,12 +113,14 @@ export async function suggestOptionStrategiesDeterministic(
     const bbands = calculateBollingerBands(closePrices, 20, 2);
     if (bbands.length >= 20) {
         const recentBbands = bbands.slice(-20).filter(b => b && b.upper && b.lower && b.middle > 0);
-        const bandWidths = recentBbands.map(b => (b.upper - b.lower) / b.middle);
-        if (bandWidths.length > 0) {
-            volatilityState = bandWidths[bandWidths.length - 1] || 0;
-            const minBandwidth = Math.min(...bandWidths);
-            if (volatilityState < minBandwidth * 1.2) { // Squeeze is active or recent
-                timingScore = Math.min(1.0, timingScore + 0.4); // Majorly boost timing score during a squeeze
+        if (recentBbands.length > 0) {
+            const bandWidths = recentBbands.map(b => (b.upper - b.lower) / b.middle);
+            if (bandWidths.length > 0) {
+                volatilityState = bandWidths[bandWidths.length - 1] || 0;
+                const minBandwidth = Math.min(...bandWidths);
+                if (volatilityState < minBandwidth * 1.2) { // Squeeze is active or recent
+                    timingScore = Math.min(1.0, timingScore + 0.4); // Majorly boost timing score during a squeeze
+                }
             }
         }
     }

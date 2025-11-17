@@ -99,7 +99,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
           <span>Option Strategy Ideas for {ticker}</span>
         </CardTitle>
         <CardDescription>
-          Based on the "{analysis.signal}" signal, here are some potential strategies from our AI and rule-based engines.
+          Based on the "{analysis.signal}" signal, here are potential strategies from our AI and rule-based engines.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -111,7 +111,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     AI Suggestions
                 </h3>
                 {suggestions.aiStrategies.map((strategy, index) => (
-                    <div key={index} className="p-4 rounded-lg border bg-background">
+                    <div key={`ai-${index}`} className="p-4 rounded-lg border bg-background">
                         <h4 className="font-semibold text-md text-foreground">{strategy.name}</h4>
                         <p className="text-sm text-muted-foreground mt-1">{strategy.rationale}</p>
                     </div>
@@ -130,7 +130,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     Rule-Based Suggestions
                 </h3>
                 {suggestions.deterministicStrategies.map((strategy, index) => (
-                    <div key={index} className="p-4 rounded-lg border bg-background">
+                    <div key={`det-${index}`} className="p-4 rounded-lg border bg-background">
                         <h4 className="font-semibold text-md text-foreground">{strategy.name}</h4>
                         <p className="text-sm text-muted-foreground mt-1">{strategy.rationale}</p>
                     </div>
