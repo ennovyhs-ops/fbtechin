@@ -4,7 +4,11 @@
 import { useEffect, useState } from 'react';
 import { Lightbulb, Loader2, AlertCircle, ChevronDown, Brain, Bot } from 'lucide-react';
 import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
-import type { OptionStrategy, MarketData } from '@/lib/types';
+import { suggestOptionStrategiesDeterministic } from '@/ai/flows/suggest-option-strategies-deterministic';
+import type { SuggestOptionStrategiesOutput } from '@/ai/flows/suggest-option-strategies';
+import type { SuggestOptionStrategiesDeterministicOutput } from '@/ai/flows/suggest-option-strategies-deterministic';
+
+import type { MarketData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -19,36 +23,64 @@ interface OptionStrategiesProps {
   marketData: MarketData[];
 }
 
-interface DualSuggestions {
-    aiStrategies: OptionStrategy[];
-    deterministicStrategies: OptionStrategy[];
-    disclaimer: string;
-}
-
 export function OptionStrategies({ ticker, analysis, latestClose, marketData }: OptionStrategiesProps) {
-  const [suggestions, setSuggestions] = useState<DualSuggestions | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<SuggestOptionStrategiesOutput | null>(null);
+  const [deterministicSuggestions, setDeterministicSuggestions] = useState<SuggestOptionStrategiesDeterministicOutput | null>(null);
+  
+  const [aiLoading, setAiLoading] = useState(true);
+  const [deterministicLoading, setDeterministicLoading] = useState(true);
+  
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [deterministicError, setDeterministicError] = useState<string | null>(null);
+
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
+  // Effect for AI suggestions
   useEffect(() => {
-    if (ticker && analysis?.signal && latestClose && marketData) {
-      setLoading(true);
-      setError(null);
+    if (ticker && analysis?.signal && latestClose) {
+      setAiLoading(true);
+      setAiError(null);
       suggestOptionStrategies({ ticker, analysis, latestClose, marketData })
         .then(response => {
-          setSuggestions(response);
+          setAiSuggestions(response);
         })
         .catch(() => {
-          setError('Could not generate option strategy suggestions at this time.');
+          setAiError('AI suggestions could not be generated at this time.');
         })
         .finally(() => {
-          setLoading(false);
+          setAiLoading(false);
         });
     }
   }, [ticker, analysis, latestClose, marketData]);
 
-  if (loading) {
+  // Effect for deterministic suggestions
+  useEffect(() => {
+    if (ticker && analysis?.signal && latestClose && marketData) {
+      setDeterministicLoading(true);
+      setDeterministicError(null);
+      suggestOptionStrategiesDeterministic({
+        ticker,
+        totalScore: analysis.totalScore,
+        marketData,
+        latestClose
+      })
+      .then(response => {
+        setDeterministicSuggestions(response);
+      })
+      .catch(() => {
+        setDeterministicError('Rule-based suggestions could not be generated at this time.');
+      })
+      .finally(() => {
+        setDeterministicLoading(false);
+      });
+    }
+  }, [ticker, analysis, latestClose, marketData]);
+
+  const hasContent = (aiSuggestions && aiSuggestions.strategies.length > 0) || 
+                     (deterministicSuggestions && deterministicSuggestions.strategies.length > 0);
+  const isLoading = aiLoading || deterministicLoading;
+
+  if (isLoading && !hasContent) {
     return (
       <Card>
         <CardHeader>
@@ -70,26 +102,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
     );
   }
 
-  if (error) {
-    return (
-       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-            <Lightbulb className="h-6 w-6 text-destructive" />
-            <span>Option Strategy Ideas</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-4 w-4" />
-            <span>{error}</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!suggestions || (suggestions.aiStrategies.length === 0 && suggestions.deterministicStrategies.length === 0)) return null;
+  if (!hasContent) return null;
 
   return (
     <Card className="animate-in fade-in-50 duration-500 delay-500">
@@ -104,13 +117,17 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
       </CardHeader>
       <CardContent className="space-y-6">
         
-        {suggestions.aiStrategies.length > 0 && (
+        {aiLoading ? (
+           <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>Loading AI Ideas...</span></div>
+        ) : aiError ? (
+           <div className="flex items-center gap-2 text-destructive"><AlertCircle className="h-4 w-4" /><span>{aiError}</span></div>
+        ) : aiSuggestions && aiSuggestions.strategies.length > 0 && (
             <div className="space-y-4">
                 <h3 className="flex items-center gap-2 font-semibold text-md text-foreground">
                     <Bot className="h-5 w-5 text-muted-foreground" />
                     AI Suggestions
                 </h3>
-                {suggestions.aiStrategies.map((strategy, index) => (
+                {aiSuggestions.strategies.map((strategy, index) => (
                     <div key={`ai-${index}`} className="p-4 rounded-lg border bg-background">
                         <h4 className="font-semibold text-md text-foreground">{strategy.name}</h4>
                         <p className="text-sm text-muted-foreground mt-1">{strategy.rationale}</p>
@@ -119,17 +136,21 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
             </div>
         )}
 
-        {suggestions.aiStrategies.length > 0 && suggestions.deterministicStrategies.length > 0 && (
+        {aiSuggestions && deterministicSuggestions && aiSuggestions.strategies.length > 0 && deterministicSuggestions.strategies.length > 0 && (
             <Separator />
         )}
 
-        {suggestions.deterministicStrategies.length > 0 && (
+        {deterministicLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>Loading Rule-Based Ideas...</span></div>
+        ) : deterministicError ? (
+            <div className="flex items-center gap-2 text-destructive"><AlertCircle className="h-4 w-4" /><span>{deterministicError}</span></div>
+        ) : deterministicSuggestions && deterministicSuggestions.strategies.length > 0 && (
              <div className="space-y-4">
                 <h3 className="flex items-center gap-2 font-semibold text-md text-foreground">
                     <Brain className="h-5 w-5 text-muted-foreground" />
                     Rule-Based Suggestions
                 </h3>
-                {suggestions.deterministicStrategies.map((strategy, index) => (
+                {deterministicSuggestions.strategies.map((strategy, index) => (
                     <div key={`det-${index}`} className="p-4 rounded-lg border bg-background">
                         <h4 className="font-semibold text-md text-foreground">{strategy.name}</h4>
                         <p className="text-sm text-muted-foreground mt-1">{strategy.rationale}</p>
@@ -137,7 +158,6 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                 ))}
             </div>
         )}
-
 
          <Collapsible open={isDisclaimerOpen} onOpenChange={setIsDisclaimerOpen} className="w-full pt-2">
             <CollapsibleTrigger asChild>
@@ -151,7 +171,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Disclaimer</AlertTitle>
                     <AlertDescription>
-                        {suggestions.disclaimer}
+                        {aiSuggestions?.disclaimer || deterministicSuggestions?.disclaimer}
                     </AlertDescription>
                 </Alert>
             </CollapsibleContent>
