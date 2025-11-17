@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar } from 'lucide-react';
 import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
@@ -155,25 +155,34 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   const isPredictionError = !prediction || 'error' in prediction;
   const signalInfo = getSignalInfoForPrediction(analysis.signal);
 
-  const PriceTargetContent = () => {
-    if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Calculating...</div>;
-    if (isPredictionError) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Prediction failed.</div>;
+  const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
+    if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div>;
+    if (isPredictionError) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Failed</div>;
     
-    const isUp = (prediction as PredictPriceTargetOutput).priceTarget > parseFloat(marketData![0].close);
+    const targetData = (prediction as PredictPriceTargetOutput)[targetType];
+    const isUp = targetData.priceTarget > parseFloat(marketData![0].close);
     const predColor = isUp ? 'text-green-400' : 'text-red-400';
     const PredIcon = isUp ? TrendingUp : TrendingDown;
 
     return (
-        <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-3">
-                <PredIcon className={`h-6 w-6 ${predColor}`} />
-                <div className="flex flex-col items-center">
-                    <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency((prediction as PredictPriceTargetOutput).priceTarget, currency)}</span>
-                     <span className="text-sm text-muted-foreground">{(prediction as PredictPriceTargetOutput).timeframe}</span>
-                </div>
-            </div>
-             <p className="text-sm text-muted-foreground mt-2 max-w-sm">{(prediction as PredictPriceTargetOutput).interpretation}</p>
-        </div>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="flex flex-col items-center gap-2 cursor-help">
+                        <div className="flex items-center gap-3">
+                            <Icon className={`h-5 w-5 text-muted-foreground`} />
+                            <div className="flex flex-col items-center">
+                                <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency(targetData.priceTarget, currency)}</span>
+                                <span className="text-xs text-muted-foreground">{targetData.timeframe}</span>
+                            </div>
+                        </div>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                     <p className="max-w-xs">{targetData.interpretation}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
   }
 
@@ -185,13 +194,13 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
           <span>AI Analysis for {ticker}</span>
         </CardTitle>
         <CardDescription>
-          A proprietary momentum score and a derived short-term price target.
+          A proprietary momentum score and derived short- and long-term price targets.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
             {/* Left side: Momentum Score */}
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
                 <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
@@ -213,10 +222,14 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <Separator orientation="vertical" className="h-24 hidden md:block" />
             <Separator orientation="horizontal" className="w-full md:hidden" />
 
-            {/* Right side: Price Target & Action */}
-             <div className="flex flex-col items-center gap-4">
-                 <h3 className="font-semibold text-sm text-muted-foreground -mb-2">AI Price Target</h3>
-                 <PriceTargetContent />
+            {/* Right side: Price Target */}
+             <div className="flex flex-col items-center gap-4 text-center">
+                 <h3 className="font-semibold text-sm text-muted-foreground">AI Price Targets</h3>
+                 <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <PriceTargetContent targetType="shortTerm" icon={Clock} />
+                    <Separator orientation="vertical" className="h-12 hidden sm:block" />
+                    <PriceTargetContent targetType="longTerm" icon={Calendar} />
+                 </div>
             </div>
         </div>
 
