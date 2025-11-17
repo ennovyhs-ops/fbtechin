@@ -114,8 +114,8 @@ export async function suggestOptionStrategiesDeterministic(
     let volatilityState = 0;
     const bbands = calculateBollingerBands(closePrices, 20, 2);
     if (bbands.length >= 20) {
-        const recentBbands = bbands.slice(-20);
-        const bandWidths = recentBbands.map(b => (b && b.upper && b.lower && b.middle > 0) ? (b.upper - b.lower) / b.middle : NaN).filter(bw => !isNaN(bw));
+        const recentBbands = bbands.slice(-20).filter(b => b && b.upper && b.lower && b.middle > 0);
+        const bandWidths = recentBbands.map(b => (b.upper - b.lower) / b.middle);
         if (bandWidths.length > 0) {
             volatilityState = bandWidths[bandWidths.length - 1] || 0;
             const minBandwidth = Math.min(...bandWidths);
