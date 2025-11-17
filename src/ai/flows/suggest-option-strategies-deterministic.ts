@@ -114,7 +114,7 @@ export async function suggestOptionStrategiesDeterministic(
     if (bbands.length >= 20) {
         const recentBbands = bbands.slice(-20).filter(b => b && b.upper && b.lower && b.middle > 0);
         if (recentBbands.length > 0) {
-            const bandWidths = recentBbands.map(b => (b.upper - b.lower) / b.middle);
+            const bandWidths = recentBbands.map(b => (b.upper - b.lower) / b.middle).filter(bw => !isNaN(bw));
             if (bandWidths.length > 0) {
                 volatilityState = bandWidths[bandWidths.length - 1] || 0;
                 const minBandwidth = Math.min(...bandWidths);
