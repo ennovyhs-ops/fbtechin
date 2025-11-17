@@ -51,7 +51,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
 
   if (isCryptoPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
-    url = `${ALPHA_VANTage_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Digital Currency Daily)';
     openKey = `1a. open (${to_symbol})`;
     highKey = `2a. high (${to_symbol})`;
@@ -74,9 +74,10 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     currency = to_symbol;
     region = 'Forex';
   } else {
-    const metadata = await fetchTickerMetadata(ticker, avApiKey);
-    currency = metadata.currency;
-    region = metadata.region;
+    // For stocks, we no longer fetch metadata to save an API call.
+    // We assume USD and don't display a region.
+    currency = 'USD';
+    region = 'Alpha Vantage'; // Generic region
     url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     openKey = '1. open';
@@ -103,7 +104,12 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     
     const timeSeries = data[timeSeriesKey];
     if (!timeSeries) {
-      throw new Error(`No data found for symbol "${ticker}" from Alpha Vantage.`);
+      // Try to get metadata for a more specific error message if the symbol is not found.
+       const metadata = data['Meta Data'];
+       if (metadata) {
+         throw new Error(`No data found for symbol "${ticker}". Please ensure it's a valid symbol.`);
+       }
+       throw new Error(`No data found for symbol "${ticker}" from Alpha Vantage.`);
     }
 
 
@@ -116,10 +122,10 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
       volume: values[volumeKey] || 'N/A',
     }));
 
-    return { data: marketData.slice(0, 730), currency, region: `Alpha Vantage (${region})` };
+    return { data: marketData.slice(0, 730), currency, region };
   } catch (err: any) {
     console.error(`Primary fetch failed for ${ticker}:`, err.message);
-    return { error: 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
+    return { error: err.message || 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
   }
 }
 
