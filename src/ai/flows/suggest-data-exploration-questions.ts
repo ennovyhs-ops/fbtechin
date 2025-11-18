@@ -40,7 +40,7 @@ const suggestDataExplorationQuestionsPrompt = ai.definePrompt({
   name: 'suggestDataExplorationQuestionsPrompt',
   input: {schema: SuggestDataExplorationQuestionsInputSchema},
   output: {schema: SuggestDataExplorationQuestionsOutputSchema},
-  prompt: `You are an expert financial analyst. Given the stock ticker symbol "{{ticker}}", suggest five reasonable, related, specific follow-up questions a user might ask about this security.
+  prompt: `You are an expert financial analyst. Your task is to generate five insightful, specific, and non-generic follow-up questions for a user researching the stock ticker "{{ticker}}".
 
 {{#if recentNews}}
 **Use the following recent news headlines to make your questions more timely and relevant:**
@@ -49,7 +49,19 @@ const suggestDataExplorationQuestionsPrompt = ai.definePrompt({
 {{/each}}
 {{/if}}
 
-Consider typical investor interests like valuation, competitive landscape, future growth, and recent performance. Focus on variety; don't just repeat the same type of query. Return the questions as a JSON array of strings.`,
+**Instructions for Question Quality:**
+1.  **Be Specific & Deep:** The questions should prompt deeper investigation.
+    -   **Good Example:** "How does {{ticker}}'s revenue growth over the last two years compare to its main competitors?"
+    -   **Bad Example (Too Generic):** "What is {{ticker}}'s revenue?"
+2.  **Avoid Basic, Obvious Questions:** Do NOT ask simple questions that can be answered with a single number.
+    -   **Bad Example:** "What is the stock price of {{ticker}}?"
+    -   **Bad Example:** "What is the market cap for {{ticker}}?"
+3.  **Avoid Giving Financial Advice:** Frame questions for exploration, not as a recommendation.
+    -   **Bad Example:** "Should I buy {{ticker}} stock?"
+    -   **Good Example:** "What are the main risks and opportunities facing {{ticker}} in the next year?"
+4.  **Focus on Variety:** Cover different topics like valuation, competitive landscape, growth drivers, profitability, and risks.
+
+Generate five questions based on these rules. Return the questions as a JSON array of strings.`,
 });
 
 const suggestDataExplorationQuestionsFlow = ai.defineFlow(
