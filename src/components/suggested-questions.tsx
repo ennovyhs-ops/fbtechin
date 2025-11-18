@@ -6,6 +6,7 @@ import { BrainCircuit, Loader2 } from 'lucide-react';
 import { suggestDataExplorationQuestions } from '@/ai/flows/suggest-data-exploration-questions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { fetchNewsSentiment } from '@/app/actions';
 
 interface SuggestedQuestionsProps {
   ticker: string;
@@ -24,8 +25,13 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
 
       const getSuggestions = async () => {
         try {
+            // First, try to fetch recent news
+            const newsResult = await fetchNewsSentiment(ticker);
+            const recentNewsHeadlines = newsResult.articles?.map(article => article.title) ?? [];
+
             const suggestions = await suggestDataExplorationQuestions({
-                ticker
+                ticker,
+                recentNews: recentNewsHeadlines,
             });
             setQuestions(suggestions.questions);
           
@@ -51,14 +57,14 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
           <span>Suggested Exploration</span>
         </CardTitle>
         <CardDescription>
-          AI-powered suggestions for your next query about {ticker}.
+          AI-powered suggestions for your next query about {ticker}, enhanced by recent news.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Generating ideas...</span>
+            <span>Generating ideas based on recent news...</span>
           </div>
         )}
         {error && <p className="text-sm text-destructive">{error}</p>}
