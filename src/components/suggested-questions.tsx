@@ -7,6 +7,9 @@ import { suggestDataExplorationQuestions } from '@/ai/flows/suggest-data-explora
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { fetchNewsSentiment } from '@/app/actions';
+import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
+
 
 interface SuggestedQuestionsProps {
   ticker: string;
@@ -49,6 +52,10 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
 
   const showContent = !loading && !error && questions.length > 0;
 
+  const createGoogleSearchUrl = (query: string) => {
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -57,7 +64,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
           <span>Suggested Exploration</span>
         </CardTitle>
         <CardDescription>
-          AI-powered suggestions for your next query about {ticker}, enhanced by recent news.
+          Click a question to instantly search for answers on Google.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -75,9 +82,18 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
                         <h3 className="text-md font-semibold mb-2 pt-2">Follow-up Questions</h3>
                         <div className="flex flex-wrap gap-2">
                             {questions.map((q, i) => (
-                            <Button key={i} variant="outline" className="text-left h-auto whitespace-normal">
+                              <a
+                                key={i}
+                                href={createGoogleSearchUrl(q)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                  buttonVariants({ variant: 'outline' }),
+                                  'text-left h-auto whitespace-normal'
+                                )}
+                              >
                                 {q}
-                            </Button>
+                              </a>
                             ))}
                         </div>
                     </div>
