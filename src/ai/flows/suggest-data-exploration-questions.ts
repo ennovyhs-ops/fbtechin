@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/index';
 import {z} from 'genkit';
+import {generate} from 'genkit';
 
 const SuggestDataExplorationQuestionsInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
@@ -58,7 +59,20 @@ const suggestDataExplorationQuestionsFlow = ai.defineFlow(
     outputSchema: SuggestDataExplorationQuestionsOutputSchema,
   },
   async input => {
-    const {output} = await suggestDataExplorationQuestionsPrompt(input);
-    return output!;
+    try {
+      // First attempt with the default model
+      const { output } = await suggestDataExplorationQuestionsPrompt(input);
+      return output!;
+    } catch (e: any) {
+      // If the default model fails (e.g., 503 error), try with a fallback model.
+      console.warn("Default model failed for suggestDataExplorationQuestions. Retrying with gemini-1.5-flash.", e);
+      const { output } = await generate({
+        model: 'googleai/gemini-1.5-flash',
+        prompt: suggestDataExplorationQuestionsPrompt.template,
+        input,
+        output: { schema: SuggestDataExplorationQuestionsOutputSchema },
+      });
+      return output!;
+    }
   }
 );
