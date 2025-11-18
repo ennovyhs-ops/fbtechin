@@ -16,12 +16,7 @@ import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 const SuggestOptionStrategiesInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
   latestClose: z.string().describe("The latest closing price of the stock, to be used as a reference for strike prices."),
-  analysis: z.object({
-    totalScore: z.number(),
-    signal: z.string(),
-    interpretation: z.string(),
-    tradeAction: z.string()
-  }).describe("The full AI-generated momentum analysis object for the stock.")
+  signal: z.string().describe("The AI-generated momentum signal for the stock (e.g. 'STRONG BULLISH').")
 });
 export type SuggestOptionStrategiesInput = z.infer<typeof SuggestOptionStrategiesInputSchema>;
 
@@ -40,11 +35,7 @@ export type SuggestOptionStrategiesOutput = z.infer<typeof SuggestOptionStrategi
 export async function suggestOptionStrategies(
   input: SuggestOptionStrategiesInput
 ): Promise<SuggestOptionStrategiesOutput> {
-    const { output } = await suggestOptionStrategiesPrompt({
-        ticker: input.ticker,
-        latestClose: input.latestClose,
-        signal: input.analysis.signal,
-    });
+    const { output } = await suggestOptionStrategiesPrompt(input);
     
     if (!output) {
       throw new Error("AI failed to generate option strategies.");
@@ -55,11 +46,7 @@ export async function suggestOptionStrategies(
 
 const suggestOptionStrategiesPrompt = ai.definePrompt({
   name: 'suggestOptionStrategiesPrompt',
-  input: { schema: z.object({
-    ticker: z.string(),
-    latestClose: z.string(),
-    signal: z.string(),
-  }) },
+  input: { schema: SuggestOptionStrategiesInputSchema },
   output: { schema: SuggestOptionStrategiesOutputSchema },
   prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price. The momentum signal is based on daily data with indicators over the last 14-26 days, so the strategies should be for a short-to-medium term outlook.
 
