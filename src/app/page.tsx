@@ -295,7 +295,7 @@ export default function Home() {
                               <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                                <FormControl>
                                   <Input
-                                    placeholder="e.g., GOOG, 9988.HK, EURUSD"
+                                    placeholder="e.g., AAPL, EURUSD, 0700.HK"
                                     autoComplete="off"
                                     {...field}
                                     onInput={(e) => {
@@ -319,7 +319,7 @@ export default function Home() {
                         />
                         <div className="w-full">
                             <p className="text-xs text-muted-foreground mb-1 text-center">
-                              Required: date, close. Optional: open, high, low, volume.
+                              CSV: date, close required
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -358,13 +358,13 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">API Usage</h3>
                         <p className="text-muted-foreground">
-                          A free Alpha Vantage API key (25 requests/day) is used. Clicking "Get Data" uses **1** API request. Clicking "Load News & Analysis" uses **1** additional request. Uploading a CSV file for market data does not use any API requests.
+                          A free Alpha Vantage API key is used. Clicking "Get Data" for a stock, forex, or crypto pair uses **1 API request**. Uploading a CSV uses **0 requests**.
                         </p>
                       </div>
                        <div>
                         <h3 className="font-semibold text-foreground mb-2">On-Demand News Analysis</h3>
                         <p className="text-muted-foreground">
-                          To conserve your API quota, news is not fetched automatically. You can choose to load news and generate an AI impact analysis for a specific stock by clicking the **"Load News & Analysis"** button, which costs one additional API request.
+                          To conserve your API quota, news is not fetched automatically. You can load news and generate an AI impact analysis by clicking the **"Load News & Analysis"** button, which costs **1 additional API request**.
                         </p>
                       </div>
                       <div>

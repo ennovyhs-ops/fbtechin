@@ -9,7 +9,7 @@ export function Header() {
         </div>
       </div>
       <p className="text-base sm:text-lg text-muted-foreground max-w-2xl">
-        global stock market data
+        An AI-powered tool for analyzing global market data.
       </p>
     </header>
   );

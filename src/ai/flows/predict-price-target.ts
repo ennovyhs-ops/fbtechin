@@ -7,9 +7,9 @@
  * - PredictPriceTargetOutput - The output type for the predictPriceTarget function.
  */
 
-import { z } from 'zod';
 import type { MarketData } from '@/lib/types';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
+import { z } from 'zod';
 
 
 const PriceTargetObjectSchema = z.object({

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Lightbulb, Loader2, AlertCircle, ChevronDown, Brain, Bot } from 'lucide-react';
 import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
 import { suggestOptionStrategiesDeterministic } from '@/ai/flows/suggest-option-strategies-deterministic';
-import type { SuggestOptionStrategiesOutput } from '@/ai/flows/suggest-option-strategies';
+import type { SuggestOptionStrategiesOutput, SuggestOptionStrategiesInput } from '@/ai/flows/suggest-option-strategies';
 import type { SuggestOptionStrategiesDeterministicOutput } from '@/ai/flows/suggest-option-strategies-deterministic';
 
 import type { MarketData } from '@/lib/types';
@@ -40,7 +40,12 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
     if (ticker && analysis?.signal && latestClose) {
       setAiLoading(true);
       setAiError(null);
-      suggestOptionStrategies({ ticker, analysis, latestClose })
+      const input: SuggestOptionStrategiesInput = {
+        ticker,
+        signal: analysis.signal,
+        latestClose
+      };
+      suggestOptionStrategies(input)
         .then(response => {
           setAiSuggestions(response);
         })
