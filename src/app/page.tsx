@@ -319,7 +319,7 @@ export default function Home() {
                         />
                         <div className="w-full">
                             <p className="text-xs text-muted-foreground mb-1 text-center">
-                              CSV: date, close required
+                              CSV: date, close, volume required
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -358,7 +358,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">API Usage</h3>
                         <p className="text-muted-foreground">
-                          A free Alpha Vantage API key is used. Clicking "Get Data" for a stock, forex, or crypto pair uses **1 API request**. Uploading a CSV uses **0 requests**.
+                          A free Alpha Vantage API key is used. Clicking "Get Data" for any stock, forex, or crypto pair now uses only **1 API request**. Uploading a CSV uses **0 requests**.
                         </p>
                       </div>
                        <div>
