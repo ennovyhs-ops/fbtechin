@@ -5,7 +5,7 @@ import { useState, useTransition, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, Printer } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -255,10 +255,6 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
     if (submittedTicker && marketData) {
@@ -278,9 +274,9 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <Header className="no-print" />
+      <Header />
       <div className="max-w-4xl mx-auto">
-        <Card className="w-full no-print">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
             <CardDescription>Enter a symbol to fetch live data, or upload a CSV file with historical data.</CardDescription>
@@ -337,12 +333,6 @@ export default function Home() {
                   {isPending && !uploadedFileName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isPending && !uploadedFileName ? 'Retrieving Data...' : 'Get Data'}
                 </Button>
-                 {marketData && (
-                  <Button type="button" variant="outline" onClick={handlePrint}>
-                    Export to PDF / Print
-                    <Printer className="ml-2" />
-                  </Button>
-                )}
                 <Dialog>
                   <DialogTrigger asChild>
                      <Button type="button" variant="outline">
@@ -434,13 +424,13 @@ export default function Home() {
 
         <div className="mt-8 space-y-8">
           {isPending && !marketData && (
-            <div className="flex justify-center items-center p-8 no-print">
+            <div className="flex justify-center items-center p-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           )}
 
           {error && (
-            <Alert variant={isApiLimitError || isApiInfoNote ? 'default' : 'destructive'} className="no-print">
+            <Alert variant={isApiLimitError || isApiInfoNote ? 'default' : 'destructive'}>
               <AlertCircle className="h-4 w-4" />
               {isApiLimitError ? 
                 <AlertTitle>{apiLimitMessage}</AlertTitle> : 
@@ -453,7 +443,7 @@ export default function Home() {
           )}
 
           {latestData && submittedTicker && (
-             <Card className="animate-in fade-in-50 duration-500 card-print">
+             <Card className="animate-in fade-in-50 duration-500">
              <CardHeader>
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
@@ -509,7 +499,7 @@ export default function Home() {
                   </div>
                 </div>
              </CardContent>
-             <CardFooter className="no-print">
+             <CardFooter>
                 <Collapsible open={isHistoryExpanded} onOpenChange={setIsHistoryExpanded} className="w-full">
                     <div className="flex flex-col sm:flex-row items-start gap-2">
                         <CollapsibleTrigger asChild>
@@ -572,14 +562,14 @@ export default function Home() {
            )}
           
           {submittedTicker && (
-            <div className="animate-in fade-in-50 duration-500 delay-200 card-print">
+            <div className="animate-in fade-in-50 duration-500 delay-200">
                 <SuggestedQuestions ticker={submittedTicker} />
             </div>
           )}
 
 
           {showInitialSkeleton && (
-            <div className="space-y-8 animate-pulse no-print">
+            <div className="space-y-8 animate-pulse">
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">
