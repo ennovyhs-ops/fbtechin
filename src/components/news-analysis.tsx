@@ -80,7 +80,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   if (news) {
     if (news.length === 0 && !loading) {
        return (
-         <Card>
+         <Card className="card-print">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Newspaper className="h-6 w-6 text-accent" />
@@ -98,7 +98,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
     const topArticles = news.slice(0, 3);
 
     return (
-        <Card className="animate-in fade-in-50 duration-500 delay-400">
+        <Card className="animate-in fade-in-50 duration-500 delay-400 card-print">
         <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline text-2xl">
             <Newspaper className="h-6 w-6 text-accent" />
@@ -110,12 +110,12 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
         </CardHeader>
         <CardContent className="space-y-4">
             {loading ? (
-                 <div className="flex items-center gap-2 text-muted-foreground">
+                 <div className="flex items-center gap-2 text-muted-foreground no-print">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Analyzing news...</span>
                 </div>
             ) : error ? (
-                <div className="flex items-center gap-2 text-destructive">
+                <div className="flex items-center gap-2 text-destructive no-print">
                     <AlertCircle className="h-4 w-4" />
                     <span>{error}</span>
                 </div>
@@ -141,7 +141,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
                          <h3 className="font-semibold text-sm">Top 3 Most Relevant Articles:</h3>
                          <div className="space-y-3">
                             {topArticles.map((article, index) => (
-                                <a href={article.url} target="_blank" rel="noopener noreferrer" key={index} className="block p-3 rounded-md border bg-background/50 hover:border-primary/50 transition-colors">
+                                <a href={article.url} target="_blank" rel="noopener noreferrer" key={index} className="block p-3 rounded-md border bg-background/50 hover:border-primary/50 transition-colors no-print">
                                     <p className="font-semibold text-sm text-foreground truncate">{article.title}</p>
                                     <p className="text-xs text-muted-foreground mt-1 truncate">{article.summary}</p>
                                     <div className='flex items-center justify-between mt-2'>
@@ -162,7 +162,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
 
   // Initial state with button
   return (
-     <Card>
+     <Card className="no-print">
         <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                 <Newspaper className="h-6 w-6 text-accent" />

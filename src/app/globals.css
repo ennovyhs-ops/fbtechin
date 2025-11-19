@@ -48,3 +48,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body {
+    background-color: white;
+  }
+
+  /* Hide UI elements that shouldn't be printed */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset card styles for cleaner print output */
+  .card-print {
+    border: 1px solid #e5e7eb;
+    box-shadow: none;
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
+  
+  @page {
+    size: auto;
+    margin: 0.75in;
+  }
+}

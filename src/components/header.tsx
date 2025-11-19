@@ -1,8 +1,9 @@
 import { LineChart } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function Header() {
+export function Header({ className }: { className?: string }) {
   return (
-    <header className="flex flex-col items-center justify-center gap-2 text-center mb-8">
+    <header className={cn("flex flex-col items-center justify-center gap-2 text-center mb-8", className)}>
       <div className="flex items-center gap-3">
         <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
           <LineChart className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />

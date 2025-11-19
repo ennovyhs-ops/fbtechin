@@ -90,7 +90,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
 
   if (loading) {
     return (
-        <Card>
+        <Card className="no-print">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
@@ -114,7 +114,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
 
   if (analysis.error) {
     return (
-        <Card>
+        <Card className="no-print">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-destructive" />
@@ -136,7 +136,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   
   if (analysis.signal === 'N/A') {
       return (
-           <Card>
+           <Card className="card-print">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-muted-foreground" />
@@ -187,7 +187,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   }
 
   return (
-    <Card className="animate-in fade-in-50 duration-500 delay-300">
+    <Card className="animate-in fade-in-50 duration-500 delay-300 card-print">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Zap className="h-6 w-6 text-accent" />
@@ -240,7 +240,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                 {actionExplanation && (
                     <Dialog>
                         <DialogTrigger asChild>
-                            <button className="text-muted-foreground hover:text-foreground">
+                            <button className="text-muted-foreground hover:text-foreground no-print">
                                 <Info className="h-4 w-4" />
                             </button>
                         </DialogTrigger>

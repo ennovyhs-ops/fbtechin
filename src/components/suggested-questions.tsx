@@ -68,18 +68,18 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
           <BrainCircuit className="h-6 w-6 text-accent" />
           <span>Suggested Exploration</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="no-print">
           Click a question to instantly search for answers on Google.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading && (
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground no-print">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span>Generating ideas...</span>
           </div>
         )}
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-sm text-destructive no-print">{error}</p>}
         {showContent && (
             <div className="space-y-4">
                 {questions.length > 0 && (
@@ -94,7 +94,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
                                 rel="noopener noreferrer"
                                 className={cn(
                                   buttonVariants({ variant: 'outline' }),
-                                  'text-left h-auto whitespace-normal'
+                                  'text-left h-auto whitespace-normal no-print'
                                 )}
                               >
                                 {q}
