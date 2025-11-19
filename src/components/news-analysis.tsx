@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from './ui/button';
 import { fetchNewsSentiment } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Separator } from './ui/separator';
 
 interface NewsAnalysisProps {
   ticker: string;
@@ -65,13 +66,21 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
     }
     
     const fetchedNews = newsResult.articles || [];
-    setNewsData(fetchedNews);
 
-    if (fetchedNews.length > 0) {
+    // Sort by relevance score for the given ticker
+    const sortedNews = [...fetchedNews].sort((a, b) => {
+        const relevanceA = a.ticker_sentiment.find(t => t.ticker === ticker)?.relevance_score || '0';
+        const relevanceB = b.ticker_sentiment.find(t => t.ticker === ticker)?.relevance_score || '0';
+        return parseFloat(relevanceB) - parseFloat(relevanceA);
+    });
+
+    setNewsData(sortedNews);
+
+    if (sortedNews.length > 0) {
         try {
             const analysisResult = await analyzeNewsImpact({
                 ticker,
-                news: fetchedNews.map(({ title, summary }) => ({ title, summary })),
+                news: sortedNews.map(({ title, summary }) => ({ title, summary })),
             });
             setAnalysis(analysisResult);
         } catch {
@@ -138,6 +147,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
     }
 
     const { icon, color } = getImpactInfo(analysis?.impact || 'Neutral');
+    const topArticles = news.slice(0, 3);
 
     return (
         <Card className="animate-in fade-in-50 duration-500 delay-400">
@@ -175,6 +185,28 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
                     </div>
                 </>
             ) : null}
+
+            {topArticles.length > 0 && (
+                <>
+                    <Separator className="my-4"/>
+                    <div className="space-y-3">
+                         <h3 className="font-semibold text-sm">Top 3 Most Relevant Articles:</h3>
+                         <div className="space-y-3">
+                            {topArticles.map((article, index) => (
+                                <a href={article.url} target="_blank" rel="noopener noreferrer" key={index} className="block p-3 rounded-md border bg-background/50 hover:border-primary/50 transition-colors">
+                                    <p className="font-semibold text-sm text-foreground truncate">{article.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-1 truncate">{article.summary}</p>
+                                    <div className='flex items-center justify-between mt-2'>
+                                         <p className="text-xs text-muted-foreground">{article.source}</p>
+                                         <p className="text-xs text-muted-foreground">{new Date(article.time_published).toLocaleDateString()}</p>
+                                    </div>
+                                </a>
+                            ))}
+                         </div>
+                    </div>
+                </>
+            )}
+
         </CardContent>
         </Card>
     );
