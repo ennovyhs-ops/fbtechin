@@ -318,7 +318,7 @@ export default function Home() {
                         />
                         <div className="w-full">
                             <p className="text-xs text-muted-foreground mb-1 text-center">
-                              CSV: date, close, volume required
+                              For better suggestions, name your file like 'TICKER.csv' (e.g. 'AAPL.csv')
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -685,3 +685,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
