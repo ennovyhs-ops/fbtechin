@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { BrainCircuit, Loader2 } from 'lucide-react';
 import { suggestDataExplorationQuestions } from '@/ai/flows/suggest-data-exploration-questions';
+import { generateSyntheticNews } from '@/ai/flows/generate-synthetic-news';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { fetchNewsSentiment } from '@/app/actions';
@@ -27,20 +28,42 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
       setQuestions([]);
 
       const getSuggestions = async () => {
+        let headlines: string[] = [];
         try {
-            // First, try to fetch recent news
+            // First, try to fetch real news
             const newsResult = await fetchNewsSentiment(ticker);
-            const recentNewsHeadlines = newsResult.articles?.map(article => article.title) ?? [];
+            if (newsResult.articles && newsResult.articles.length > 0) {
+                 headlines = newsResult.articles.map(article => article.title);
+            } else {
+                // If no real news, generate synthetic news as a fallback
+                console.log("No real news found, generating synthetic headlines.");
+                const syntheticResult = await generateSyntheticNews({ ticker });
+                headlines = syntheticResult.headlines;
+            }
 
-            const suggestions = await suggestDataExplorationQuestions({
+        } catch (e) {
+            console.error("Error fetching real news, falling back to synthetic news generation:", e);
+            // If fetching real news fails for any reason (API error, quota, etc.), use synthetic news
+            try {
+                const syntheticResult = await generateSyntheticNews({ ticker });
+                headlines = syntheticResult.headlines;
+            } catch (synthError) {
+                 console.error("Failed to generate synthetic news as well:", synthError);
+                 setError('Could not generate suggestions. Both real and synthetic news sources failed.');
+                 setLoading(false);
+                 return;
+            }
+        }
+        
+        try {
+             const suggestions = await suggestDataExplorationQuestions({
                 ticker,
-                recentNews: recentNewsHeadlines,
+                recentNews: headlines,
             });
             setQuestions(suggestions.questions);
-          
-        } catch (e) {
-            console.error(e);
-            setError('Could not generate suggestions at this time.');
+        } catch(e) {
+             console.error("Failed to generate questions even with headlines:", e);
+             setError('Could not generate suggestions at this time.');
         } finally {
             setLoading(false);
         }

@@ -44,50 +44,45 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
     setNewsData(null);
     setSyntheticNews(null);
 
-    const newsResult = await fetchNewsSentiment(ticker);
-    
-    // Check for API limit error specifically
-    if (newsResult.error && (newsResult.error.includes('limit') || newsResult.error.includes('premium subscription'))) {
+    try {
+        const newsResult = await fetchNewsSentiment(ticker);
+        
+        if (newsResult.error || !newsResult.articles || newsResult.articles.length === 0) {
+            // If real news fails or is empty, go to synthetic fallback
+            throw new Error(newsResult.error || "No articles found.");
+        }
+        
+        const fetchedNews = newsResult.articles || [];
+
+        // Sort by relevance score for the given ticker
+        const sortedNews = [...fetchedNews].sort((a, b) => {
+            const relevanceA = a.ticker_sentiment.find(t => t.ticker === ticker)?.relevance_score || '0';
+            const relevanceB = b.ticker_sentiment.find(t => t.ticker === ticker)?.relevance_score || '0';
+            return parseFloat(relevanceB) - parseFloat(relevanceA);
+        });
+
+        setNewsData(sortedNews);
+
+        if (sortedNews.length > 0) {
+            const analysisResult = await analyzeNewsImpact({
+                ticker,
+                news: sortedNews.map(({ title, summary }) => ({ title, summary })),
+            });
+            setAnalysis(analysisResult);
+        }
+
+    } catch (e: any) {
+        console.error("Real news fetch failed, trying synthetic:", e.message);
+        // Fallback to generating synthetic news
         try {
             const syntheticResult = await generateSyntheticNews({ ticker });
             setSyntheticNews(syntheticResult);
         } catch {
             setError('The news service is unavailable, and the AI fallback failed.');
         }
+    } finally {
         setLoading(false);
-        return;
     }
-
-    if (newsResult.error) {
-        setError(newsResult.error);
-        setNewsData(null);
-        setLoading(false);
-        return;
-    }
-    
-    const fetchedNews = newsResult.articles || [];
-
-    // Sort by relevance score for the given ticker
-    const sortedNews = [...fetchedNews].sort((a, b) => {
-        const relevanceA = a.ticker_sentiment.find(t => t.ticker === ticker)?.relevance_score || '0';
-        const relevanceB = b.ticker_sentiment.find(t => t.ticker === ticker)?.relevance_score || '0';
-        return parseFloat(relevanceB) - parseFloat(relevanceA);
-    });
-
-    setNewsData(sortedNews);
-
-    if (sortedNews.length > 0) {
-        try {
-            const analysisResult = await analyzeNewsImpact({
-                ticker,
-                news: sortedNews.map(({ title, summary }) => ({ title, summary })),
-            });
-            setAnalysis(analysisResult);
-        } catch {
-            setError('Could not generate the news analysis at this time.');
-        }
-    }
-    setLoading(false);
   };
 
 
