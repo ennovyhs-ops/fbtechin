@@ -12,7 +12,6 @@
 import { ai } from '@/ai/index';
 import { z } from 'zod';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
-import { generate } from 'genkit';
 
 const SuggestOptionStrategiesInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
@@ -36,21 +35,9 @@ export type SuggestOptionStrategiesOutput = z.infer<typeof SuggestOptionStrategi
 export async function suggestOptionStrategies(
   input: SuggestOptionStrategiesInput
 ): Promise<SuggestOptionStrategiesOutput> {
-    try {
-      const { output } = await suggestOptionStrategiesPrompt(input);
-      if (!output) throw new Error("AI failed to generate a valid response.");
-      return output;
-    } catch(e: any) {
-       console.warn("Default model failed for suggestOptionStrategies. Retrying with gemini-1.5-flash.", e);
-       const { output } = await generate({
-        model: 'googleai/gemini-1.5-flash',
-        prompt: suggestOptionStrategiesPrompt.template,
-        input,
-        output: { schema: SuggestOptionStrategiesOutputSchema },
-      });
-      if (!output) throw new Error("AI failed to generate option strategies on retry.");
-      return output;
-    }
+  const { output } = await suggestOptionStrategiesPrompt(input);
+  if (!output) throw new Error("AI failed to generate a valid response.");
+  return output;
 }
 
 const suggestOptionStrategiesPrompt = ai.definePrompt({
