@@ -185,7 +185,7 @@ export default function Home() {
 
                 const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
                 if (missingHeaders.length > 0) {
-                     throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}.`);
+                     throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low, volume.`);
                 }
                 
                 [...requiredHeaders, ...optionalHeaders].forEach(header => {
@@ -317,8 +317,8 @@ export default function Home() {
                             className="hidden"
                         />
                         <div className="w-full">
-                            <p className="text-xs text-muted-foreground mb-1 text-center">
-                              For better suggestions, name your file like 'TICKER.csv' (e.g. 'AAPL.csv')
+                             <p className="text-xs text-muted-foreground mb-1 text-center">
+                                CSV: 'date' & 'close' required. 'open', 'high', 'low', 'volume' optional.
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -351,7 +351,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Data Input & Indicator Calculation</h3>
                         <p className="text-muted-foreground">
-                            You can fetch live market data from Alpha Vantage by entering a ticker, or upload your own close-price data via a CSV file. For uploads, the filename (e.g., "SPY.csv") is used as the ticker. In both cases, technical indicators (RSI, MACD, etc.) are calculated in your browser.
+                            You can fetch live market data from Alpha Vantage by entering a ticker, or upload your own data via a CSV file. For better AI suggestions, name your file with the ticker (e.g., "SPY.csv"). The file must have 'date' and 'close' columns; 'open', 'high', 'low', and 'volume' are optional.
                         </p>
                       </div>
                       <div>
@@ -685,5 +685,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
