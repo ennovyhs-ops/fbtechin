@@ -45,6 +45,11 @@ export type MAVolData = {
   MAVol: string | null;
 }
 
+export type VwmaData = {
+    date: string;
+    VWMA: string | null;
+}
+
 export type MomentumAnalysisInput = {
   ticker: string;
   isRocPositive: boolean;
@@ -110,4 +115,5 @@ export type IndicatorPeriods = {
     stdDev: number;
   };
   maVol: number;
+  vwma: number;
 };

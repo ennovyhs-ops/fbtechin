@@ -7,9 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol } from '@/lib/technical-analysis';
+import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +42,7 @@ const defaultPeriods: IndicatorPeriods = {
   macd: { fast: 12, slow: 26, signal: 9 },
   bbands: { period: 20, stdDev: 2 },
   maVol: 50,
+  vwma: 20,
 };
 
 export default function Home() {
@@ -53,7 +54,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -109,6 +110,7 @@ export default function Home() {
         const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev);
         const roc = calculateROC(closePrices, periods.roc);
         const maVol = calculateMAVol(volumes, periods.maVol);
+        const vwma = calculateVWMA(closePrices, volumes, periods.vwma);
 
         const formatNumber = (num: number | null | undefined, precision: number = 2): string | null => {
             if (num === null || num === undefined || isNaN(num)) return null;
@@ -137,7 +139,8 @@ export default function Home() {
                 date: dates[i],
                 volume: volumes.reverse()[i].toString(),
                 MAVol: formatNumber(val, 0) 
-            }))
+            })),
+            vwma: vwma.reverse().map((val, i) => ({ date: dates[i], VWMA: formatNumber(val) })),
         });
     } catch (e: any) {
         setIndicatorsError(e.message || 'Failed to calculate indicators.');
@@ -184,7 +187,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(marketResult.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
         }
       }
     });

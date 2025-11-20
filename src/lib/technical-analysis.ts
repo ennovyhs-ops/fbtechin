@@ -221,3 +221,34 @@ export const calculateVolatility = (data: number[], period: number): number | nu
 export const calculateMAVol = (volumeData: number[], period: number): number[] => {
     return sma(volumeData, period);
 };
+
+/**
+ * Calculates the Volume-Weighted Moving Average (VWMA).
+ * @param prices - Array of chronological price data.
+ * @param volumes - Array of chronological volume data.
+ * @param period - The number of periods to average over.
+ * @returns An array of the VWMA.
+ */
+export const calculateVWMA = (prices: number[], volumes: number[], period: number): number[] => {
+    const result: number[] = new Array(period - 1).fill(NaN);
+    if (prices.length < period) return new Array(prices.length).fill(NaN);
+
+    let priceVolumeSum = 0;
+    let volumeSum = 0;
+    for (let i = 0; i < period; i++) {
+        priceVolumeSum += prices[i] * volumes[i];
+        volumeSum += volumes[i];
+    }
+    result.push(volumeSum === 0 ? prices[period -1] : priceVolumeSum / volumeSum);
+
+    for (let i = period; i < prices.length; i++) {
+        priceVolumeSum -= prices[i - period] * volumes[i - period];
+        volumeSum -= volumes[i - period];
+        
+        priceVolumeSum += prices[i] * volumes[i];
+        volumeSum += volumes[i];
+        
+        result.push(volumeSum === 0 ? prices[i] : priceVolumeSum / volumeSum);
+    }
+    return result;
+};
