@@ -94,10 +94,10 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
-                    <span>AI Analysis for {ticker}</span>
+                    <span>Calculated Analysis for {ticker}</span>
                 </CardTitle>
                 <CardDescription>
-                    The AI is running a detailed scoring model and price projection...
+                    Running a detailed scoring model and price projection...
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -118,7 +118,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-destructive" />
-                    <span>AI Momentum Analysis</span>
+                    <span>Momentum Analysis</span>
                 </CardTitle>
                 <CardDescription>
                     Could not complete the analysis for {ticker}.
@@ -140,7 +140,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-muted-foreground" />
-                    <span>AI Momentum Analysis</span>
+                    <span>Momentum Analysis</span>
                 </CardTitle>
                 <CardDescription>
                     {analysis.interpretation}
@@ -191,7 +191,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Zap className="h-6 w-6 text-accent" />
-          <span>AI Analysis for {ticker}</span>
+          <span>Calculated Analysis for {ticker}</span>
         </CardTitle>
         <CardDescription>
           A proprietary momentum score and derived short- and long-term price targets.
@@ -260,5 +260,3 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     </Card>
   );
 }
-
-    

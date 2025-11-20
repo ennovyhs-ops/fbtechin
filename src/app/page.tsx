@@ -606,7 +606,7 @@ export default function Home() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                             <Zap className="h-6 w-6 text-muted-foreground" />
-                            <span>AI Analysis</span>
+                            <span>Calculated Analysis</span>
                         </CardTitle>
                         <CardDescription>A proprietary momentum score and a derived short-term price target.</CardDescription>
                     </CardHeader>
