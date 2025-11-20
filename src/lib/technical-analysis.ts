@@ -211,3 +211,13 @@ export const calculateVolatility = (data: number[], period: number): number | nu
     // Return as a percentage
     return annualizedVolatility * 100;
 }
+
+/**
+ * Calculates the Moving Average of Volume.
+ * @param volumeData - Array of chronological volume data.
+ * @param period - The number of periods to average over.
+ * @returns An array of the moving average of volume.
+ */
+export const calculateMAVol = (volumeData: number[], period: number): number[] => {
+    return sma(volumeData, period);
+};

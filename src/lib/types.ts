@@ -39,6 +39,12 @@ export type BbandsData = {
     'Real Middle Band': string | null;
 }
 
+export type MAVolData = {
+  date: string;
+  volume: string;
+  MAVol: string | null;
+}
+
 export type MomentumAnalysisInput = {
   ticker: string;
   isRocPositive: boolean;
@@ -103,4 +109,5 @@ export type IndicatorPeriods = {
     period: number;
     stdDev: number;
   };
+  maVol: number;
 };

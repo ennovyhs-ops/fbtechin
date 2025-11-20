@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart, RefreshCw } from 'lucide-react';
-import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
+import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart, RefreshCw, BarChart3, Zap } from 'lucide-react';
+import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
@@ -20,6 +20,7 @@ interface TechnicalIndicatorsProps {
         macd: MacdData[];
         bbands: BbandsData[];
         roc: RocData[];
+        maVol: MAVolData[];
     } | null;
     loading: boolean;
     error: string | null;
@@ -96,6 +97,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const latestMacd = data?.macd?.[0];
     const latestBbands = data?.bbands?.[0];
     const latestRoc = data?.roc?.[0];
+    const latestMaVol = data?.maVol?.[0];
 
     const getRsiStatus = (rsiValue: string | null) => {
         if (rsiValue === null) return 'N/A';
@@ -104,8 +106,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         if (rsi < 30) return 'Oversold';
         return 'Neutral';
     };
-    
+
     const rsiStatus = getRsiStatus(latestRsi?.RSI ?? null);
+    
+    const isVolumeSpike = latestMaVol?.volume && latestMaVol?.MAVol ? parseFloat(latestMaVol.volume) > parseFloat(latestMaVol.MAVol) * 1.5 : false;
+
 
     return (
         <Card className="animate-in fade-in-50 duration-500 delay-100">
@@ -120,6 +125,41 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             </CardHeader>
             <CardContent className="space-y-6">
                 <TooltipProvider>
+                    {/* Volume */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-4">
+                            <BarChart3 className="text-muted-foreground h-5 w-5 flex-shrink-0" />
+                             <div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <h3 className="font-semibold text-sm text-muted-foreground cursor-help underline decoration-dotted">Volume vs. Avg.</h3>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" align="start" className="max-w-xs">
+                                        <p className="font-bold mb-1">Volume vs. Moving Average</p>
+                                        <p>This compares the most recent trading volume to its moving average over a specified period.</p>
+                                        <p className="mt-2"><span className="font-semibold">Interpretation:</span> A "volume spike" (volume significantly above its average) can indicate strong conviction behind a price move, confirming a trend or signaling a potential reversal. It's a sign of heightened interest.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <div className="flex items-baseline gap-2">
+                                     <p className="font-semibold text-lg">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
+                                     <p className="text-xs text-muted-foreground">/ Avg: {latestMaVol?.MAVol ? Number(latestMaVol.MAVol).toLocaleString() : 'N/A'}</p>
+                                </div>
+                            </div>
+                            {isVolumeSpike && (
+                                <div className="flex items-center gap-1.5 text-orange-400 font-semibold text-xs bg-orange-500/20 px-2 py-1 rounded-md">
+                                    <Zap className="h-3 w-3" />
+                                    Volume Spike
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">Avg. Period</label>
+                            <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-20 h-8 text-sm" />
+                        </div>
+                    </div>
+
+                    <Separator />
+
                     {/* ROC */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-4">
