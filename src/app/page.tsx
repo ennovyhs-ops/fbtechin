@@ -5,7 +5,7 @@ import { useState, useTransition, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -28,6 +28,7 @@ import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-moment
 import { NewsAnalysis } from '@/components/news-analysis';
 import { Input } from '@/components/ui/input';
 import { MarketCorrelation } from '@/components/market-correlation';
+import { HistoricalVolatility } from '@/components/historical-volatility';
 
 
 const FormSchema = z.object({
@@ -509,13 +510,6 @@ export default function Home() {
             />
           )}
 
-          {submittedTicker && marketData && (
-              <MarketCorrelation 
-                baseTicker={submittedTicker}
-                baseMarketData={marketData}
-              />
-          )}
-
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
             <OptionStrategies 
                 ticker={submittedTicker!} 
@@ -525,6 +519,10 @@ export default function Home() {
             />
           )}
           
+          {submittedTicker && marketData && (
+            <HistoricalVolatility marketData={marketData} />
+          )}
+
           {submittedTicker && (
             <TechnicalIndicators 
                 ticker={submittedTicker}
@@ -543,6 +541,13 @@ export default function Home() {
             />
            )}
           
+          {submittedTicker && marketData && (
+              <MarketCorrelation 
+                baseTicker={submittedTicker}
+                baseMarketData={marketData}
+              />
+          )}
+
           {submittedTicker && (
             <div className="animate-in fade-in-50 duration-500 delay-200">
                 <SuggestedQuestions ticker={submittedTicker} />

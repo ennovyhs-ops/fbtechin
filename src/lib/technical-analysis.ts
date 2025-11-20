@@ -1,4 +1,5 @@
 
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
@@ -177,6 +178,39 @@ export const calculateMultiROC = (data: number[], periods: number[]) => {
     });
 
     return results;
+};
+
+
+/**
+ * Calculates the annualized historical volatility.
+ * @param data - Array of chronological close prices.
+ * @param period - The number of periods (days) to calculate volatility for.
+ * @returns The annualized volatility as a percentage, or null if not enough data.
+ */
+export const calculateVolatility = (data: number[], period: number): number | null => {
+    if (data.length < period) return null;
+
+    const relevantData = data.slice(data.length - period);
+    
+    // 1. Calculate daily log returns
+    const logReturns: number[] = [];
+    for (let i = 1; i < relevantData.length; i++) {
+        logReturns.push(Math.log(relevantData[i] / relevantData[i - 1]));
+    }
+
+    if (logReturns.length === 0) return null;
+
+    // 2. Calculate the standard deviation of the log returns
+    const n = logReturns.length;
+    const mean = logReturns.reduce((a, b) => a + b, 0) / n;
+    const variance = logReturns.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (n - 1);
+    const stdDev = Math.sqrt(variance);
+
+    // 3. Annualize the volatility (assuming 252 trading days in a year)
+    const annualizedVolatility = stdDev * Math.sqrt(252);
+    
+    // Return as a percentage
+    return annualizedVolatility * 100;
 }
 
-
+    
