@@ -342,7 +342,7 @@ export default function Home() {
                 <Dialog>
                   <DialogTrigger asChild>
                      <Button type="button" variant="outline">
-                      How It Works
+                      Application Guide
                       <HelpCircle className="ml-2" />
                     </Button>
                   </DialogTrigger>
@@ -350,76 +350,56 @@ export default function Home() {
                     <DialogHeader>
                       <DialogTitle>Application Guide</DialogTitle>
                       <DialogDescription>
-                        This guide explains the app's features and how it uses AI to provide financial insights.
+                        This guide explains the app's features, data sources, and how it uses AI to provide financial insights.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 text-sm overflow-y-auto pr-4">
+                      
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Data Input & Indicator Calculation</h3>
+                        <h3 className="font-semibold text-foreground mb-2">1. Data Input</h3>
                         <p className="text-muted-foreground">
-                            You can fetch live market data from Alpha Vantage by entering a ticker, or upload your own data via a CSV file. For better AI suggestions, name your file with the ticker (e.g., "SPY.csv"). The file must have 'date' and 'close' columns; 'open', 'high', 'low', and 'volume' are optional.
+                            You can fetch live market data by entering a ticker, or upload your own historical data via a CSV file. For best results with CSV uploads, name your file with the ticker (e.g., "SPY.csv"). The CSV file must have 'date' and 'close' columns; 'open', 'high', 'low', and 'volume' are optional but recommended for full analysis.
                         </p>
                       </div>
+
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">API Usage</h3>
+                        <h3 className="font-semibold text-foreground mb-2">2. Data Source & API Usage</h3>
                         <p className="text-muted-foreground">
-                          A free Alpha Vantage API key is used. Clicking "Get Data" for any stock, forex, or crypto pair now uses only **1 API request**. Uploading a CSV uses **0 requests**.
+                          All live financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a limit of 25 requests per day.
+                        </p>
+                         <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
+                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request.</li>
+                          <li><span className="font-semibold text-foreground">Upload CSV:</span> Uses **0** API requests.</li>
+                          <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
+                        </ul>
+                         <p className="text-muted-foreground mt-2">
+                           If you are unsure of a symbol, you can use <a href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener noreferrer" className="text-primary underline">a tool like Yahoo Finance</a> to find it.
                         </p>
                       </div>
-                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">On-Demand News Analysis</h3>
-                        <p className="text-muted-foreground">
-                          To conserve your API quota, news is not fetched automatically. You can load news and generate an AI impact analysis by clicking the **"Load News & Analysis"** button, which costs **1 additional API request**.
-                        </p>
-                      </div>
+
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">AI-Powered Analysis</h3>
+                        <h3 className="font-semibold text-foreground mb-2">3. Calculated & AI-Powered Analysis</h3>
+                        <p className="text-muted-foreground">
+                            The application uses a mix of deterministic calculations and generative AI to provide insights.
+                        </p>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">AI Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated using multiple technical indicators to provide a single, clear momentum signal.</li>
-                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A projected price target based on the momentum score and recent volatility.</li>
-                          <li><span className="font-semibold text-foreground">AI Option Strategies:</span> Based on the momentum score, the AI suggests suitable option strategies with a rationale.</li>
-                          <li><span className="font-semibold text-foreground">AI News Impact:</span> When you load news, the AI analyzes the articles to provide a summary and a predicted impact (Bullish, Bearish, or Neutral).</li>
+                          <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators, including the stock's position within its 52-week range.</li>
+                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility, with an interpretation that considers the 52-week high/low.</li>
+                          <li><span className="font-semibold text-foreground">52-Week Range:</span> The high and low for the last 52 weeks are calculated locally from historical data, using no extra API calls.</li>
+                          <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
+                          <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> Both AI-powered and rule-based engines suggest potential option strategies based on the momentum score.</li>
+                          <li><span className="font-semibold text-foreground">AI News Impact:</span> When news is loaded, an AI analyzes the articles to provide a summary and predict its impact.</li>
+                          <li><span className="font-semibold text-foreground">Suggested Exploration:</span> Get AI-powered suggestions for follow-up research questions.</li>
                         </ul>
                       </div>
+                      
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Customizable Indicators</h3>
+                        <h3 className="font-semibold text-foreground mb-2">4. Customizable Indicators</h3>
                         <p className="text-muted-foreground">
-                          You can freely adjust the periods for ROC, RSI, MACD, and Bollinger Bands. Clicking "Update" re-calculates all indicators in your browser instantly.
+                          You can adjust the periods for ROC, RSI, MACD, and Bollinger Bands in the "Technical Indicators" card. Click "Update" to re-calculate all indicators instantly in your browser at no API cost.
                         </p>
                       </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <Dialog>
-                  <DialogTrigger asChild>
-                     <Button type="button" variant="outline">
-                      Data Sources
-                      <Info className="ml-2" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Our Data Source</DialogTitle>
-                      <DialogDescription>
-                        This application retrieves all financial data from a single provider to ensure consistency.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 text-sm">
-                      <p>
-                        <strong>Primary Data Source:</strong> All end-of-day stock data, forex rates, cryptocurrency prices, and technical indicators are sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>.
-                      </p>
-                      <div>
-                        <p><strong>Ticker Examples:</strong> If you are unsure of a symbol, you can use <a href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener noreferrer" className="text-primary underline">a tool like Yahoo Finance</a> to find the correct one. Here are some examples:</p>
-                        <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">US Stock:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">AAPL</code> (Apple Inc.)</li>
-                          <li><span className="font-semibold text-foreground">International Stock:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">0700.HK</code> (Tencent)</li>
-                          <li><span className="font-semibold text-foreground">Forex Pair:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">EURUSD</code> (Euro to US Dollar)</li>
-                          <li><span className="font-semibold text-foreground">Cryptocurrency:</span> <code className="bg-muted px-1.5 py-0.5 rounded-sm">BTCUSD</code> (Bitcoin to US Dollar)</li>
-                        </ul>
-                      </div>
-                      <p>
-                        A free API key is used for this service, which has a limit of 25 requests per day. Each full analysis uses multiple requests.
-                      </p>
+
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -729,4 +709,5 @@ export default function Home() {
   );
 }
 
+    
     
