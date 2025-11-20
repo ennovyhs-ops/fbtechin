@@ -29,6 +29,7 @@ import { NewsAnalysis } from '@/components/news-analysis';
 import { Input } from '@/components/ui/input';
 import { MarketCorrelation } from '@/components/market-correlation';
 import { HistoricalVolatility } from '@/components/historical-volatility';
+import { SignalExplanation } from '@/components/signal-explanation';
 
 
 const FormSchema = z.object({
@@ -511,6 +512,15 @@ export default function Home() {
           )}
 
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
+              <SignalExplanation 
+                ticker={submittedTicker!}
+                analysis={analysisResult}
+                marketData={marketData}
+                indicatorData={indicatorData}
+              />
+          )}
+
+          {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
             <OptionStrategies 
                 ticker={submittedTicker!} 
                 analysis={analysisResult}
@@ -672,5 +682,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
