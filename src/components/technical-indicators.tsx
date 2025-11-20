@@ -55,7 +55,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
-            <Card className="card-print">
+            <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                         <Activity className="h-6 w-6 text-muted-foreground" />
@@ -71,7 +71,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
     if (loading && !data) { // Show loading only on initial load
         return (
-            <Card className="no-print">
+            <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                         <Activity className="h-6 w-6 text-accent" />
@@ -105,7 +105,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const rsiStatus = getRsiStatus(latestRsi?.RSI ?? null);
 
     return (
-        <Card className="animate-in fade-in-50 duration-500 delay-100 card-print">
+        <Card className="animate-in fade-in-50 duration-500 delay-100">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Activity className="h-6 w-6 text-accent" />
@@ -136,7 +136,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <p className="font-semibold text-lg">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 no-print">
+                            <div className="flex items-center gap-2">
                                 <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">Period</label>
                                 <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-20 h-8 text-sm" />
                             </div>
@@ -167,7 +167,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     'bg-muted text-muted-foreground'
                                 }`}>{rsiStatus}</p>
                             </div>
-                            <div className="flex items-center gap-2 no-print">
+                            <div className="flex items-center gap-2">
                                 <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
                                 <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-20 h-8 text-sm" />
                             </div>
@@ -195,7 +195,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         </TooltipContent>
                                     </Tooltip>
                                 </div>
-                                <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end no-print">
+                                <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end">
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
                                         <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handlePeriodChange('macd', e.target.value, 'fast')} className="w-16 h-8 text-sm" />
@@ -246,7 +246,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         </TooltipContent>
                                     </Tooltip>
                                 </div>
-                                <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end no-print">
+                                <div className="flex items-center gap-3 w-full flex-wrap sm:w-auto justify-start sm:justify-end">
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
                                         <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handlePeriodChange('bbands', e.target.value, 'period')} className="w-16 h-8 text-sm" />
@@ -275,14 +275,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                     </div>
                 </TooltipProvider>
 
-                <div className="flex justify-end no-print">
+                <div className="flex justify-end">
                     <Button onClick={handleUpdateClick} disabled={loading} size="sm">
                         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                         {loading ? 'Calculating...' : 'Update All Indicators'}
                     </Button>
                 </div>
                  {error && (
-                    <Alert variant="destructive" className="mt-4 no-print">
+                    <Alert variant="destructive" className="mt-4">
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle>Indicator Error</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
@@ -294,11 +294,3 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 }
 
     
-
-
-
-
-    
-
-
-

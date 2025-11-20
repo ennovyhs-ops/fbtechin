@@ -81,7 +81,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
 
   if (isLoading) {
     return (
-      <Card className="no-print">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-headline text-2xl">
             <Lightbulb className="h-6 w-6 text-accent" />
@@ -103,7 +103,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
 
   if (anyError && noSuggestions) {
     return (
-      <Card className="no-print">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-headline text-2xl">
             <Lightbulb className="h-6 w-6 text-destructive" />
@@ -128,7 +128,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
   const disclaimerText = aiSuggestions?.disclaimer || deterministicSuggestions?.disclaimer;
 
   return (
-    <Card className="animate-in fade-in-50 duration-500 delay-500 card-print">
+    <Card className="animate-in fade-in-50 duration-500 delay-500">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Lightbulb className="h-6 w-6 text-accent" />
@@ -211,7 +211,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
         </div>
 
         {disclaimerText && (
-            <Collapsible open={isDisclaimerOpen} onOpenChange={setIsDisclaimerOpen} className="w-full pt-4 no-print">
+            <Collapsible open={isDisclaimerOpen} onOpenChange={setIsDisclaimerOpen} className="w-full pt-4">
                 <CollapsibleTrigger asChild>
                     <Button variant="outline" size="sm">
                         Disclaimer
@@ -233,3 +233,5 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
     </Card>
   );
 }
+
+    

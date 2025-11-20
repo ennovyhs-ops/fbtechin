@@ -5,7 +5,7 @@ import { useState, useTransition, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -250,7 +250,6 @@ export default function Home() {
   const isApiLimitError = !!apiLimitMessage;
 
   const isApiInfoNote = error && error.includes('Thank you for using Alpha Vantage!');
-
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -629,7 +628,7 @@ export default function Home() {
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
-                    </Content>
+                    </CardContent>
                 </Card>
                 
                 <Card>
@@ -668,3 +667,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
