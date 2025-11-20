@@ -33,7 +33,7 @@ const calculatePerformance = (data: MarketData[], days: number): number | null =
 };
 
 export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelationProps) {
-  const [comparisonTicker, setComparisonTicker] = useState('SPY');
+  const [comparisonTicker, setComparisonTicker] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -150,7 +150,7 @@ conclusion
   const resetAnalysis = () => {
     setAnalysis(null); 
     setError(null); 
-    setComparisonTicker('SPY');
+    setComparisonTicker('');
   }
 
   const PerformanceDisplay = ({ label, value }: { label: string, value: number }) => {
