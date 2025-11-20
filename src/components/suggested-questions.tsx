@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { BrainCircuit, Loader2 } from 'lucide-react';
 import { suggestDataExplorationQuestions } from '@/ai/flows/suggest-data-exploration-questions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { fetchNewsSentiment } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 
@@ -26,21 +25,9 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
       setQuestions([]);
 
       const getSuggestions = async () => {
-        let headlines: string[] = [];
-        try {
-            // Attempt to fetch real news to add context
-            const newsResult = await fetchNewsSentiment(ticker);
-            if (newsResult.articles && newsResult.articles.length > 0) {
-                 headlines = newsResult.articles.map(article => article.title);
-            }
-        } catch (e) {
-            console.warn("Could not fetch news for suggestions, proceeding without it.", e);
-        }
-        
         try {
              const suggestions = await suggestDataExplorationQuestions({
                 ticker,
-                recentNews: headlines.length > 0 ? headlines : undefined,
             });
             setQuestions(suggestions.questions);
         } catch(e) {
