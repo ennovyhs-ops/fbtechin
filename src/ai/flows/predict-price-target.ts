@@ -52,7 +52,7 @@ export async function predictPriceTarget(
   analysis: AnalyzeStockMomentumOutput,
 ): Promise<PredictPriceTargetOutput | { error: string }> {
   try {
-    const requiredDataPoints = 90; // For long-term volatility
+    const requiredDataPoints = 252; // At least one year of data
     if (!marketData || marketData.length < requiredDataPoints) {
       return { error: `Insufficient data for prediction. At least ${requiredDataPoints} days of data are required.` };
     }
@@ -62,6 +62,22 @@ export async function predictPriceTarget(
     const trendStrength = Math.abs(totalScore);
     const direction = totalScore > 0 ? "upward" : "downward";
     
+    // --- Calculate 52-Week Range ---
+    const oneYearData = marketData.slice(0, 252);
+    const isSynthesizedData = marketData.every(d => d.open === d.close && d.high === d.close && d.low === d.close);
+    let high52 = -Infinity;
+    let low52 = Infinity;
+
+    oneYearData.forEach(d => {
+        const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
+        const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
+        if (!isNaN(h) && h > high52) high52 = h;
+        if (!isNaN(l) && l < low52) low52 = l;
+    });
+
+    const hasValid52WeekRange = high52 !== -Infinity && low52 !== Infinity;
+
+
     // --- Short-Term Calculation ---
     const shortTermPrices = marketData.slice(0, 22).map(d => parseFloat(d.close));
     const shortTermStdDev = calculateStdDev(shortTermPrices);
@@ -73,6 +89,12 @@ export async function predictPriceTarget(
     let shortTermInterpretation = `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${shortTermTimeframe}. This is a projection, not a guarantee.`;
     if (totalScore < 0.1 && totalScore > -0.1) {
         shortTermInterpretation = "The current momentum is neutral, making a directional price prediction unreliable at this time."
+    } else if (hasValid52WeekRange) {
+        if (totalScore > 0 && shortTermPriceTarget > high52) {
+            shortTermInterpretation = `This projection suggests a potential breakout above the 52-week high, driven by strong short-term momentum.`;
+        } else if (totalScore < 0 && shortTermPriceTarget < low52) {
+            shortTermInterpretation = `This projection indicates a potential breakdown below the 52-week low, based on current selling pressure.`;
+        }
     }
     
     // --- Long-Term Calculation (6-month outlook) ---
@@ -87,6 +109,12 @@ export async function predictPriceTarget(
     let longTermInterpretation = `This projection leverages the same momentum score but uses a longer volatility window to forecast a potential ${longTermTimeframe} price level.`;
      if (totalScore < 0.1 && totalScore > -0.1) {
         longTermInterpretation = "Neutral momentum makes a long-term directional forecast unreliable."
+    } else if (hasValid52WeekRange) {
+        if (totalScore > 0 && longTermPriceTarget > high52) {
+             longTermInterpretation = `The long-term outlook suggests a sustained move that could challenge and potentially surpass the 52-week high, acting as a key resistance level.`;
+        } else if (totalScore < 0 && longTermPriceTarget < low52) {
+             longTermInterpretation = `The longer-term forecast points towards a decline that may test the 52-week low, which could act as a significant support level.`;
+        }
     }
 
 
