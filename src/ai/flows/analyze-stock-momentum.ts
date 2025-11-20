@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import { calculateRSI, calculateMACD, calculateBollingerBands, calculateMultiROC } from '@/lib/technical-analysis';
+import { calculateRSI, calculateMACD, calculateBollingerBands, calculateMultiROC, calculateVWMA } from '@/lib/technical-analysis';
 import type { MarketData } from '@/lib/types';
 import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 
@@ -66,10 +66,11 @@ export async function analyzeStockMomentum(
     // Define weights
     let weights = {
         multiRoc: 0.25,
-        volume: 0.15,
-        bbands: 0.15,
-        rsi: 0.15,
         macd: 0.20,
+        vwma: 0.15,
+        rsi: 0.15,
+        volume: 0.10,
+        bbands: 0.05,
         fiftyTwoWeek: 0.10,
     };
 
@@ -80,63 +81,32 @@ export async function analyzeStockMomentum(
             ...weights,
             multiRoc: weights.multiRoc + redistributedWeight,
             volume: 0, // Set volume weight to 0
-            bbands: weights.bbands + redistributedWeight,
+            vwma: weights.vwma + redistributedWeight,
             rsi: weights.rsi + redistributedWeight,
             macd: weights.macd + redistributedWeight,
         };
     }
 
-
-    // The data is descending (latest first). Reverse to get chronological for calculations.
-    const closePrices = marketData.map(d => parseFloat(d.close)).reverse();
+    const data = [...marketData].reverse(); // Reverse once to get chronological for all calculations.
+    const closePrices = data.map(d => parseFloat(d.close));
+    const volumes = data.map(d => parseFloat(d.volume));
     
     const rsi = calculateRSI(closePrices, 14);
     const macd = calculateMACD(closePrices, 12, 26, 9);
     const bbands = calculateBollingerBands(closePrices, 20, 2);
     const multiRoc = calculateMultiROC(closePrices, [5, 22, 50]);
+    const vwma = calculateVWMA(closePrices, volumes, 20);
     
-    const data = marketData; // Keep variable name for clarity, it's descending
-
-    // Get latest valid values from the end of the chronological arrays
-    const findLatest = <T>(arr: T[]): T | undefined => {
-        for (let i = arr.length - 1; i >= 0; i--) {
-            if (arr[i] !== undefined && arr[i] !== null && !Object.values(arr[i] as any).some(v => v === null || (typeof v === 'number' && isNaN(v)))) {
-                return arr[i];
-            }
-        }
-        return undefined;
-    };
+    const latestRoc5 = multiRoc.roc5.at(-1);
+    const latestRoc22 = multiRoc.roc22.at(-1);
+    const latestRoc50 = multiRoc.roc50.at(-1);
+    const latestRsi = rsi.at(-1);
+    const latestMacd = macd.at(-1);
+    const prevMacd = macd.at(-2);
+    const latestBbands = bbands.at(-1);
+    const latestVwma = vwma.at(-1);
     
-    const findLastNumber = (arr: number[]): number | undefined => {
-        for(let i = arr.length - 1; i >= 0; i--) {
-            if (!isNaN(arr[i])) return arr[i];
-        }
-        return undefined;
-    };
-
-    const findPrevious = <T>(arr: T[]): T | undefined => {
-      let latestFound = false;
-      for (let i = arr.length - 1; i >= 0; i--) {
-         if (arr[i] !== undefined && arr[i] !== null && !Object.values(arr[i] as any).some(v => v === null || (typeof v === 'number' && isNaN(v)))) {
-           if (latestFound) {
-             return arr[i];
-           } else {
-             latestFound = true;
-           }
-         }
-      }
-      return undefined;
-    };
-
-    const latestRoc5 = findLastNumber(multiRoc.roc5);
-    const latestRoc22 = findLastNumber(multiRoc.roc22);
-    const latestRoc50 = findLastNumber(multiRoc.roc50);
-    const latestRsi = findLastNumber(rsi);
-    const latestMacd = findLatest(macd);
-    const prevMacd = findPrevious(macd);
-    const latestBbands = findLatest(bbands);
-    
-    if (latestRoc5 === undefined || latestRoc22 === undefined || latestRoc50 === undefined || latestRsi === undefined || !latestMacd || !prevMacd || !latestBbands) {
+    if (latestRoc5 === undefined || latestRoc22 === undefined || latestRoc50 === undefined || latestRsi === undefined || !latestMacd || !prevMacd || !latestBbands || latestVwma === undefined) {
         return { error: "Could not calculate one or more required technical indicators. The asset may not have enough historical data." };
     }
 
@@ -160,11 +130,11 @@ export async function analyzeStockMomentum(
         totalScore += weights.multiRoc * (rocScore);
     }
 
-    // Step 2: Volume-Price Confirmation (Weight: 15%) - Skipped if data is synthesized
+    // Step 2: Volume-Price Confirmation (Weight: 10%) - Skipped if data is synthesized
     if (!isSynthesizedData && data.length >= 20) {
-        const recentData = data.slice(0, 10);
-        const volumes = data.slice(0, 20).map(d => parseFloat(d.volume));
-        const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
+        const recentData = data.slice(-10);
+        const recentVolumes = data.slice(-20).map(d => parseFloat(d.volume));
+        const avgVolume = recentVolumes.reduce((sum, v) => sum + v, 0) / recentVolumes.length;
 
         let highVolUpDays = 0;
         let highVolDownDays = 0;
@@ -185,17 +155,27 @@ export async function analyzeStockMomentum(
             totalScore -= weights.volume;
         }
     }
+    
+    const latestClose = closePrices.at(-1)!;
+
+    // Step 3: VWMA Trend Confirmation (Weight: 15%)
+    if (!isNaN(latestVwma)) {
+        if (latestClose > latestVwma) {
+            totalScore += weights.vwma;
+        } else if (latestClose < latestVwma) {
+            totalScore -= weights.vwma;
+        }
+    }
 
 
-    // Step 3: Bollinger Bands Position & Volatility Context (Weight: 15%)
-    const latestClose = parseFloat(data[0].close);
+    // Step 4: Bollinger Bands Position & Volatility Context (Weight: 5%)
     const { upper: upperBand, lower: lowerBand, middle: middleBand } = latestBbands;
-    const priceAboveMiddleBand = latestClose > middleBand;
-    totalScore += priceAboveMiddleBand ? (weights.bbands * 0.5) : -(weights.bbands * 0.5);
+    if (latestClose > middleBand) totalScore += (weights.bbands * 0.5);
+    else if (latestClose < middleBand) totalScore -= (weights.bbands * 0.5);
     
     // Breakout signal
-    if (latestClose > upperBand) totalScore += (weights.bbands * 0.33); 
-    else if (latestClose < lowerBand) totalScore -= (weights.bbands * 0.33);
+    if (latestClose > upperBand) totalScore += (weights.bbands * 0.3); 
+    else if (latestClose < lowerBand) totalScore -= (weights.bbands * 0.3);
     
     // Volatility (Squeeze)
     if (bbands.length >= 20) {
@@ -205,13 +185,13 @@ export async function analyzeStockMomentum(
             const currentBandwidth = bandWidths[bandWidths.length - 1];
             const minBandwidth = Math.min(...bandWidths);
             if (currentBandwidth < minBandwidth * 1.15) { // Squeeze is active
-                if (isRoc22Bullish) totalScore += (weights.bbands * 0.17);
-                else totalScore -= (weights.bbands * 0.17);
+                if (isRoc22Bullish) totalScore += (weights.bbands * 0.2);
+                else totalScore -= (weights.bbands * 0.2);
             }
         }
     }
 
-    // Step 4: RSI Strength & Divergence (Weight: 15%)
+    // Step 5: RSI Strength & Divergence (Weight: 15%)
     if (latestRsi > 60) totalScore += (weights.rsi * 0.66);
     else if (latestRsi > 50) totalScore += (weights.rsi * 0.33);
     else if (latestRsi < 40) totalScore -= (weights.rsi * 0.66);
@@ -219,7 +199,7 @@ export async function analyzeStockMomentum(
 
     // Divergence (last 10 days)
     if (data.length >= 11 && rsi.length >= data.length) {
-        const priceSlice = data.slice(0, 10).map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) }));
+        const priceSlice = data.slice(-10);
         const rsiSlice = rsi.slice(-10);
         
         const priceLow5 = isSynthesizedData ? priceSlice[5].close : priceSlice[5].low;
@@ -227,7 +207,7 @@ export async function analyzeStockMomentum(
         const rsiLow5 = rsiSlice[5];
         const rsiLow0 = rsiSlice[0];
 
-        if (priceLow0 < priceLow5 && rsiLow0 > rsiLow5) {
+        if (priceLow0 < parseFloat(priceLow5) && rsiLow0 > rsiLow5) {
             totalScore += (weights.rsi * 0.34); // Bullish divergence
         }
         
@@ -236,25 +216,27 @@ export async function analyzeStockMomentum(
         const rsiHigh5 = rsiSlice[5];
         const rsiHigh0 = rsiSlice[0];
 
-        if (priceHigh0 > priceHigh5 && rsiHigh0 < rsiHigh5) {
+        if (priceHigh0 > parseFloat(priceHigh5) && rsiHigh0 < rsiHigh5) {
             totalScore -= (weights.rsi * 0.34); // Bearish divergence
         }
     }
 
-    // Step 5: MACD Trend Acceleration (Weight: 20%)
-    const isMacdBullish = latestMacd.MACD! > latestMacd.signal!;
-    totalScore += isMacdBullish ? (weights.macd * 0.5) : -(weights.macd * 0.5);
+    // Step 6: MACD Trend Acceleration (Weight: 20%)
+    if (latestMacd.MACD && latestMacd.signal && prevMacd.MACD && prevMacd.signal) {
+      const isMacdBullish = latestMacd.MACD > latestMacd.signal;
+      totalScore += isMacdBullish ? (weights.macd * 0.5) : -(weights.macd * 0.5);
 
-    const isMacdCrossoverBullish = prevMacd.MACD! <= prevMacd.signal! && latestMacd.MACD! > latestMacd.signal!;
-    if (isMacdCrossoverBullish) {
-        totalScore += (weights.macd * 0.5);
-    }
-    const isMacdCrossoverBearish = prevMacd.MACD! >= prevMacd.signal! && latestMacd.MACD! < latestMacd.signal!;
-    if (isMacdCrossoverBearish) {
-        totalScore -= (weights.macd * 0.5);
+      const isMacdCrossoverBullish = prevMacd.MACD <= prevMacd.signal && latestMacd.MACD > latestMacd.signal;
+      if (isMacdCrossoverBullish) {
+          totalScore += (weights.macd * 0.5);
+      }
+      const isMacdCrossoverBearish = prevMacd.MACD >= prevMacd.signal && latestMacd.MACD < latestMacd.signal;
+      if (isMacdCrossoverBearish) {
+          totalScore -= (weights.macd * 0.5);
+      }
     }
     
-    // Step 6: 52-Week Range Context (Weight: 10%)
+    // Step 7: 52-Week Range Context (Weight: 10%)
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const oneYearData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
@@ -308,3 +290,4 @@ export async function analyzeStockMomentum(
     
 
     
+
