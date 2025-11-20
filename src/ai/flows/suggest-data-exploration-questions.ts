@@ -14,7 +14,6 @@ import {z} from 'genkit';
 
 const SuggestDataExplorationQuestionsInputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol.'),
-  recentNews: z.array(z.string()).optional().describe('An array of recent news headlines for the stock.'),
 });
 export type SuggestDataExplorationQuestionsInput = z.infer<
   typeof SuggestDataExplorationQuestionsInputSchema
@@ -40,13 +39,6 @@ const suggestDataExplorationQuestionsPrompt = ai.definePrompt({
   input: {schema: SuggestDataExplorationQuestionsInputSchema},
   output: {schema: SuggestDataExplorationQuestionsOutputSchema},
   prompt: `You are an expert financial analyst. Your task is to generate five insightful, specific, and non-generic follow-up questions for a user researching the stock ticker "{{ticker}}".
-
-{{#if recentNews}}
-**Use the following recent news headlines to make your questions more timely and relevant:**
-{{#each recentNews}}
-- {{{this}}}
-{{/each}}
-{{/if}}
 
 **Instructions for Question Quality:**
 1.  **Be Specific & Deep:** The questions should prompt deeper investigation.
