@@ -351,7 +351,7 @@ export default function Home() {
                         <h3 className="font-semibold text-foreground mb-2">AI-Powered Analysis</h3>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">AI Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated using multiple technical indicators to provide a single, clear momentum signal.</li>
-                          <li><span className="font-semibold text-foreground">AI Price Target:</span> A projected price target based on the momentum score and recent volatility.</li>
+                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A projected price target based on the momentum score and recent volatility.</li>
                           <li><span className="font-semibold text-foreground">AI Option Strategies:</span> Based on the momentum score, the AI suggests suitable option strategies with a rationale.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When you load news, the AI analyzes the articles to provide a summary and a predicted impact (Bullish, Bearish, or Neutral).</li>
                         </ul>

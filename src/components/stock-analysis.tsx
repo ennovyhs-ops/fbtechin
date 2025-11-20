@@ -224,7 +224,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
 
             {/* Right side: Price Target */}
              <div className="flex flex-col items-center gap-4 text-center">
-                 <h3 className="font-semibold text-sm text-muted-foreground">AI Price Targets</h3>
+                 <h3 className="font-semibold text-sm text-muted-foreground">Calculated Price Targets</h3>
                  <div className="flex flex-col sm:flex-row items-center gap-6">
                     <PriceTargetContent targetType="shortTerm" icon={Clock} />
                     <Separator orientation="vertical" className="h-12 hidden sm:block" />
