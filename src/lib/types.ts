@@ -32,6 +32,11 @@ export type MacdData = {
   MACD: string | null;
 }
 
+export type VwmaData = {
+    date: string;
+    VWMA: string | null;
+}
+
 export type BbandsData = {
     date: string;
     'Real Upper Band': string | null;
@@ -94,6 +99,7 @@ export type NewsAnalysis = {
 export type IndicatorPeriods = {
   roc: number;
   rsi: number;
+  vwma: number;
   macd: {
     fast: number;
     slow: number;
@@ -104,3 +110,4 @@ export type IndicatorPeriods = {
     stdDev: number;
   };
 };
+

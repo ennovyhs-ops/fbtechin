@@ -1,5 +1,4 @@
 
-
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
@@ -212,5 +211,35 @@ export const calculateVolatility = (data: number[], period: number): number | nu
     // Return as a percentage
     return annualizedVolatility * 100;
 }
+
+
+/**
+ * Calculates the Volume-Weighted Moving Average (VWMA).
+ * @param closePrices - Array of chronological close prices.
+ * @param volumes - Array of chronological volumes.
+ * @param period - The number of periods to calculate the VWMA for.
+ * @returns An array of VWMA values.
+ */
+export const calculateVWMA = (closePrices: number[], volumes: number[], period: number): number[] => {
+    const result: number[] = new Array(period - 1).fill(NaN);
+    if (closePrices.length < period) return new Array(closePrices.length).fill(NaN);
+
+    let priceVolumeSum = 0;
+    let volumeSum = 0;
+    for (let i = 0; i < period; i++) {
+        priceVolumeSum += closePrices[i] * volumes[i];
+        volumeSum += volumes[i];
+    }
+    result.push(volumeSum === 0 ? 0 : priceVolumeSum / volumeSum);
+
+    for (let i = period; i < closePrices.length; i++) {
+        priceVolumeSum -= closePrices[i - period] * volumes[i - period];
+        volumeSum -= volumes[i - period];
+        priceVolumeSum += closePrices[i] * volumes[i];
+        volumeSum += volumes[i];
+        result.push(volumeSum === 0 ? 0 : priceVolumeSum / volumeSum);
+    }
+    return result;
+};
 
     
