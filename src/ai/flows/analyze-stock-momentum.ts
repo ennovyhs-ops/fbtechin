@@ -65,17 +65,19 @@ export async function analyzeStockMomentum(
     
     // Define weights
     let weights = {
-        multiRoc: 0.30,
-        volume: 0.20,
+        multiRoc: 0.25,
+        volume: 0.15,
         bbands: 0.15,
         rsi: 0.15,
-        macd: 0.20
+        macd: 0.20,
+        fiftyTwoWeek: 0.10,
     };
 
     // If data is synthesized, Volume-Price Confirmation is not possible. Redistribute its weight.
     if (isSynthesizedData) {
         const redistributedWeight = weights.volume / 4;
         weights = {
+            ...weights,
             multiRoc: weights.multiRoc + redistributedWeight,
             volume: 0, // Set volume weight to 0
             bbands: weights.bbands + redistributedWeight,
@@ -141,7 +143,7 @@ export async function analyzeStockMomentum(
 
     let totalScore = 0;
 
-    // Step 1: Multi-Timeframe Alignment (Weight: 30%)
+    // Step 1: Multi-Timeframe Alignment (Weight: 25%)
     const isRoc5Bullish = latestRoc5 > 0;
     const isRoc22Bullish = latestRoc22 > 0;
     const isRoc50Bullish = latestRoc50 > 0;
@@ -159,7 +161,7 @@ export async function analyzeStockMomentum(
         totalScore += weights.multiRoc * (rocScore);
     }
 
-    // Step 2: Volume-Price Confirmation (Weight: 20%) - Skipped if data is synthesized
+    // Step 2: Volume-Price Confirmation (Weight: 15%) - Skipped if data is synthesized
     if (!isSynthesizedData && data.length >= 20) {
         const recentData = data.slice(0, 10);
         const volumes = data.slice(0, 20).map(d => parseFloat(d.volume));
@@ -252,6 +254,37 @@ export async function analyzeStockMomentum(
     if (isMacdCrossoverBearish) {
         totalScore -= (weights.macd * 0.5);
     }
+    
+    // Step 6: 52-Week Range Context (Weight: 10%)
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const oneYearData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
+    
+    if (oneYearData.length > 0) {
+        let high52 = -Infinity;
+        let low52 = Infinity;
+
+        oneYearData.forEach(d => {
+            const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
+            const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
+            if (!isNaN(h) && h > high52) high52 = h;
+            if (!isNaN(l) && l < low52) low52 = l;
+        });
+
+        if (high52 !== -Infinity && low52 !== Infinity && high52 > low52) {
+            const currentPosition = (latestClose - low52) / (high52 - low52); // Position as % of range (0-1)
+            
+            if (currentPosition > 0.95) { // Near 52-week high
+                totalScore += weights.fiftyTwoWeek;
+            } else if (currentPosition > 0.75) {
+                totalScore += weights.fiftyTwoWeek * 0.5;
+            } else if (currentPosition < 0.05) { // Near 52-week low
+                totalScore -= weights.fiftyTwoWeek;
+            } else if (currentPosition < 0.25) {
+                totalScore -= weights.fiftyTwoWeek * 0.5;
+            }
+        }
+    }
 
 
     // Normalize score to be within -1 and 1
@@ -271,6 +304,8 @@ export async function analyzeStockMomentum(
     return { error: e.message || 'An unexpected error occurred during analysis.' };
   }
 }
+    
+
     
 
     
