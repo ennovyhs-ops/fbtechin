@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import { calculateRSI, calculateMACD, calculateBollingerBands, calculateMultiROC, calculateVWMA } from '@/lib/technical-analysis';
+import { calculateRSI, calculateMACD, calculateBollingerBands, calculateMultiROC, calculateVWMA, calculateMAVol } from '@/lib/technical-analysis';
 import type { MarketData } from '@/lib/types';
 import { isCurrencyPair, isCryptoPair } from '@/lib/utils';
 
@@ -96,6 +96,7 @@ export async function analyzeStockMomentum(
     const bbands = calculateBollingerBands(closePrices, 20, 2);
     const multiRoc = calculateMultiROC(closePrices, [5, 22, 50]);
     const vwma = calculateVWMA(closePrices, volumes, 20);
+    const maVol = calculateMAVol(volumes, 50);
     
     const latestRoc5 = multiRoc.roc5.at(-1);
     const latestRoc22 = multiRoc.roc22.at(-1);
@@ -131,28 +132,29 @@ export async function analyzeStockMomentum(
     }
 
     // Step 2: Volume-Price Confirmation (Weight: 10%) - Skipped if data is synthesized
-    if (!isSynthesizedData && data.length >= 20) {
-        const recentData = data.slice(-10);
-        const recentVolumes = data.slice(-20).map(d => parseFloat(d.volume));
-        const avgVolume = recentVolumes.reduce((sum, v) => sum + v, 0) / recentVolumes.length;
+    if (!isSynthesizedData && data.length >= 50 && maVol.length === data.length) {
+        const recentData = data.slice(-10); // Look at last 10 days
+        const avgVolume = maVol.at(-1); // Get latest 50-day average volume
 
-        let highVolUpDays = 0;
-        let highVolDownDays = 0;
+        if (avgVolume) {
+            let highVolUpDays = 0;
+            let highVolDownDays = 0;
 
-        for (const day of recentData) {
-            const isUpDay = parseFloat(day.close) > parseFloat(day.open);
-            const isHighVolume = parseFloat(day.volume) > avgVolume * 1.2;
+            for (const day of recentData) {
+                const isUpDay = parseFloat(day.close) > parseFloat(day.open);
+                const isHighVolume = parseFloat(day.volume) > avgVolume * 1.2;
 
-            if (isHighVolume) {
-                if (isUpDay) highVolUpDays++;
-                else highVolDownDays++;
+                if (isHighVolume) {
+                    if (isUpDay) highVolUpDays++;
+                    else highVolDownDays++;
+                }
             }
-        }
-        
-        if (highVolUpDays > highVolDownDays + 1) { // Clear Accumulation
-            totalScore += weights.volume;
-        } else if (highVolDownDays > highVolUpDays + 1) { // Clear Distribution
-            totalScore -= weights.volume;
+            
+            if (highVolUpDays > highVolDownDays + 1) { // Clear Accumulation
+                totalScore += weights.volume;
+            } else if (highVolDownDays > highVolUpDays + 1) { // Clear Distribution
+                totalScore -= weights.volume;
+            }
         }
     }
     
@@ -290,4 +292,5 @@ export async function analyzeStockMomentum(
     
 
     
+
 
