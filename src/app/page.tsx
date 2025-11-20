@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { NewsAnalysis } from '@/components/news-analysis';
 import { Input } from '@/components/ui/input';
+import { MarketCorrelation } from '@/components/market-correlation';
 
 
 const FormSchema = z.object({
@@ -234,33 +235,12 @@ export default function Home() {
     event.target.value = '';
   };
   
-  const handleExport = () => {
-    if (!marketData || !submittedTicker) return;
-
-    const headers = ['date', 'open', 'high', 'low', 'close', 'volume'];
-    const csvContent = [
-      headers.join(','),
-      ...marketData.map(row => 
-        [row.date, row.open, row.high, row.low, row.close, row.volume].join(',')
-      )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${submittedTicker}_history.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
     if (submittedTicker && marketData) {
       calculateIndicators(marketData, newPeriods);
     }
-  }
+  };
 
   const latestData = marketData?.[0];
 
@@ -443,7 +423,7 @@ export default function Home() {
           )}
 
           {latestData && submittedTicker && (
-             <Card className="animate-in fade-in-50 duration-500">
+             <Card>
              <CardHeader>
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
@@ -508,10 +488,6 @@ export default function Home() {
                                 {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
                             </Button>
                         </CollapsibleTrigger>
-                        <Button variant="outline" onClick={handleExport} className="w-full sm:w-auto">
-                            CSV Export
-                            <Download className="ml-2" />
-                        </Button>
                     </div>
                     <CollapsibleContent className="w-full mt-4">
                         {marketData && marketData.length > 0 && (
@@ -532,6 +508,13 @@ export default function Home() {
               onAnalysisComplete={setAnalysisResult}
               currency={currency}
             />
+          )}
+
+          {submittedTicker && marketData && (
+              <MarketCorrelation 
+                baseTicker={submittedTicker}
+                baseMarketData={marketData}
+              />
           )}
 
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
@@ -646,7 +629,7 @@ export default function Home() {
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
                         <div className="h-10 w-full bg-muted/80 rounded-md"></div>
-                    </CardContent>
+                    </Content>
                 </Card>
                 
                 <Card>
