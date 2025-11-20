@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useTransition, useCallback, useRef } from 'react';
+import { useState, useTransition, useCallback, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -62,6 +62,31 @@ export default function Home() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+
+  const fiftyTwoWeekRange = useMemo(() => {
+    if (!marketData || marketData.length === 0) return null;
+    
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const relevantData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
+    if (relevantData.length === 0) return null;
+
+    let high = -Infinity;
+    let low = Infinity;
+
+    relevantData.forEach(d => {
+        const h = parseFloat(d.high);
+        const l = parseFloat(d.low);
+        if (!isNaN(h) && h > high) high = h;
+        if (!isNaN(l) && l < low) low = l;
+    });
+
+    if (high === -Infinity || low === Infinity) return null;
+
+    return { high, low };
+
+  }, [marketData]);
 
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -448,7 +473,7 @@ export default function Home() {
                       <p className="text-4xl md:text-5xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
                       <p className="text-lg text-muted-foreground font-medium sm:pb-1">Close</p>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                         <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
@@ -478,6 +503,27 @@ export default function Home() {
                         </div>
                     </div>
                   </div>
+                    {fiftyTwoWeekRange && (
+                        <>
+                            <div className="border-t border-dashed -mx-6 my-2"></div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <LineChart className="text-muted-foreground h-5 w-5" />
+                                    <div>
+                                        <p className="text-muted-foreground">52-Week High</p>
+                                        <p className="font-semibold">{formatCurrency(fiftyTwoWeekRange.high, currency)}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                     <LineChart className="text-muted-foreground h-5 w-5" />
+                                     <div>
+                                        <p className="text-muted-foreground">52-Week Low</p>
+                                        <p className="font-semibold">{formatCurrency(fiftyTwoWeekRange.low, currency)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
              </CardContent>
              <CardFooter>
@@ -682,3 +728,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
