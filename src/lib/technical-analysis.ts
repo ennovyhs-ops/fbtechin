@@ -23,22 +23,30 @@ const sma = (data: number[], period: number): number[] => {
 
 // Exponential Moving Average
 const ema = (data: number[], period: number): number[] => {
-    const result: number[] = new Array(data.length).fill(NaN);
+    const result: number[] = new Array(period - 1).fill(NaN);
+    if (data.length < period) {
+        return new Array(data.length).fill(NaN);
+    }
+    
     const k = 2 / (period + 1);
     
-    if (data.length > 0) {
-        result[0] = data[0]; // Start with the first data point
-
-        for (let i = 1; i < data.length; i++) {
-            if (isNaN(result[i-1])) {
-                 // If previous EMA is NaN, try to re-seed from current data point.
-                 result[i] = data[i];
-            } else {
-                 result[i] = (data[i] * k) + (result[i-1] * (1 - k));
-            }
-        }
+    // Calculate initial SMA
+    let sum = 0;
+    for (let i = 0; i < period; i++) {
+        sum += data[i];
     }
-    return result;
+    result.push(sum / period);
+    
+    // Calculate subsequent EMAs
+    for (let i = period; i < data.length; i++) {
+        const ema = (data[i] * k) + (result[result.length - 1] * (1 - k));
+        result.push(ema);
+    }
+
+    // The result array will be shorter than data array, need to pad
+    const padding = new Array(data.length - result.length).fill(NaN);
+
+    return [...padding, ...result];
 };
 
 
