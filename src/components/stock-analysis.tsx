@@ -8,7 +8,7 @@ import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-moment
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
 import { formatCurrency } from '@/lib/utils';
