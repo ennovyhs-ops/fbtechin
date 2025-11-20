@@ -183,5 +183,3 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   );
 
 }
-
-    
