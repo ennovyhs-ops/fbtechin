@@ -236,7 +236,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         <div className="space-y-2 text-center pt-2">
             <div className="flex items-center justify-center gap-2">
                 <h3 className="font-semibold text-sm">Suggested Action:</h3>
-                <p className="text-sm text-muted-foreground">{analysis.tradeAction}</p>
+                 <div className="text-sm font-semibold text-accent-foreground bg-accent px-3 py-1 rounded-md">{analysis.tradeAction}</div>
                 {actionExplanation && (
                     <Dialog>
                         <DialogTrigger asChild>
@@ -260,3 +260,5 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     </Card>
   );
 }
+
+    
