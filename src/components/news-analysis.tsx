@@ -2,9 +2,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Newspaper, Loader2, AlertCircle, TrendingUp, TrendingDown, Minus, BrainCircuit } from 'lucide-react';
+import { Newspaper, Loader2, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { analyzeNewsImpact } from '@/ai/flows/analyze-news-impact';
-import { generateSyntheticNews } from '@/ai/flows/generate-synthetic-news';
 import type { NewsArticle, NewsAnalysis as NewsAnalysisType } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from './ui/button';
@@ -14,12 +13,6 @@ import { Separator } from './ui/separator';
 
 interface NewsAnalysisProps {
   ticker: string;
-}
-
-interface SyntheticNews {
-    headlines: string[];
-    summary: string;
-    disclaimer: string;
 }
 
 const getImpactInfo = (impact: string): { icon: React.ReactNode, color: string } => {
@@ -35,9 +28,11 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   const [news, setNewsData] = useState<NewsArticle[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasBeenLoaded, setHasBeenLoaded] = useState(false);
 
   const handleLoadNews = async () => {
     setLoading(true);
+    setHasBeenLoaded(true);
     setError(null);
     setAnalysis(null);
     setNewsData(null);
@@ -46,8 +41,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
         const newsResult = await fetchNewsSentiment(ticker);
         
         if (newsResult.error || !newsResult.articles || newsResult.articles.length === 0) {
-            // If real news fails or is empty, go to synthetic fallback
-            throw new Error(newsResult.error || "No articles found.");
+            throw new Error(newsResult.error || "No articles were found for this ticker from the news service.");
         }
         
         const fetchedNews = newsResult.articles || [];
@@ -77,8 +71,35 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   };
 
 
-  if (news) {
-    if (news.length === 0 && !loading) {
+  if (hasBeenLoaded && !loading) {
+    if (error) {
+         return (
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                        <Newspaper className="h-6 w-6 text-destructive" />
+                        <span>News & AI Analysis</span>
+                    </CardTitle>
+                    <CardDescription>
+                        Could not retrieve news for {ticker}.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>News Service Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                        <Button onClick={handleLoadNews} disabled={loading} variant="outline" size="sm" className="mt-4">
+                            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Try Again
+                        </Button>
+                    </Alert>
+                </CardContent>
+            </Card>
+        );
+    }
+      
+    if (!news || news.length === 0) {
        return (
          <Card>
             <CardHeader>
@@ -109,17 +130,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
             </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-            {loading ? (
-                 <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Analyzing news...</span>
-                </div>
-            ) : error ? (
-                <div className="flex items-center gap-2 text-destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{error}</span>
-                </div>
-            ) : analysis ? (
+            {analysis ? (
                 <>
                     <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/50">
                         <p className="text-sm text-foreground">{analysis.analysis}</p>
@@ -169,7 +180,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
                 <span>News & AI Analysis</span>
             </CardTitle>
             <CardDescription>
-                Load recent news and generate an AI-powered impact analysis. This will use one API request. If the quota is hit, the request will fail.
+                Load recent news and generate an AI-powered impact analysis. This will use one API request.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -177,7 +188,6 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Load News & Analysis
             </Button>
-            {error && <p className="text-sm text-destructive mt-4">{error}</p>}
         </CardContent>
     </Card>
   );
