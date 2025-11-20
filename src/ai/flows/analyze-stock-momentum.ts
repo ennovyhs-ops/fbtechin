@@ -87,9 +87,8 @@ export async function analyzeStockMomentum(
     }
 
 
-    // Pre-calculation logic
-    const reversedData = [...marketData].reverse();
-    const closePrices = reversedData.map(d => parseFloat(d.close));
+    // The data is descending (latest first). Reverse to get chronological for calculations.
+    const closePrices = marketData.map(d => parseFloat(d.close)).reverse();
     
     const rsi = calculateRSI(closePrices, 14);
     const macd = calculateMACD(closePrices, 12, 26, 9);
@@ -98,29 +97,29 @@ export async function analyzeStockMomentum(
     
     const data = marketData; // Keep variable name for clarity, it's descending
 
-    const findLatestValid = <T, K>(
-      arr: T[],
-      isValid: (item: T) => boolean,
-      extract: (item: T) => K
-    ): K | undefined => {
-      for (let i = arr.length - 1; i >= 0; i--) {
-        if (isValid(arr[i])) {
-          return extract(arr[i]);
+    // Get latest valid values from the end of the chronological arrays
+    const findLatest = <T>(arr: T[]): T | undefined => {
+        for (let i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] !== undefined && arr[i] !== null && !Object.values(arr[i] as any).some(v => v === null || (typeof v === 'number' && isNaN(v)))) {
+                return arr[i];
+            }
         }
-      }
-      return undefined;
+        return undefined;
     };
     
-    const findPreviousValid = <T, K>(
-      arr: T[],
-      isValid: (item: T) => boolean,
-      extract: (item: T) => K
-    ): K | undefined => {
+    const findLastNumber = (arr: number[]): number | undefined => {
+        for(let i = arr.length - 1; i >= 0; i--) {
+            if (!isNaN(arr[i])) return arr[i];
+        }
+        return undefined;
+    };
+
+    const findPrevious = <T>(arr: T[]): T | undefined => {
       let latestFound = false;
       for (let i = arr.length - 1; i >= 0; i--) {
-         if (isValid(arr[i])) {
+         if (arr[i] !== undefined && arr[i] !== null && !Object.values(arr[i] as any).some(v => v === null || (typeof v === 'number' && isNaN(v)))) {
            if (latestFound) {
-             return extract(arr[i]);
+             return arr[i];
            } else {
              latestFound = true;
            }
@@ -129,14 +128,14 @@ export async function analyzeStockMomentum(
       return undefined;
     };
 
-    const latestRoc5 = findLatestValid(multiRoc.roc5, (v) => !isNaN(v), v => v);
-    const latestRoc22 = findLatestValid(multiRoc.roc22, (v) => !isNaN(v), v => v);
-    const latestRoc50 = findLatestValid(multiRoc.roc50, (v) => !isNaN(v), v => v);
-    const latestRsi = findLatestValid(rsi, (v) => !isNaN(v), v => v);
-    const latestMacd = findLatestValid(macd, (v) => v && !isNaN(v.MACD!) && !isNaN(v.signal!), v => v);
-    const prevMacd = findPreviousValid(macd, (v) => v && !isNaN(v.MACD!) && !isNaN(v.signal!), v => v);
-    const latestBbands = findLatestValid(bbands, (v) => v && !isNaN(v.middle) && !isNaN(v.upper) && !isNaN(v.lower), v => v);
-
+    const latestRoc5 = findLastNumber(multiRoc.roc5);
+    const latestRoc22 = findLastNumber(multiRoc.roc22);
+    const latestRoc50 = findLastNumber(multiRoc.roc50);
+    const latestRsi = findLastNumber(rsi);
+    const latestMacd = findLatest(macd);
+    const prevMacd = findPrevious(macd);
+    const latestBbands = findLatest(bbands);
+    
     if (latestRoc5 === undefined || latestRoc22 === undefined || latestRoc50 === undefined || latestRsi === undefined || !latestMacd || !prevMacd || !latestBbands) {
         return { error: "Could not calculate one or more required technical indicators. The asset may not have enough historical data." };
     }
@@ -200,7 +199,7 @@ export async function analyzeStockMomentum(
     
     // Volatility (Squeeze)
     if (bbands.length >= 20) {
-        const recentBbands = [...bbands].reverse().slice(-20);
+        const recentBbands = bbands.slice(-20);
         const bandWidths = recentBbands.map(b => (b && b.upper && b.lower && b.middle > 0) ? (b.upper - b.lower) / b.middle : NaN).filter(bw => !isNaN(bw));
         if (bandWidths.length > 0) {
             const currentBandwidth = bandWidths[bandWidths.length - 1];
@@ -221,7 +220,7 @@ export async function analyzeStockMomentum(
     // Divergence (last 10 days)
     if (data.length >= 11 && rsi.length >= data.length) {
         const priceSlice = data.slice(0, 10).map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) }));
-        const rsiSlice = [...rsi].reverse().slice(0, 10);
+        const rsiSlice = rsi.slice(-10);
         
         const priceLow5 = isSynthesizedData ? priceSlice[5].close : priceSlice[5].low;
         const priceLow0 = isSynthesizedData ? priceSlice[0].close : priceSlice[0].low;

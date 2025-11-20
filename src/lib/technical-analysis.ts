@@ -23,30 +23,50 @@ const sma = (data: number[], period: number): number[] => {
 
 // Exponential Moving Average
 const ema = (data: number[], period: number): number[] => {
-    const result: number[] = new Array(period - 1).fill(NaN);
     if (data.length < period) {
         return new Array(data.length).fill(NaN);
     }
     
     const k = 2 / (period + 1);
+    const result: number[] = new Array(data.length).fill(NaN);
     
     // Calculate initial SMA
     let sum = 0;
     for (let i = 0; i < period; i++) {
+        if(isNaN(data[i])) continue;
         sum += data[i];
     }
-    result.push(sum / period);
     
-    // Calculate subsequent EMAs
-    for (let i = period; i < data.length; i++) {
-        const ema = (data[i] * k) + (result[result.length - 1] * (1 - k));
-        result.push(ema);
+    // Find the first valid data point to start the EMA
+    let firstValidIndex = -1;
+    for (let i = 0; i < data.length; i++) {
+        if (!isNaN(data[i])) {
+            firstValidIndex = i;
+            break;
+        }
+    }
+    
+    if (firstValidIndex === -1 || data.length < firstValidIndex + period) {
+        return result; // Not enough data
+    }
+    
+    sum = 0;
+    for (let i = firstValidIndex; i < firstValidIndex + period; i++) {
+        sum += data[i];
     }
 
-    // The result array will be shorter than data array, need to pad
-    const padding = new Array(data.length - result.length).fill(NaN);
+    result[firstValidIndex + period - 1] = sum / period;
 
-    return [...padding, ...result];
+    // Calculate subsequent EMAs
+    for (let i = firstValidIndex + period; i < data.length; i++) {
+        const prevEma = result[i - 1];
+        if (isNaN(data[i]) || isNaN(prevEma)) {
+             result[i] = prevEma; // Carry over last valid EMA
+        } else {
+             result[i] = (data[i] * k) + (prevEma * (1 - k));
+        }
+    }
+    return result;
 };
 
 
@@ -86,13 +106,16 @@ export const calculateRSI = (prices: number[], period: number): number[] => {
     const rsi: number[] = new Array(prices.length).fill(NaN);
     if (prices.length <= period) return rsi;
 
-    let gainSum = 0;
-    let lossSum = 0;
     const changes: number[] = [];
     for (let i = 1; i < prices.length; i++) {
         changes.push(prices[i] - prices[i-1]);
     }
+    
+    if (changes.length < period) return rsi;
 
+    let gainSum = 0;
+    let lossSum = 0;
+    
     // Calculate initial average gain and loss
     for (let i = 0; i < period; i++) {
         if (changes[i] > 0) {
