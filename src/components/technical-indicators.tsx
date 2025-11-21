@@ -177,7 +177,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. &gt;70 is 'overbought', &lt;30 is 'oversold'.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. >70 is 'overbought', <30 is 'oversold'.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
@@ -231,18 +231,18 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     </TooltipTrigger>
                                     <TooltipContent><p className="max-w-xs">A trend-following momentum indicator showing the relationship between two exponential moving averages (EMAs).</p></TooltipContent>
                                 </Tooltip>
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F</label>
-                                        <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-12 h-7 text-xs" />
+                                        <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-14 h-7 text-xs" />
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">S</label>
-                                        <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-12 h-7 text-xs" />
+                                        <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-14 h-7 text-xs" />
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Sig</label>
-                                        <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-12 h-7 text-xs" />
+                                        <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-14 h-7 text-xs" />
                                     </div>
                                 </div>
                             </div>
@@ -288,5 +288,3 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
-
-    
