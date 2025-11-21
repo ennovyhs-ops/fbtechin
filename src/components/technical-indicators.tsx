@@ -6,10 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Activity, Target, TrendingUp, TrendingDown, Minus, AreaChart, RefreshCw, BarChart3, Zap } from 'lucide-react';
+import { Loader2, AlertCircle, Activity, Zap } from 'lucide-react';
 import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
-import { Separator } from './ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface TechnicalIndicatorsProps {
@@ -40,7 +39,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     };
 
     const handleComplexPeriodChange = (indicator: 'macd' | 'bbands', subKey: keyof IndicatorPeriods['macd'] | keyof IndicatorPeriods['bbands'], value: string) => {
-        const numValue = parseInt(value, 10);
+        const numValue = parseFloat(value); // Use parseFloat for stdDev
          if (!isNaN(numValue) && numValue > 0) {
             setLocalPeriods(prev => ({
                 ...prev,
@@ -113,23 +112,23 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
 
     return (
-        <Card className="animate-in fade-in-50 duration-500 delay-100">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-                    <Activity className="h-6 w-6 text-accent" />
-                    <span>Technical Indicators for {ticker}</span>
-                </CardTitle>
-                <CardDescription>
-                    Latest calculated values based on daily data. You can adjust the periods and update.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <TooltipProvider>
+        <TooltipProvider>
+            <Card className="animate-in fade-in-50 duration-500 delay-100">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                        <Activity className="h-6 w-6 text-accent" />
+                        <span>Technical Indicators for {ticker}</span>
+                    </CardTitle>
+                    <CardDescription>
+                        Latest calculated values based on daily data. You can adjust the periods and update.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         
                         {/* ROC */}
                         <div className="space-y-2">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
@@ -146,7 +145,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* Bollinger Bands */}
                         <div className="space-y-2">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
@@ -173,12 +172,12 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* RSI */}
                         <div className="space-y-2">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. >70 is 'overbought', <30 is 'oversold'.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. &gt;70 is 'overbought', &lt;30 is 'oversold'.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
@@ -197,7 +196,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* Volume */}
                         <div className="space-y-2">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
@@ -225,7 +224,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* MACD */}
                         <div className="space-y-2">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MACD</h3>
@@ -256,7 +255,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* VWMA */}
                         <div className="space-y-2">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
@@ -270,23 +269,24 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                             <p className="font-semibold text-base">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
                         </div>
-
                     </div>
-                </TooltipProvider>
-                <div className="flex justify-end pt-2">
-                    <Button onClick={handleUpdateClick} disabled={loading} size="sm">
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                        {loading ? 'Calculating...' : 'Update All Indicators'}
-                    </Button>
-                </div>
-                 {error && (
-                    <Alert variant="destructive" className="mt-4">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Indicator Error</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-            </CardContent>
-        </Card>
+                    <div className="flex justify-end pt-2">
+                        <Button onClick={handleUpdateClick} disabled={loading} size="sm">
+                            {loading && data ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Activity className="mr-2 h-4 w-4" />}
+                            {loading && data ? 'Calculating...' : 'Update All Indicators'}
+                        </Button>
+                    </div>
+                     {error && (
+                        <Alert variant="destructive" className="mt-4">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Indicator Error</AlertTitle>
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                </CardContent>
+            </Card>
+        </TooltipProvider>
     );
 }
+
+    
