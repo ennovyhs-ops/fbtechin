@@ -9,7 +9,7 @@ import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, Trend
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { getCompanyName } from '@/ai/flows/get-company-name';
+import { getAssetInfo } from '@/ai/flows/get-asset-info';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
@@ -174,10 +174,10 @@ export default function Home() {
       setSubmittedTicker(ticker); 
 
       // Kick off AI flow for company name, don't await it
-      getCompanyName({ ticker }).then(result => {
-        if (result.companyName) {
-            setCompanyName(result.companyName);
-        }
+      getAssetInfo({ ticker }).then(result => {
+        if (result.companyName) setCompanyName(result.companyName);
+        if (result.exchange) setRegion(result.exchange);
+        if (result.currency) setCurrency(result.currency);
       });
 
       const marketResult = await fetchMarketData(ticker);
@@ -190,8 +190,9 @@ export default function Home() {
       
       if (marketResult.data) {
         setMarketData(marketResult.data);
-        setCurrency(marketResult.currency || null);
-        setRegion(marketResult.region || null);
+        // Let AI flow overwrite currency/region if it finds it, but use this as fallback
+        setCurrency(curr => marketResult.currency || curr);
+        setRegion(reg => marketResult.region || reg);
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
@@ -267,15 +268,15 @@ export default function Home() {
                 setSubmittedTicker(tickerFromFile);
                 
                  // Kick off AI flow for company name
-                getCompanyName({ ticker: tickerFromFile }).then(result => {
-                    if (result.companyName) {
-                        setCompanyName(result.companyName);
-                    }
+                getAssetInfo({ ticker: tickerFromFile }).then(result => {
+                    if (result.companyName) setCompanyName(result.companyName);
+                    if (result.exchange) setRegion(result.exchange);
+                    if (result.currency) setCurrency(result.currency);
                 });
 
                 setMarketData(data);
-                setCurrency('USD'); // Assume USD for CSV uploads
-                setRegion('Uploaded Data');
+                setCurrency(curr => curr || 'USD'); // Assume USD for CSV uploads if AI doesn't find it
+                setRegion(reg => reg || 'Uploaded Data');
                 
                 calculateIndicators(data, defaultPeriods);
 
