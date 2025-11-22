@@ -297,12 +297,36 @@ export default function Home() {
     }
   };
 
+  const downloadCsv = () => {
+    if (!marketData || !submittedTicker) return;
+
+    const headers = ['date', 'open', 'high', 'low', 'close', 'volume'];
+    const csvContent = [
+        headers.join(','),
+        ...marketData.map(row => headers.map(header => row[header as keyof MarketData]).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+        URL.revokeObjectURL(link.href);
+    }
+    link.href = URL.createObjectURL(blob);
+    link.download = `${submittedTicker}_market_data.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   const latestData = marketData?.[0];
 
   const showInitialSkeleton = isPending && !marketData;
 
   const apiLimitMessage = error ? parseApiLimit(error) : null;
   const isApiLimitError = !!apiLimitMessage;
+  const isApiInfoNote = error?.toLowerCase().includes('thank you for using');
+
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -547,23 +571,10 @@ export default function Home() {
                 </div>
              </CardContent>
              <CardFooter>
-                <Collapsible open={isHistoryExpanded} onOpenChange={setIsHistoryExpanded} className="w-full">
-                    <div className="flex flex-col sm:flex-row items-start gap-2">
-                        <CollapsibleTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto">
-                                {isHistoryExpanded ? 'Hide' : 'Show'} History
-                                {isHistoryExpanded ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
-                            </Button>
-                        </CollapsibleTrigger>
-                    </div>
-                    <CollapsibleContent className="w-full mt-4">
-                        {marketData && marketData.length > 0 && (
-                            <div className="animate-in fade-in-50 duration-500">
-                                <MarketDataTable data={marketData} ticker={submittedTicker} currency={currency} />
-                            </div>
-                        )}
-                    </CollapsibleContent>
-                </Collapsible>
+                 <Button variant="outline" onClick={downloadCsv}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download as CSV
+                </Button>
              </CardFooter>
            </Card>
           )}
