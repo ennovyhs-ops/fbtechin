@@ -304,8 +304,6 @@ export default function Home() {
   const apiLimitMessage = error ? parseApiLimit(error) : null;
   const isApiLimitError = !!apiLimitMessage;
 
-  const isApiInfoNote = error && error.includes('Thank you for using Alpha Vantage!');
-
   return (
     <main className="container mx-auto px-4 py-8">
       <Header />
@@ -733,8 +731,8 @@ export default function Home() {
                          <div className="flex flex-wrap gap-2">
                             <div className="h-9 w-48 bg-muted/80 rounded-md"></div>
                             <div className="h-9 w-56 bg-muted/80 rounded-md"></div>
-                            <div className="h-9 w-64 bg-muted/
-                        </div>
+                            <div className="h-9 w-64 bg-muted/80 rounded-md"></div>
+                         </div>
                       </CardContent>
                 </Card>
             </div>

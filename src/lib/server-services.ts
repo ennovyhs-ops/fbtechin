@@ -74,10 +74,10 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     currency = to_symbol;
     region = 'Forex';
   } else {
-    // For stocks, we no longer fetch metadata to save an API call.
-    // We assume USD and don't display a region.
-    currency = 'USD';
-    region = 'Alpha Vantage'; // Generic region
+    // For stocks, fetch metadata to get currency and region
+    const metadata = await fetchTickerMetadata(ticker, avApiKey);
+    currency = metadata.currency;
+    region = metadata.region;
     url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     openKey = '1. open';
@@ -156,3 +156,5 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'An unexpected error occurred while fetching news.' };
   }
 }
+
+    

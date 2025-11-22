@@ -58,3 +58,6 @@ const getCompanyNameFlow = ai.defineFlow(
     const { output } = await getCompanyNamePrompt(input);
     return output || { companyName: '' };
   }
+);
+
+    
