@@ -48,8 +48,8 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   } else {
     // Default to a standard stock lookup. This avoids an extra API call for metadata.
     // The AI flow for the company name handles identification.
-    currency = 'USD';
-    region = 'United States';
+    currency = null;
+    region = null;
     url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     openKey = '1. open';

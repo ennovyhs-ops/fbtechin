@@ -59,7 +59,9 @@ export function formatCurrency(value: string | number | null | undefined, curren
     if (isNaN(numberValue)) return 'N/A';
 
     if (!currency) {
-        return `$${numberValue.toFixed(2)}`;
+        // Determine precision for non-currency numbers
+        const hasDecimals = numberValue % 1 !== 0;
+        return numberValue.toFixed(hasDecimals ? 2 : 0);
     }
 
     try {
