@@ -8,34 +8,6 @@ import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/uti
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
 
-async function fetchTickerMetadata(ticker: string, apiKey: string): Promise<{currency: string, region: string}> {
-    const url = `${ALPHA_VANTAGE_BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${apiKey}`;
-    const defaultMetadata = { currency: 'USD', region: 'United States' };
-    try {
-        const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) return { currency: 'USD', region: '' }; 
-
-        const data = await response.json();
-        
-        const bestMatch = data?.bestMatches?.find((match: any) => match['1. symbol'].toLowerCase() === ticker.toLowerCase());
-        
-        if (bestMatch) {
-            return { currency: bestMatch['8. currency'], region: bestMatch['4. region'] };
-        }
-        
-        // Default for US stocks if no specific match is found and not an international ticker
-        if (!ticker.includes('.')) {
-            return defaultMetadata;
-        }
-
-        return { currency: 'USD', region: '' }; // Fallback
-    } catch (error) {
-        console.error("Could not fetch currency for ticker:", error);
-        return { currency: 'USD', region: '' }; // Default to USD on error
-    }
-}
-
-
 export async function fetchMarketDataService(ticker: string): Promise<FetchResult> {
   const avApiKey = serverConfig.alphaVantageApiKey;
   if (!avApiKey) {
@@ -74,10 +46,10 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     currency = to_symbol;
     region = 'Forex';
   } else {
-    // For stocks, fetch metadata to get currency and region
-    const metadata = await fetchTickerMetadata(ticker, avApiKey);
-    currency = metadata.currency;
-    region = metadata.region;
+    // Default to a standard stock lookup. This avoids an extra API call for metadata.
+    // The AI flow for the company name handles identification.
+    currency = 'USD';
+    region = 'United States';
     url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     openKey = '1. open';
@@ -156,5 +128,3 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'An unexpected error occurred while fetching news.' };
   }
 }
-
-    
