@@ -144,14 +144,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* Bollinger Bands */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2 flex-wrap">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
                                     </TooltipTrigger>
                                     <TooltipContent><p className="max-w-xs">A volatility indicator. When bands are wide, volatility is high. When they are narrow (a 'squeeze'), volatility is low.</p></TooltipContent>
                                 </Tooltip>
-                               <div className="flex items-center gap-3">
+                               <div className="flex items-center gap-x-3 gap-y-2 flex-wrap justify-end">
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
                                         <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-16 h-7 text-xs" />
@@ -223,14 +223,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* MACD */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2 flex-wrap">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MACD</h3>
                                     </TooltipTrigger>
                                     <TooltipContent><p className="max-w-xs">A trend-following momentum indicator showing the relationship between two exponential moving averages (EMAs).</p></TooltipContent>
                                 </Tooltip>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F</label>
                                         <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-14 h-7 text-xs" />
