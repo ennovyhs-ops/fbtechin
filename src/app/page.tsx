@@ -5,10 +5,11 @@ import { useState, useTransition, useCallback, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
+import { getCompanyName } from '@/ai/flows/get-company-name';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ export default function Home() {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string | null>(null);
 
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
@@ -159,6 +161,7 @@ export default function Home() {
     setAnalysisResult(null);
     setCurrency(null);
     setRegion(null);
+    setCompanyName(null);
     setIndicatorPeriods(defaultPeriods);
     setUploadedFileName(null);
   };
@@ -169,6 +172,13 @@ export default function Home() {
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker); 
+
+      // Kick off AI flow for company name, don't await it
+      getCompanyName({ ticker }).then(result => {
+        if (result.companyName) {
+            setCompanyName(result.companyName);
+        }
+      });
 
       const marketResult = await fetchMarketData(ticker);
       
@@ -256,6 +266,13 @@ export default function Home() {
                 form.setValue('ticker', tickerFromFile);
                 setSubmittedTicker(tickerFromFile);
                 
+                 // Kick off AI flow for company name
+                getCompanyName({ ticker: tickerFromFile }).then(result => {
+                    if (result.companyName) {
+                        setCompanyName(result.companyName);
+                    }
+                });
+
                 setMarketData(data);
                 setCurrency('USD'); // Assume USD for CSV uploads
                 setRegion('Uploaded Data');
@@ -396,6 +413,7 @@ export default function Home() {
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators, including the stock's position within its 52-week range.</li>
                           <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility, with an interpretation that considers the 52-week high/low.</li>
+                          <li><span className="font-semibold text-foreground">AI Company Name Lookup:</span> The company name is identified using an AI model to avoid using API quota.</li>
                           <li><span className="font-semibold text-foreground">52-Week Range:</span> The high and low for the last 52 weeks are calculated locally from historical data, using no extra API calls.</li>
                           <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
                           <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> Both AI-powered and rule-based engines suggest potential option strategies based on the momentum score.</li>
@@ -445,17 +463,30 @@ export default function Home() {
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
                </CardTitle>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground pt-1">
-                   <div className="flex items-center gap-2">
-                     <Calendar className="h-4 w-4" />
-                     <span>As of {new Date(latestData.date).toDateString()}</span>
-                   </div>
-                   {region && (
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        <span>{region}</span>
-                      </div>
-                   )}
+                <div className="space-y-2 text-sm text-muted-foreground pt-1">
+                    {companyName ? (
+                         <div className="flex items-center gap-2">
+                           <Building className="h-4 w-4" />
+                           <span>{companyName}</span>
+                         </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                           <Building className="h-4 w-4" />
+                           <span className="h-4 w-40 bg-muted/80 rounded-md animate-pulse"></span>
+                        </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                       <div className="flex items-center gap-2">
+                         <Calendar className="h-4 w-4" />
+                         <span>As of {new Date(latestData.date).toDateString()}</span>
+                       </div>
+                       {region && (
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-4 w-4" />
+                            <span>{region}</span>
+                          </div>
+                       )}
+                    </div>
                 </div>
              </CardHeader>
              <CardContent>
@@ -609,15 +640,9 @@ export default function Home() {
                         <CardTitle className="font-headline text-2xl">
                             <div className="h-8 w-48 bg-muted/80 rounded-md"></div>
                         </CardTitle>
-                        <div className="flex items-center gap-4 text-sm pt-1">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
-                                <div className="h-5 w-32 bg-muted/80 rounded-md"></div>
-                            </div>
-                             <div className="flex items-center gap-2">
-                                <Globe className="h-4 w-4" />
-                                <div className="h-5 w-24 bg-muted/80 rounded-md"></div>
-                            </div>
+                        <div className="space-y-2 pt-1">
+                            <div className="h-5 w-40 bg-muted/80 rounded-md"></div>
+                            <div className="h-5 w-56 bg-muted/80 rounded-md"></div>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -708,8 +733,8 @@ export default function Home() {
                          <div className="flex flex-wrap gap-2">
                             <div className="h-9 w-48 bg-muted/80 rounded-md"></div>
                             <div className="h-9 w-56 bg-muted/80 rounded-md"></div>
-                            <div className="h-9 w-64 bg-muted/80 rounded-md"></div>
-                         </div>
+                            <div className="h-9 w-64 bg-muted/
+                        </div>
                       </CardContent>
                 </Card>
             </div>
@@ -719,3 +744,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
