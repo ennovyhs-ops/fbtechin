@@ -9,7 +9,6 @@ import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, Trend
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { getAssetInfo } from '@/ai/flows/get-asset-info';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
@@ -49,7 +48,7 @@ const defaultPeriods: IndicatorPeriods = {
 export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{message: string, url?: string} | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [currency, setCurrency] = useState<string | null>(null);
@@ -172,31 +171,19 @@ export default function Home() {
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
-
-      // We are deliberately not running the AI and API calls in parallel.
-      // The AI flow provides the "true" ticker, which might be different from user input.
-      // We use that verified ticker for the API call to prevent errors.
       
       try {
-        const assetInfo = await getAssetInfo({ ticker });
-        
-        const verifiedTicker = ticker;
-        if (assetInfo.companyName) setCompanyName(assetInfo.companyName);
-        if (assetInfo.exchange) setRegion(assetInfo.exchange);
-        if (assetInfo.currency) setCurrency(assetInfo.currency);
-        
-        const marketResult = await fetchMarketData(verifiedTicker);
+        const marketResult = await fetchMarketData(ticker);
         
         if (marketResult.error) {
-          setError(marketResult.error);
+          setError({message: marketResult.error, url: marketResult.url});
           return;
         } 
         
         if (marketResult.data) {
           setMarketData(marketResult.data);
-          // The AI flow is the source of truth, but we can use API result as a fallback.
-          if (!assetInfo.currency && marketResult.currency) setCurrency(marketResult.currency);
-          if (!assetInfo.exchange && marketResult.region) setRegion(marketResult.region);
+          if (marketResult.currency) setCurrency(marketResult.currency);
+          if (marketResult.region) setRegion(marketResult.region);
           
           const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
           if (!isForexOrCrypto) {
@@ -205,10 +192,10 @@ export default function Home() {
               setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
           }
         } else {
-          setError("No market data was returned.");
+          setError({message: "No market data was returned."});
         }
       } catch (e: any) {
-        setError(e.message || 'An unexpected error occurred.');
+        setError({message: e.message || 'An unexpected error occurred.'});
       }
     });
   }, [calculateIndicators]);
@@ -225,14 +212,14 @@ export default function Home() {
         reader.onload = async (e) => {
             const text = e.target?.result;
             if (typeof text !== 'string') {
-                setError('Failed to read the file.');
+                setError({message: 'Failed to read the file.'});
                 return;
             }
 
             try {
                 const lines = text.split('\n').filter(line => line.trim() !== '');
                 if (lines.length < 2) {
-                    setError('CSV file must contain a header row and at least one data row.');
+                    setError({message: 'CSV file must contain a header row and at least one data row.'});
                     return;
                 }
                 
@@ -268,29 +255,21 @@ export default function Home() {
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Ensure descending order
 
                 if(data.length === 0) {
-                    setError('CSV file is empty or in an invalid format.');
+                    setError({message: 'CSV file is empty or in an invalid format.'});
                     return;
                 }
                 
                 const tickerFromFile = file.name.split(/[\._\s]/)[0].toUpperCase();
                 form.setValue('ticker', tickerFromFile);
                 setSubmittedTicker(tickerFromFile);
-                
-                 // Kick off AI flow for company name
-                getAssetInfo({ ticker: tickerFromFile }).then(result => {
-                    if (result.companyName) setCompanyName(result.companyName);
-                    if (result.exchange) setRegion(result.exchange);
-                    if (result.currency) setCurrency(result.currency);
-                });
 
                 setMarketData(data);
-                setCurrency(curr => curr || null); // Use null for CSV uploads if AI doesn't find it
-                setRegion(reg => reg || 'Uploaded Data');
+                setRegion('Uploaded Data');
                 
                 calculateIndicators(data, defaultPeriods);
 
             } catch (err: any) {
-                setError(`Error parsing CSV: ${err.message}.`);
+                setError({message: `Error parsing CSV: ${err.message}.`});
             }
         };
         reader.readAsText(file);
@@ -333,9 +312,9 @@ export default function Home() {
 
   const showInitialSkeleton = isPending && !marketData;
 
-  const apiLimitMessage = error ? parseApiLimit(error) : null;
+  const apiLimitMessage = error ? parseApiLimit(error.message) : null;
   const isApiLimitError = !!apiLimitMessage;
-  const isApiInfoNote = error?.toLowerCase().includes('thank you for using');
+  const isApiInfoNote = error?.message?.toLowerCase().includes('thank you for using');
 
 
   return (
@@ -483,7 +462,23 @@ export default function Home() {
                 <AlertTitle>{apiLimitMessage}</AlertTitle> : 
                 <>
                   <AlertTitle>{isApiInfoNote ? 'API Information' : 'Error'}</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>
+                    <p>{error.message}</p>
+                    {error.url && (
+                        <div className="mt-2 text-xs">
+                            <p className="font-semibold">Failed URL (for diagnosis):</p>
+                            <a 
+                                href={error.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="break-all text-blue-500 underline"
+                            >
+                                {error.url}
+                            </a>
+                            <p className="mt-1">Click the link to see the raw error from the API provider. Note: the API key has been removed.</p>
+                        </div>
+                    )}
+                  </AlertDescription>
                 </>
               }
             </Alert>
@@ -501,12 +496,7 @@ export default function Home() {
                            <Building className="h-4 w-4" />
                            <span>{companyName}</span>
                          </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                           <Building className="h-4 w-4" />
-                           <span className="h-4 w-40 bg-muted/80 rounded-md animate-pulse"></span>
-                        </div>
-                    )}
+                    ) : null}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                        <div className="flex items-center gap-2">
                          <Calendar className="h-4 w-4" />

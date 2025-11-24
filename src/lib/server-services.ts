@@ -46,7 +46,6 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     currency = to_symbol;
     region = 'Forex';
   } else {
-    // For stocks, we just fetch directly. The AI flow provides the metadata.
     const apiFunction = 'TIME_SERIES_DAILY';
     url = `${ALPHA_VANTAGE_BASE_URL}?function=${apiFunction}&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
@@ -57,6 +56,8 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     volumeKey = '5. volume';
     precision = 2;
   }
+
+  const urlForDisplay = url.replace(avApiKey, '[HIDDEN_API_KEY]');
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -69,7 +70,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     // Check for API limit or other critical errors from Alpha Vantage
     if (data['Note'] || data['Information'] || data['Error Message']) {
       const errorMessage = data['Note'] || data['Information'] || data['Error Message'];
-      return { error: errorMessage };
+      return { error: errorMessage, url: urlForDisplay };
     }
     
     const timeSeries = data[timeSeriesKey];
@@ -89,7 +90,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     return { data: marketData.slice(0, 730), currency, region };
   } catch (err: any) {
     console.error(`Primary fetch failed for ${ticker}:`, err.message);
-    return { error: err.message || 'An unexpected error occurred while fetching data. Please check your network connection and try again.' };
+    return { error: err.message || 'An unexpected error occurred while fetching data. Please check your network connection and try again.', url: urlForDisplay };
   }
 }
 

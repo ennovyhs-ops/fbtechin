@@ -13,6 +13,7 @@ export type FetchResult = {
   currency?: string | null;
   region?: string | null;
   error?: string | null;
+  url?: string;
 }
 
 export type RsiData = {
