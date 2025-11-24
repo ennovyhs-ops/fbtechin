@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -52,27 +53,27 @@ export function parseApiLimit(note: string): string | null {
   return "You have reached the Alpha Vantage API rate limit.";
 }
 
-export function formatCurrency(value: string | number | null | undefined, currency?: string | null): string {
+export function formatCurrency(value: string | number | null | undefined, currency: string | null): string {
     if (value === null || value === undefined) return 'N/A';
     
     const numberValue = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(numberValue)) return 'N/A';
 
-    if (!currency) {
-        // Determine precision for non-currency numbers
-        const hasDecimals = numberValue % 1 !== 0;
-        return numberValue.toFixed(hasDecimals ? 2 : 0);
-    }
+    // For non-forex, default to USD if currency is not provided.
+    const displayCurrency = currency || 'USD';
+    const isForex = isCurrencyPair(displayCurrency) || (currency && currency.length === 3 && currency !== 'USD');
+
 
     try {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 4,
+            currency: displayCurrency,
+            // Forex pairs need higher precision
+            minimumFractionDigits: isForex ? 4 : 2,
+            maximumFractionDigits: isForex ? 4 : 2,
         }).format(numberValue);
     } catch (e) {
         // Fallback for unknown currency codes
-        return `${currency} ${numberValue.toFixed(2)}`;
+        return `${displayCurrency} ${numberValue.toFixed(isForex ? 4 : 2)}`;
     }
 }

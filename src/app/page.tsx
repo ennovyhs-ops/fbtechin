@@ -53,7 +53,6 @@ export default function Home() {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>(null);
 
   const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
@@ -160,7 +159,6 @@ export default function Home() {
     setAnalysisResult(null);
     setCurrency(null);
     setRegion(null);
-    setCompanyName(null);
     setIndicatorPeriods(defaultPeriods);
     setUploadedFileName(null);
   };
@@ -265,6 +263,7 @@ export default function Home() {
 
                 setMarketData(data);
                 setRegion('Uploaded Data');
+                setCurrency('USD'); // Default to USD for uploaded files
                 
                 calculateIndicators(data, defaultPeriods);
 
@@ -491,12 +490,6 @@ export default function Home() {
                  Latest Price for {submittedTicker}
                </CardTitle>
                 <div className="space-y-2 text-sm text-muted-foreground pt-1">
-                    {companyName ? (
-                         <div className="flex items-center gap-2">
-                           <Building className="h-4 w-4" />
-                           <span>{companyName}</span>
-                         </div>
-                    ) : null}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                        <div className="flex items-center gap-2">
                          <Calendar className="h-4 w-4" />
@@ -753,5 +746,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
