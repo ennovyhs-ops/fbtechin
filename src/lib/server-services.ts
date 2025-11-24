@@ -41,23 +41,52 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     highKey = '2. high';
     lowKey = '3. low';
     closeKey = '4. close';
-    volumeKey = '5. volume';
+    volumeKey = '5. volume'; // This key doesn't exist for FX, will result in 'N/A'
     precision = 4;
     currency = to_symbol;
     region = 'Forex';
   } else {
-    // Default to a standard stock lookup. This avoids an extra API call for metadata.
-    // The AI flow for the company name handles identification.
-    currency = null;
-    region = null;
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
-    timeSeriesKey = 'Time Series (Daily)';
-    openKey = '1. open';
-    highKey = '2. high';
-    lowKey = '3. low';
-    closeKey = '4. close';
-    volumeKey = '5. volume';
-    precision = 2;
+    // For stocks/ETFs, we now use a two-step process.
+    // 1. Search for the symbol to get accurate metadata and determine the best API function.
+    const searchUrl = `${ALPHA_VANTAGE_BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${avApiKey}`;
+    
+    try {
+        const searchResponse = await fetch(searchUrl, { cache: 'no-store' });
+        const searchData = await searchResponse.json();
+        
+        if (searchData['Note'] || searchData['Information']) {
+            return { error: searchData['Note'] || searchData['Information'] };
+        }
+        if (searchData['Error Message']) {
+             return { error: `Symbol search failed: ${searchData['Error Message']}` };
+        }
+        if (!searchData.bestMatches || searchData.bestMatches.length === 0) {
+            return { error: `No matching symbols found for "${ticker}".` };
+        }
+        
+        // Find the best match, preferring exact ticker matches
+        const bestMatch = searchData.bestMatches.find((m: any) => m['1. symbol'] === ticker) || searchData.bestMatches[0];
+        
+        const symbol = bestMatch['1. symbol'];
+        currency = bestMatch['8. currency'];
+        region = bestMatch['4. region'];
+        
+        // Determine which function to use. Adjusted is generally more robust.
+        // Some asset types like ETFs might not work with TIME_SERIES_DAILY.
+        const apiFunction = 'TIME_SERIES_DAILY';
+        url = `${ALPHA_VANTAGE_BASE_URL}?function=${apiFunction}&symbol=${symbol}&apikey=${avApiKey}&outputsize=full`;
+        timeSeriesKey = 'Time Series (Daily)';
+        openKey = '1. open';
+        highKey = '2. high';
+        lowKey = '3. low';
+        closeKey = '4. close';
+        volumeKey = '5. volume';
+        precision = 2;
+
+    } catch (err: any) {
+        console.error(`Symbol search failed for ${ticker}:`, err.message);
+        return { error: `Failed to search for ticker symbol "${ticker}". It may be invalid or the service is temporarily down.` };
+    }
   }
 
   try {
@@ -76,14 +105,8 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     
     const timeSeries = data[timeSeriesKey];
     if (!timeSeries) {
-      // Try to get metadata for a more specific error message if the symbol is not found.
-       const metadata = data['Meta Data'];
-       if (metadata) {
-         throw new Error(`No data found for symbol "${ticker}". Please ensure it's a valid symbol.`);
-       }
-       throw new Error(`No data found for symbol "${ticker}" from Alpha Vantage.`);
+       throw new Error(`No time series data found for symbol "${ticker}". Please ensure it's a valid symbol.`);
     }
-
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
       date,
