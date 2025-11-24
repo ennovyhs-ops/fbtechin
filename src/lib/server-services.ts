@@ -8,11 +8,13 @@ import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/uti
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
 
-export async function fetchMarketDataService(ticker: string): Promise<FetchResult> {
+export async function fetchMarketDataService(ticker: string, functionType?: 'TIME_SERIES_DAILY' | 'AUTO'): Promise<FetchResult> {
   const avApiKey = serverConfig.alphaVantageApiKey;
   if (!avApiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
+  
+  const effectiveFunctionType = functionType || 'AUTO';
 
   let url = '';
   let timeSeriesKey = '';
@@ -21,7 +23,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   let currency: string | null = null;
   let region: string | null = null;
 
-  if (isCryptoPair(ticker)) {
+  if (effectiveFunctionType === 'AUTO' && isCryptoPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     url = `${ALPHA_VANTAGE_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Digital Currency Daily)';
@@ -30,18 +32,18 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     lowKey = `3a. low (${to_symbol})`;
     closeKey = `4a. close (${to_symbol})`;
     volumeKey = '5. volume';
-    precision = 2; // Keep more precision for crypto
+    precision = 2;
     currency = to_symbol;
     region = 'Cryptocurrency';
-  } else if (isCurrencyPair(ticker)) {
+  } else if (effectiveFunctionType === 'AUTO' && isCurrencyPair(ticker)) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     url = `${ALPHA_VANTAGE_BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series FX (Daily)';
-    precision = 4; // More precision for forex
+    precision = 4;
     currency = to_symbol;
     region = 'Forex';
   } else {
-    // Default to a standard stock
+    // Default to a standard stock or if TIME_SERIES_DAILY is forced
     url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
     timeSeriesKey = 'Time Series (Daily)';
     currency = 'USD';

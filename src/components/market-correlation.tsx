@@ -79,7 +79,8 @@ conclusion
         return;
       }
       
-      const comparisonResult = await fetchMarketData(comparisonTicker.toUpperCase());
+      // Explicitly call TIME_SERIES_DAILY
+      const comparisonResult = await fetchMarketData(comparisonTicker.toUpperCase(), 'TIME_SERIES_DAILY');
       if (comparisonResult.error) {
         setError(comparisonResult.error);
         return;
