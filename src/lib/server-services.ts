@@ -46,47 +46,16 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     currency = to_symbol;
     region = 'Forex';
   } else {
-    // For stocks/ETFs, we now use a two-step process.
-    // 1. Search for the symbol to get accurate metadata and determine the best API function.
-    const searchUrl = `${ALPHA_VANTAGE_BASE_URL}?function=SYMBOL_SEARCH&keywords=${ticker}&apikey=${avApiKey}`;
-    
-    try {
-        const searchResponse = await fetch(searchUrl, { cache: 'no-store' });
-        const searchData = await searchResponse.json();
-        
-        if (searchData['Note'] || searchData['Information']) {
-            return { error: searchData['Note'] || searchData['Information'] };
-        }
-        if (searchData['Error Message']) {
-             return { error: `Symbol search failed: ${searchData['Error Message']}` };
-        }
-        if (!searchData.bestMatches || searchData.bestMatches.length === 0) {
-            return { error: `No matching symbols found for "${ticker}".` };
-        }
-        
-        // Find the best match, preferring exact ticker matches
-        const bestMatch = searchData.bestMatches.find((m: any) => m['1. symbol'] === ticker) || searchData.bestMatches[0];
-        
-        const symbol = bestMatch['1. symbol'];
-        currency = bestMatch['8. currency'];
-        region = bestMatch['4. region'];
-        
-        // Determine which function to use. Adjusted is generally more robust.
-        // Some asset types like ETFs might not work with TIME_SERIES_DAILY.
-        const apiFunction = 'TIME_SERIES_DAILY';
-        url = `${ALPHA_VANTAGE_BASE_URL}?function=${apiFunction}&symbol=${symbol}&apikey=${avApiKey}&outputsize=full`;
-        timeSeriesKey = 'Time Series (Daily)';
-        openKey = '1. open';
-        highKey = '2. high';
-        lowKey = '3. low';
-        closeKey = '4. close';
-        volumeKey = '5. volume';
-        precision = 2;
-
-    } catch (err: any) {
-        console.error(`Symbol search failed for ${ticker}:`, err.message);
-        return { error: `Failed to search for ticker symbol "${ticker}". It may be invalid or the service is temporarily down.` };
-    }
+    // For stocks, we just fetch directly. The AI flow provides the metadata.
+    const apiFunction = 'TIME_SERIES_DAILY';
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${apiFunction}&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
+    timeSeriesKey = 'Time Series (Daily)';
+    openKey = '1. open';
+    highKey = '2. high';
+    lowKey = '3. low';
+    closeKey = '4. close';
+    volumeKey = '5. volume';
+    precision = 2;
   }
 
   try {
@@ -151,3 +120,5 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'An unexpected error occurred while fetching news.' };
   }
 }
+
+    

@@ -171,28 +171,32 @@ export default function Home() {
 
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
-      setSubmittedTicker(ticker); 
+      
+      // Step 1: Always get asset info first (0 API calls)
+      // This gives us a verified ticker, company name, exchange, and currency.
+      const assetInfo = await getAssetInfo({ ticker });
+      
+      const verifiedTicker = ticker; // We use the user's ticker for the API call
+      setSubmittedTicker(verifiedTicker); 
 
-      // Kick off AI flow for company name, don't await it
-      getAssetInfo({ ticker }).then(result => {
-        if (result.companyName) setCompanyName(result.companyName);
-        if (result.exchange) setRegion(result.exchange);
-        if (result.currency) setCurrency(result.currency);
-      });
-
-      const marketResult = await fetchMarketData(ticker);
+      if (assetInfo.companyName) setCompanyName(assetInfo.companyName);
+      if (assetInfo.exchange) setRegion(assetInfo.exchange);
+      if (assetInfo.currency) setCurrency(assetInfo.currency);
+      
+      // Step 2: Fetch market data with the verified ticker (1 API call)
+      const marketResult = await fetchMarketData(verifiedTicker);
       
       if (marketResult.error) {
         setError(marketResult.error);
-        setSubmittedTicker(null);
+        setSubmittedTicker(null); // Clear ticker on error
         return;
       } 
       
       if (marketResult.data) {
         setMarketData(marketResult.data);
-        // Let AI flow overwrite currency/region if it finds it, but use this as fallback
-        setCurrency(curr => marketResult.currency || curr);
-        setRegion(reg => marketResult.region || reg);
+        // Use currency/region from market data as a fallback if AI didn't provide it
+        if (!assetInfo.currency && marketResult.currency) setCurrency(marketResult.currency);
+        if (!assetInfo.exchange && marketResult.region) setRegion(marketResult.region);
         
         const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
         if (!isForexOrCrypto) {
@@ -275,7 +279,7 @@ export default function Home() {
                 });
 
                 setMarketData(data);
-                setCurrency(curr => curr || 'USD'); // Assume USD for CSV uploads if AI doesn't find it
+                setCurrency(curr => curr || null); // Use null for CSV uploads if AI doesn't find it
                 setRegion(reg => reg || 'Uploaded Data');
                 
                 calculateIndicators(data, defaultPeriods);
