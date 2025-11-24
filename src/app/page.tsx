@@ -171,39 +171,44 @@ export default function Home() {
 
     startTransition(async () => {
       const ticker = values.ticker.toUpperCase();
-      
-      // Step 1: Always get asset info first (0 API calls)
-      // This gives us a verified ticker, company name, exchange, and currency.
-      const assetInfo = await getAssetInfo({ ticker });
-      
-      const verifiedTicker = ticker; // We use the user's ticker for the API call
-      setSubmittedTicker(verifiedTicker); 
+      setSubmittedTicker(ticker);
 
-      if (assetInfo.companyName) setCompanyName(assetInfo.companyName);
-      if (assetInfo.exchange) setRegion(assetInfo.exchange);
-      if (assetInfo.currency) setCurrency(assetInfo.currency);
+      // We are deliberately not running the AI and API calls in parallel.
+      // The AI flow provides the "true" ticker, which might be different from user input.
+      // We use that verified ticker for the API call to prevent errors.
       
-      // Step 2: Fetch market data with the verified ticker (1 API call)
-      const marketResult = await fetchMarketData(verifiedTicker);
-      
-      if (marketResult.error) {
-        setError(marketResult.error);
-        setSubmittedTicker(null); // Clear ticker on error
-        return;
-      } 
-      
-      if (marketResult.data) {
-        setMarketData(marketResult.data);
-        // Use currency/region from market data as a fallback if AI didn't provide it
-        if (!assetInfo.currency && marketResult.currency) setCurrency(marketResult.currency);
-        if (!assetInfo.exchange && marketResult.region) setRegion(marketResult.region);
+      try {
+        const assetInfo = await getAssetInfo({ ticker });
         
-        const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
-        if (!isForexOrCrypto) {
-            calculateIndicators(marketResult.data, defaultPeriods);
+        const verifiedTicker = ticker;
+        if (assetInfo.companyName) setCompanyName(assetInfo.companyName);
+        if (assetInfo.exchange) setRegion(assetInfo.exchange);
+        if (assetInfo.currency) setCurrency(assetInfo.currency);
+        
+        const marketResult = await fetchMarketData(verifiedTicker);
+        
+        if (marketResult.error) {
+          setError(marketResult.error);
+          return;
+        } 
+        
+        if (marketResult.data) {
+          setMarketData(marketResult.data);
+          // The AI flow is the source of truth, but we can use API result as a fallback.
+          if (!assetInfo.currency && marketResult.currency) setCurrency(marketResult.currency);
+          if (!assetInfo.exchange && marketResult.region) setRegion(marketResult.region);
+          
+          const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
+          if (!isForexOrCrypto) {
+              calculateIndicators(marketResult.data, defaultPeriods);
+          } else {
+              setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
+          }
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
+          setError("No market data was returned.");
         }
+      } catch (e: any) {
+        setError(e.message || 'An unexpected error occurred.');
       }
     });
   }, [calculateIndicators]);
