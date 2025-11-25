@@ -50,12 +50,12 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
       date,
-      open: values[isCrypto ? '1a. open (USD)' : '1. open'],
-      high: values[isCrypto ? '2a. high (USD)' : '2. high'],
-      low: values[isCrypto ? '3a. low (USD)' : '3. low'],
-      close: values[isCrypto ? '4a. close (USD)' : '4. close'],
-      volume: values[isCrypto ? '5. volume' : '5. volume'],
-    }));
+      open: values[isForex ? '1. open' : isCrypto ? '1a. open (USD)' : '1. open'],
+      high: values[isForex ? '2. high' : isCrypto ? '2a. high (USD)' : '2. high'],
+      low: values[isForex ? '3. low' : isCrypto ? '3a. low (USD)' : '3. low'],
+      close: values[isForex ? '4. close' : isCrypto ? '4a. close (USD)' : '4. close'],
+      volume: values[isCrypto ? '5. volume' : '5. volume'] || 'N/A',
+    })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return { data: marketData.slice(0, 730) };
 
