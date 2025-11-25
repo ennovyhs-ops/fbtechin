@@ -61,7 +61,7 @@ export function formatCurrency(value: string | number | null | undefined, curren
 
     // For non-forex, default to USD if currency is not provided.
     const displayCurrency = currency || 'USD';
-    const isForex = isCurrencyPair(displayCurrency) || (currency && currency.length === 3 && currency !== 'USD');
+    const isForex = currency !== 'USD';
 
 
     try {
