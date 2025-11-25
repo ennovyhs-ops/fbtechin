@@ -65,32 +65,6 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  const fiftyTwoWeekRange = useMemo(() => {
-    if (!marketData || marketData.length === 0) return null;
-    
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-    const relevantData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
-    if (relevantData.length === 0) return null;
-
-    let high = -Infinity;
-    let low = Infinity;
-
-    relevantData.forEach(d => {
-        const h = parseFloat(d.high);
-        const l = parseFloat(d.low);
-        if (!isNaN(h) && h > high) high = h;
-        if (!isNaN(l) && l < low) low = l;
-    });
-
-    if (high === -Infinity || low === Infinity) return null;
-
-    return { high, low };
-
-  }, [marketData]);
-
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -540,27 +514,6 @@ export default function Home() {
                         </div>
                     </div>
                   </div>
-                    {fiftyTwoWeekRange && (
-                        <>
-                            <div className="border-t border-dashed -mx-6 my-2"></div>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div className="flex items-center gap-2">
-                                    <LineChart className="text-muted-foreground h-5 w-5" />
-                                    <div>
-                                        <p className="text-muted-foreground">52-Week High</p>
-                                        <p className="font-semibold">{formatCurrency(fiftyTwoWeekRange.high, currency)}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                     <LineChart className="text-muted-foreground h-5 w-5" />
-                                     <div>
-                                        <p className="text-muted-foreground">52-Week Low</p>
-                                        <p className="font-semibold">{formatCurrency(fiftyTwoWeekRange.low, currency)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    )}
                 </div>
              </CardContent>
              <CardFooter>
