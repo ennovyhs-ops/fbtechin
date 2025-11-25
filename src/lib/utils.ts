@@ -80,7 +80,7 @@ export function formatCurrency(value: string | number | null | undefined, curren
             style: 'currency',
             currency: currency || 'USD',
             minimumFractionDigits: isForex ? 4 : 2,
-            maximumFractionDigits: isForex ? 4 : 2,
+            maximumFractionDigits: isForex ? 5 : 2,
         }).format(numberValue);
     } catch (e) {
         // Fallback for unknown currency codes

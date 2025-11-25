@@ -48,14 +48,37 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
       return { error: `Time series data not found for "${ticker}". It may be an invalid symbol, or the API function is not supported for this asset type.`, url: urlForDisplay };
     }
 
-    const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
-      date,
-      open: values[isForex ? '1. open' : isCrypto ? '1a. open (USD)' : '1. open'],
-      high: values[isForex ? '2. high' : isCrypto ? '2a. high (USD)' : '2. high'],
-      low: values[isForex ? '3. low' : isCrypto ? '3a. low (USD)' : '3. low'],
-      close: values[isForex ? '4. close' : isCrypto ? '4a. close (USD)' : '4. close'],
-      volume: values[isCrypto ? '5. volume' : '5. volume'] || 'N/A',
-    })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => {
+      if (isForex) {
+        return {
+          date,
+          open: values['1. open'],
+          high: values['2. high'],
+          low: values['3. low'],
+          close: values['4. close'],
+          volume: 'N/A',
+        }
+      } else if (isCrypto) {
+         return {
+          date,
+          // Crypto uses keys like "1a. open (USD)"
+          open: values[Object.keys(values).find(k => k.startsWith('1a. open'))!],
+          high: values[Object.keys(values).find(k => k.startsWith('2a. high'))!],
+          low: values[Object.keys(values).find(k => k.startsWith('3a. low'))!],
+          close: values[Object.keys(values).find(k => k.startsWith('4a. close'))!],
+          volume: values[Object.keys(values).find(k => k.startsWith('5. volume'))!],
+        }
+      } else { // Stocks
+        return {
+          date,
+          open: values['1. open'],
+          high: values['2. high'],
+          low: values['3. low'],
+          close: values['4. close'],
+          volume: values['5. volume'],
+        }
+      }
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return { data: marketData.slice(0, 730) };
 
