@@ -10,8 +10,6 @@ export type MarketData = {
 
 export type FetchResult = {
   data?: MarketData[] | null;
-  currency?: string | null;
-  region?: string | null;
   error?: string | null;
   url?: string;
 }
@@ -118,3 +116,5 @@ export type IndicatorPeriods = {
   maVol: number;
   vwma: number;
 };
+
+    

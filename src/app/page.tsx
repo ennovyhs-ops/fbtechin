@@ -144,30 +144,25 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
       
-      try {
-        const marketResult = await fetchMarketData(ticker);
+      const marketResult = await fetchMarketData(ticker);
+      
+      if (marketResult.error) {
+        setError({message: marketResult.error, url: marketResult.url});
+        setMarketData(null);
+      } else if (marketResult.data) {
+        setMarketData(marketResult.data);
+        setCurrency('USD'); // Assuming USD for simplicity in this reverted state
+        setRegion('United States'); // Assuming US for simplicity
         
-        if (marketResult.error) {
-          setError({message: marketResult.error, url: marketResult.url});
-          return;
-        } 
-        
-        if (marketResult.data) {
-          setMarketData(marketResult.data);
-          if (marketResult.currency) setCurrency(marketResult.currency);
-          if (marketResult.region) setRegion(marketResult.region);
-          
-          const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
-          if (!isForexOrCrypto) {
-              calculateIndicators(marketResult.data, defaultPeriods);
-          } else {
-              setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
-          }
+        const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
+        if (!isForexOrCrypto) {
+            calculateIndicators(marketResult.data, defaultPeriods);
         } else {
-          setError({message: "No market data was returned."});
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
         }
-      } catch (e: any) {
-        setError({message: e.message || 'An unexpected error occurred.'});
+      } else {
+        setError({message: "No market data was returned."});
+        setMarketData(null);
       }
     });
   }, [calculateIndicators]);
@@ -699,3 +694,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
