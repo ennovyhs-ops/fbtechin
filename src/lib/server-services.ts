@@ -3,6 +3,7 @@
 
 import type { MarketData, FetchResult, NewsSentimentData } from '@/lib/types';
 import { serverConfig } from '@/lib/server-config';
+import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/utils';
 
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
@@ -11,8 +12,25 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   if (!avApiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
-  
-  const url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
+
+  let url: string;
+  let dataKey: string;
+  const isForex = isCurrencyPair(ticker);
+  const isCrypto = isCryptoPair(ticker);
+
+  if (isForex) {
+    const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
+    dataKey = 'Time Series FX (Daily)';
+  } else if (isCrypto) {
+    const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
+    dataKey = `Time Series (Digital Currency Daily)`;
+  } else {
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
+    dataKey = 'Time Series (Daily)';
+  }
+
   const urlForDisplay = url.replace(avApiKey, '[HIDDEN_API_KEY]');
 
   try {
@@ -25,22 +43,20 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
       return { error: data['Note'] || data['Information'] || data['Error Message'], url: urlForDisplay };
     }
     
-    const timeSeries = data['Time Series (Daily)'];
+    const timeSeries = data[dataKey];
     if (!timeSeries) {
-      // This is a common failure point for invalid tickers or incorrect asset types
-      return { error: `Time series data not found for "${ticker}". It may be an invalid symbol or the API function is not supported for this asset type (e.g. Forex/Crypto).`, url: urlForDisplay };
+      return { error: `Time series data not found for "${ticker}". It may be an invalid symbol, or the API function is not supported for this asset type.`, url: urlForDisplay };
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => ({
       date,
-      open: values['1. open'],
-      high: values['2. high'],
-      low: values['3. low'],
-      close: values['4. close'],
-      volume: values['5. volume'],
+      open: values[isCrypto ? '1a. open (USD)' : '1. open'],
+      high: values[isCrypto ? '2a. high (USD)' : '2. high'],
+      low: values[isCrypto ? '3a. low (USD)' : '3. low'],
+      close: values[isCrypto ? '4a. close (USD)' : '4. close'],
+      volume: values[isCrypto ? '5. volume' : '5. volume'],
     }));
 
-    // Return only the most recent 2 years of data for performance
     return { data: marketData.slice(0, 730) };
 
   } catch(err: any) {
@@ -75,5 +91,3 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'An unexpected error occurred while fetching news.' };
   }
 }
-
-    
