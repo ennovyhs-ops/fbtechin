@@ -26,9 +26,23 @@ export function isCurrencyPair(ticker: string): boolean {
 
 export function isCryptoPair(ticker: string): boolean {
   if (ticker.length < 6) return false; // e.g. BTCUSD
-  const to = ticker.substring(ticker.length - 3).toUpperCase();
-  const from = ticker.substring(0, ticker.length - 3).toUpperCase();
-  return CRYPTO_CURRENCIES.has(from) && FOREX_CURRENCIES.has(to);
+  
+  // A common crypto format is BTCUSD, ETHUSD, etc.
+  const maybeTo = ticker.slice(-3).toUpperCase();
+  const maybeFrom = ticker.slice(0, -3).toUpperCase();
+
+  if (FOREX_CURRENCIES.has(maybeTo)) {
+    // This could be a crypto-fiat pair. It's harder to definitively know all crypto symbols.
+    // We'll make an assumption based on common pairs. If the 'from' is not a forex currency, it might be crypto.
+    return !FOREX_CURRENCIES.has(maybeFrom);
+  }
+
+  // Fallback for direct crypto symbol check if we expand the list
+  if (CRYPTO_CURRENCIES.has(maybeFrom) && FOREX_CURRENCIES.has(maybeTo)) {
+    return true;
+  }
+
+  return false;
 }
 
 export function getCurrencyOrCryptoPair(ticker: string): { from_symbol: string, to_symbol: string } {
@@ -59,21 +73,17 @@ export function formatCurrency(value: string | number | null | undefined, curren
     const numberValue = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(numberValue)) return 'N/A';
 
-    // For non-forex, default to USD if currency is not provided.
-    const displayCurrency = currency || 'USD';
-    const isForex = currency !== 'USD';
-
+    const isForex = currency ? FOREX_CURRENCIES.has(currency.toUpperCase()) && currency !== 'USD' : false;
 
     try {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: displayCurrency,
-            // Forex pairs need higher precision
+            currency: currency || 'USD',
             minimumFractionDigits: isForex ? 4 : 2,
             maximumFractionDigits: isForex ? 4 : 2,
         }).format(numberValue);
     } catch (e) {
         // Fallback for unknown currency codes
-        return `${displayCurrency} ${numberValue.toFixed(isForex ? 4 : 2)}`;
+        return `${currency || '$'} ${numberValue.toFixed(isForex ? 4 : 2)}`;
     }
 }
