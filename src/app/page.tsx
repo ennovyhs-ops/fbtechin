@@ -5,7 +5,7 @@ import { useState, useTransition, useCallback, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -275,8 +275,28 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
+  const { latestData, fiftyTwoWeek } = useMemo(() => {
+    if (!marketData || marketData.length === 0) {
+      return { latestData: null, fiftyTwoWeek: null };
+    }
 
-  const latestData = marketData?.[0];
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const oneYearData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
+    
+    if (oneYearData.length === 0) {
+        return { latestData: marketData[0], fiftyTwoWeek: null };
+    }
+
+    const high52 = Math.max(...oneYearData.map(d => parseFloat(d.high)));
+    const low52 = Math.min(...oneYearData.map(d => parseFloat(d.low)));
+    
+    return {
+      latestData: marketData[0],
+      fiftyTwoWeek: { high: high52, low: low52 }
+    };
+  }, [marketData]);
 
   const showInitialSkeleton = isPending && !marketData;
 
@@ -479,7 +499,7 @@ export default function Home() {
                       <p className="text-4xl md:text-5xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
                       <p className="text-lg text-muted-foreground font-medium sm:pb-1">Close</p>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                         <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
@@ -501,6 +521,24 @@ export default function Home() {
                             <p className="font-semibold">{formatCurrency(latestData.low, currency)}</p>
                         </div>
                     </div>
+                    {fiftyTwoWeek && (
+                      <>
+                        <div className="flex items-center gap-2">
+                            <Crown className="text-muted-foreground h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">52-Wk High</p>
+                                <p className="font-semibold">{formatCurrency(fiftyTwoWeek.high, currency)}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Mountain className="text-muted-foreground h-5 w-5" />
+                            <div>
+                                <p className="text-muted-foreground">52-Wk Low</p>
+                                <p className="font-semibold">{formatCurrency(fiftyTwoWeek.low, currency)}</p>
+                            </div>
+                        </div>
+                      </>
+                    )}
                     <div className="flex items-center gap-2">
                         <Scale className="text-muted-foreground h-5 w-5" />
                         <div>
@@ -694,5 +732,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
