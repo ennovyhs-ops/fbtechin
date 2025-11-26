@@ -13,8 +13,6 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
 
-  // ISOLATED LOGIC: Forcibly use the TIME_SERIES_DAILY function for stocks.
-  // This simplifies the request to test the core API functionality.
   const func = 'TIME_SERIES_DAILY';
   const dataKey = 'Time Series (Daily)';
   let url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
@@ -37,7 +35,6 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => {
-      // Logic for standard stocks
       return {
         date,
         open: values['1. open'],
