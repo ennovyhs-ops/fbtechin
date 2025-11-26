@@ -10,6 +10,7 @@
 import type { MarketData } from '@/lib/types';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 import { z } from 'zod';
+import { isCryptoPair, isCurrencyPair } from '@/lib/utils';
 
 
 const PriceTargetObjectSchema = z.object({
@@ -48,6 +49,7 @@ const getVariableTimeframe = (trendStrength: number): { timeframe: string, multi
 }
 
 export async function predictPriceTarget(
+  ticker: string,
   marketData: MarketData[],
   analysis: AnalyzeStockMomentumOutput,
 ): Promise<PredictPriceTargetOutput | { error: string }> {
@@ -76,6 +78,20 @@ export async function predictPriceTarget(
     });
 
     const hasValid52WeekRange = high52 !== -Infinity && low52 !== Infinity;
+
+    // For currency/crypto, we don't predict a price target, just show the 52-week range info in the interpretation.
+    if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
+        const neutralInterpretation = `The 52-week range for ${ticker} is from a low of ${low52.toFixed(4)} to a high of ${high52.toFixed(4)}. Price target projection is not applicable for this asset type.`;
+        const neutralTarget = {
+            priceTarget: currentPrice,
+            timeframe: "N/A",
+            interpretation: neutralInterpretation
+        };
+        return {
+            shortTerm: neutralTarget,
+            longTerm: neutralTarget,
+        }
+    }
 
 
     // --- Short-Term Calculation ---

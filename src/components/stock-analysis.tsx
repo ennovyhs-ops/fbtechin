@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, isCryptoPair, isCurrencyPair } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 
@@ -69,7 +69,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
           
           if (analysisResult && !analysisResult.error) {
             onAnalysisComplete(analysisResult as AnalyzeStockMomentumOutput);
-            const predictionResult = await predictPriceTarget(marketData, analysisResult as AnalyzeStockMomentumOutput);
+            const predictionResult = await predictPriceTarget(ticker, marketData, analysisResult as AnalyzeStockMomentumOutput);
             setPrediction(predictionResult);
           }
         } catch (e: any) {
@@ -134,22 +134,6 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     );
   }
   
-  if (analysis.signal === 'N/A') {
-      return (
-           <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-                    <Zap className="h-6 w-6 text-muted-foreground" />
-                    <span>Momentum Analysis</span>
-                </CardTitle>
-                <CardDescription>
-                    {analysis.interpretation}
-                </CardDescription>
-            </CardHeader>
-        </Card>
-      )
-  }
-
   const { icon, color } = getSignalInfo(analysis.signal);
   const actionExplanation = actionGlossary[analysis.tradeAction];
   const isPredictionError = !prediction || 'error' in prediction;
@@ -160,9 +144,30 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     if (isPredictionError) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Failed</div>;
     
     const targetData = (prediction as PredictPriceTargetOutput)[targetType];
+    const isNotApplicable = targetData.timeframe === "N/A";
+    
+    if (isNotApplicable) {
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className="flex flex-col items-center gap-2 cursor-help text-center max-w-sm">
+                             <div className="flex items-center gap-3">
+                                <Icon className="h-5 w-5 text-muted-foreground" />
+                                <span className="font-semibold text-sm text-muted-foreground">Price Target N/A</span>
+                            </div>
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p className="max-w-xs">{targetData.interpretation}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+    
     const isUp = targetData.priceTarget > parseFloat(marketData![0].close);
     const predColor = isUp ? 'text-green-400' : 'text-red-400';
-    const PredIcon = isUp ? TrendingUp : TrendingDown;
 
     return (
         <TooltipProvider>
@@ -184,6 +189,33 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             </Tooltip>
         </TooltipProvider>
     );
+  }
+
+  // Simplified view for Forex/Crypto
+  if (analysis.signal === 'N/A') {
+      return (
+           <Card className="animate-in fade-in-50 duration-500 delay-300">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                    <Zap className="h-6 w-6 text-accent" />
+                    <span>Calculated Analysis for {ticker}</span>
+                </CardTitle>
+                <CardDescription>
+                    {analysis.interpretation}
+                </CardDescription>
+            </CardHeader>
+             <CardContent className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
+                    <div className="flex flex-col items-center gap-4 text-center">
+                         <h3 className="font-semibold text-sm text-muted-foreground">Calculated Price Target</h3>
+                         <div className="flex flex-col sm:flex-row items-center gap-6">
+                            <PriceTargetContent targetType="shortTerm" icon={Clock} />
+                         </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+      )
   }
 
   return (

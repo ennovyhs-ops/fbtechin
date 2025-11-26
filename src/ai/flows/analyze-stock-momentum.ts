@@ -47,18 +47,11 @@ export async function analyzeStockMomentum(
   marketData: MarketData[],
 ): Promise<AnalyzeStockMomentumOutput | { error: string }> {
   try {
-    if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
-      return {
-        totalScore: 0,
-        signal: 'N/A',
-        interpretation: 'AI momentum analysis is not applicable to currency or crypto pairs.',
-        tradeAction: 'Technical indicator analysis is not supported for currency or crypto pairs.'
-      };
-    }
-    
     if (!marketData || marketData.length < 50) { // Need enough data for all indicators
         return { error: "Insufficient market data for analysis. At least 50 days of data are required." };
     }
+
+    const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
     
     // Check if data is synthesized (close-only)
     const isSynthesizedData = marketData.every(d => d.open === d.close && d.high === d.close && d.low === d.close);
@@ -74,8 +67,8 @@ export async function analyzeStockMomentum(
         fiftyTwoWeek: 0.10,
     };
 
-    // If data is synthesized, Volume-Price Confirmation is not possible. Redistribute its weight.
-    if (isSynthesizedData) {
+    // If data is synthesized or it's a forex pair, Volume-Price Confirmation is not possible. Redistribute its weight.
+    if (isSynthesizedData || isCurrencyPair(ticker)) {
         const redistributedWeight = weights.volume / 4;
         weights = {
             ...weights,
@@ -84,6 +77,27 @@ export async function analyzeStockMomentum(
             vwma: weights.vwma + redistributedWeight,
             rsi: weights.rsi + redistributedWeight,
             macd: weights.macd + redistributedWeight,
+        };
+    }
+    
+    // For forex/crypto, we only want to calculate the 52-week range, not the full momentum score.
+    if (isForexOrCrypto) {
+         const oneYearData = marketData.slice(0, 252);
+         if (oneYearData.length > 0) {
+            let high52 = -Infinity;
+            let low52 = Infinity;
+            oneYearData.forEach(d => {
+                const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
+                const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
+                if (!isNaN(h) && h > high52) high52 = h;
+                if (!isNaN(l) && l < low52) low52 = l;
+            });
+         }
+        return {
+            totalScore: 0,
+            signal: 'N/A',
+            interpretation: 'AI momentum analysis is not applicable to currency or crypto pairs.',
+            tradeAction: 'Technical indicator analysis is not supported for currency or crypto pairs.'
         };
     }
 
@@ -132,7 +146,7 @@ export async function analyzeStockMomentum(
     }
 
     // Step 2: Volume-Price Confirmation (Weight: 10%) - Skipped if data is synthesized
-    if (!isSynthesizedData && maVol.length > 0) {
+    if (!isSynthesizedData && maVol.length > 0 && weights.volume > 0) {
         const latestVolume = volumes.at(-1);
         const latestAvgVolume = maVol.at(-1);
 
@@ -155,7 +169,7 @@ export async function analyzeStockMomentum(
     const latestClose = closePrices.at(-1)!;
 
     // Step 3: VWMA Trend Confirmation (Weight: 15%)
-    if (!isNaN(latestVwma)) {
+    if (!isNaN(latestVwma) && weights.vwma > 0) {
         if (latestClose > latestVwma) {
             totalScore += weights.vwma;
         } else if (latestClose < latestVwma) {
@@ -233,9 +247,7 @@ export async function analyzeStockMomentum(
     }
     
     // Step 7: 52-Week Range Context (Weight: 10%)
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const oneYearData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
+    const oneYearData = marketData.filter(d => new Date(d.date) >= new Date(new Date().setFullYear(new Date().getFullYear() - 1)));
     
     if (oneYearData.length > 0) {
         let high52 = -Infinity;
@@ -288,3 +300,4 @@ export async function analyzeStockMomentum(
     
 
     
+
