@@ -13,24 +13,12 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
   }
 
-  let url: string;
-  let dataKey: string;
-  const isForex = isCurrencyPair(ticker);
-  const isCrypto = isCryptoPair(ticker);
-
-  if (isForex) {
-    const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=FX_DAILY&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
-    dataKey = 'Time Series FX (Daily)';
-  } else if (isCrypto) {
-    const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=DIGITAL_CURRENCY_DAILY&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
-    dataKey = `Time Series (Digital Currency Daily)`;
-  } else {
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
-    dataKey = 'Time Series (Daily)';
-  }
-
+  // ISOLATED LOGIC: Forcibly use the TIME_SERIES_DAILY function for stocks.
+  // This simplifies the request to test the core API functionality.
+  const func = 'TIME_SERIES_DAILY';
+  const dataKey = 'Time Series (Daily)';
+  let url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
+  
   const urlForDisplay = url.replace(avApiKey, '[HIDDEN_API_KEY]');
 
   try {
@@ -45,38 +33,18 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     
     const timeSeries = data[dataKey];
     if (!timeSeries) {
-      return { error: `Time series data not found for "${ticker}". It may be an invalid symbol, or the API function is not supported for this asset type.`, url: urlForDisplay };
+      return { error: `Time series data not found for "${ticker}". It may be an invalid symbol. Currently, this simplified function only supports standard stock tickers.`, url: urlForDisplay };
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => {
-      if (isForex) {
-        return {
-          date,
-          open: values['1. open'],
-          high: values['2. high'],
-          low: values['3. low'],
-          close: values['4. close'],
-          volume: 'N/A',
-        }
-      } else if (isCrypto) {
-         return {
-          date,
-          // Crypto uses keys like "1a. open (USD)"
-          open: values[Object.keys(values).find(k => k.startsWith('1a. open'))!],
-          high: values[Object.keys(values).find(k => k.startsWith('2a. high'))!],
-          low: values[Object.keys(values).find(k => k.startsWith('3a. low'))!],
-          close: values[Object.keys(values).find(k => k.startsWith('4a. close'))!],
-          volume: values[Object.keys(values).find(k => k.startsWith('5. volume'))!],
-        }
-      } else { // Stocks
-        return {
-          date,
-          open: values['1. open'],
-          high: values['2. high'],
-          low: values['3. low'],
-          close: values['4. close'],
-          volume: values['5. volume'],
-        }
+      // Logic for standard stocks
+      return {
+        date,
+        open: values['1. open'],
+        high: values['2. high'],
+        low: values['3. low'],
+        close: values['4. close'],
+        volume: values['5. volume'],
       }
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
