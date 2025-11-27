@@ -4,8 +4,9 @@
 
 // Simple Moving Average
 const sma = (data: number[], period: number): number[] => {
-    const result: number[] = new Array(period - 1).fill(NaN);
     if (data.length < period) return new Array(data.length).fill(NaN);
+
+    const result: number[] = new Array(period - 1).fill(NaN);
     
     let sum = 0;
     for (let i = 0; i < period; i++) {
@@ -30,13 +31,6 @@ const ema = (data: number[], period: number): number[] => {
     const k = 2 / (period + 1);
     const result: number[] = new Array(data.length).fill(NaN);
     
-    // Calculate initial SMA
-    let sum = 0;
-    for (let i = 0; i < period; i++) {
-        if(isNaN(data[i])) continue;
-        sum += data[i];
-    }
-    
     // Find the first valid data point to start the EMA
     let firstValidIndex = -1;
     for (let i = 0; i < data.length; i++) {
@@ -50,11 +44,11 @@ const ema = (data: number[], period: number): number[] => {
         return result; // Not enough data
     }
     
-    sum = 0;
+    // Calculate initial SMA for the first EMA value
+    let sum = 0;
     for (let i = firstValidIndex; i < firstValidIndex + period; i++) {
         sum += data[i];
     }
-
     result[firstValidIndex + period - 1] = sum / period;
 
     // Calculate subsequent EMAs
@@ -70,24 +64,28 @@ const ema = (data: number[], period: number): number[] => {
 };
 
 
-// Standard Deviation
-const stdDev = (data: number[], period: number): number[] => {
-    const result: number[] = new Array(period-1).fill(NaN);
+// Standard Deviation for a sliding window
+const slidingStdDev = (data: number[], period: number): number[] => {
     if (data.length < period) return new Array(data.length).fill(NaN);
+
+    const result: number[] = new Array(period - 1).fill(NaN);
 
     for (let i = period - 1; i < data.length; i++) {
         const chunk = data.slice(i - period + 1, i + 1);
+        if (chunk.some(isNaN)) {
+            result.push(NaN);
+            continue;
+        }
         const mean = chunk.reduce((a, b) => a + b, 0) / period;
-        const sqDiffs = chunk.map(val => (val - mean) ** 2);
-        const avgSqDiff = sqDiffs.reduce((a, b) => a + b, 0) / period;
-        result.push(Math.sqrt(avgSqDiff));
+        const variance = chunk.map(val => (val - mean) ** 2).reduce((a, b) => a + b, 0) / period;
+        result.push(Math.sqrt(variance));
     }
     return result;
 };
 
 export const calculateBollingerBands = (data: number[], period: number, stdDevMultiplier: number) => {
     const middleBand = sma(data, period);
-    const sd = stdDev(data, period);
+    const sd = slidingStdDev(data, period);
 
     const result = [];
     for(let i=0; i < data.length; i++) {
@@ -95,8 +93,8 @@ export const calculateBollingerBands = (data: number[], period: number, stdDevMu
         const s = sd[i];
         result.push({
             middle: mid,
-            upper: mid + s * stdDevMultiplier,
-            lower: mid - s * stdDevMultiplier,
+            upper: (!isNaN(mid) && !isNaN(s)) ? mid + s * stdDevMultiplier : NaN,
+            lower: (!isNaN(mid) && !isNaN(s)) ? mid - s * stdDevMultiplier : NaN,
         });
     }
     return result;
@@ -116,12 +114,12 @@ export const calculateRSI = (prices: number[], period: number): number[] => {
     let gainSum = 0;
     let lossSum = 0;
     
-    // Calculate initial average gain and loss
+    // Calculate initial average gain and loss from the first `period` changes
     for (let i = 0; i < period; i++) {
         if (changes[i] > 0) {
             gainSum += changes[i];
         } else {
-            lossSum -= changes[i];
+            lossSum -= changes[i]; // loss is positive
         }
     }
 
@@ -184,6 +182,7 @@ export const calculateMACD = (data: number[], fastPeriod: number, slowPeriod: nu
 
 
 export const calculateROC = (data: number[], period: number) => {
+    if (data.length <= period) return new Array(data.length).fill(NaN);
     const result: number[] = new Array(period).fill(NaN);
     for (let i = period; i < data.length; i++) {
         const roc = ((data[i] - data[i - period]) / data[i - period]) * 100;
@@ -225,6 +224,7 @@ export const calculateVolatility = (data: number[], period: number): number | nu
     // 1. Calculate daily log returns
     const logReturns: number[] = [];
     for (let i = 1; i < relevantData.length; i++) {
+        if (relevantData[i-1] <= 0 || relevantData[i] <= 0) continue; // Avoid log(0) or log(negative)
         logReturns.push(Math.log(relevantData[i] / relevantData[i - 1]));
     }
 
@@ -232,8 +232,9 @@ export const calculateVolatility = (data: number[], period: number): number | nu
 
     // 2. Calculate the standard deviation of the log returns
     const n = logReturns.length;
+    if (n < 2) return null; // Need at least 2 returns to calculate variance
     const mean = logReturns.reduce((a, b) => a + b, 0) / n;
-    const variance = logReturns.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (n - 1);
+    const variance = logReturns.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (n - 1); // Sample variance
     const stdDev = Math.sqrt(variance);
 
     // 3. Annualize the volatility (assuming 252 trading days in a year)
@@ -261,8 +262,9 @@ export const calculateMAVol = (volumeData: number[], period: number): number[] =
  * @returns An array of the VWMA.
  */
 export const calculateVWMA = (prices: number[], volumes: number[], period: number): number[] => {
-    const result: number[] = new Array(period - 1).fill(NaN);
     if (prices.length < period) return new Array(prices.length).fill(NaN);
+
+    const result: number[] = new Array(period - 1).fill(NaN);
 
     let priceVolumeSum = 0;
     let volumeSum = 0;
