@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -54,9 +55,9 @@ export async function predictPriceTarget(
   analysis: AnalyzeStockMomentumOutput,
 ): Promise<PredictPriceTargetOutput | { error: string }> {
   try {
-    const requiredDataPoints = 252; // At least one year of data
+    const requiredDataPoints = 90; // For long-term volatility calculation
     if (!marketData || marketData.length < requiredDataPoints) {
-      return { error: `Insufficient data for prediction. At least ${requiredDataPoints} days of data are required.` };
+      return { error: `Insufficient data for prediction. At least ${requiredDataPoints} days of data are required. Live data may be limited to 100 days on the free API plan.` };
     }
 
     const currentPrice = parseFloat(marketData[0].close);
@@ -65,27 +66,37 @@ export async function predictPriceTarget(
     const direction = totalScore > 0 ? "upward" : "downward";
     
     // --- Calculate 52-Week Range ---
-    const oneYearData = marketData.slice(0, 252);
-    const isSynthesizedData = marketData.every(d => d.open === d.close && d.high === d.close && d.low === d.close);
+    const oneYearDataPoints = 252;
+    const hasEnoughFor52Week = marketData.length >= oneYearDataPoints;
     let high52 = -Infinity;
     let low52 = Infinity;
-
-    oneYearData.forEach(d => {
-        const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
-        const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
-        if (!isNaN(h) && h > high52) high52 = h;
-        if (!isNaN(l) && l < low52) low52 = l;
-    });
-
+    const isSynthesizedData = marketData.every(d => d.open === d.close && d.high === d.close && d.low === d.close);
+    
+    if (hasEnoughFor52Week) {
+        const oneYearData = marketData.slice(0, oneYearDataPoints);
+        oneYearData.forEach(d => {
+            const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
+            const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
+            if (!isNaN(h) && h > high52) high52 = h;
+            if (!isNaN(l) && l < low52) low52 = l;
+        });
+    }
     const hasValid52WeekRange = high52 !== -Infinity && low52 !== Infinity;
+
 
     // For currency/crypto, we don't predict a price target, just show the 52-week range info in the interpretation.
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
-        const neutralInterpretation = `The 52-week range for ${ticker} is from a low of ${low52.toFixed(4)} to a high of ${high52.toFixed(4)}. Price target projection is not applicable for this asset type.`;
+        let interpretation = `Price target projection is not applicable for this asset type.`;
+        if(hasValid52WeekRange) {
+            interpretation = `The 52-week range for ${ticker} is from a low of ${low52.toFixed(4)} to a high of ${high52.toFixed(4)}. Price target projection is not applicable for this asset type.`
+        } else if (!hasEnoughFor52Week) {
+            interpretation = `Not enough data for 52-week range. At least ${oneYearDataPoints} days are required.`
+        }
+
         const neutralTarget = {
             priceTarget: currentPrice,
             timeframe: "N/A",
-            interpretation: neutralInterpretation
+            interpretation: interpretation
         };
         return {
             shortTerm: neutralTarget,
@@ -131,6 +142,8 @@ export async function predictPriceTarget(
         } else if (totalScore < 0 && longTermPriceTarget < low52) {
              longTermInterpretation = `The longer-term forecast points towards a decline that may test the 52-week low, which could act as a significant support level.`;
         }
+    } else if (!hasEnoughFor52Week) {
+        longTermInterpretation += ` (Note: 52-week context is unavailable as > ${oneYearDataPoints} days of data are required).`
     }
 
 

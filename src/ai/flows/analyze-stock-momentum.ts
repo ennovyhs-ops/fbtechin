@@ -82,17 +82,6 @@ export async function analyzeStockMomentum(
     
     // For forex/crypto, we only want to calculate the 52-week range, not the full momentum score.
     if (isForexOrCrypto) {
-         const oneYearData = marketData.slice(0, 252);
-         if (oneYearData.length > 0) {
-            let high52 = -Infinity;
-            let low52 = Infinity;
-            oneYearData.forEach(d => {
-                const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
-                const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
-                if (!isNaN(h) && h > high52) high52 = h;
-                if (!isNaN(l) && l < low52) low52 = l;
-            });
-         }
         return {
             totalScore: 0,
             signal: 'N/A',
@@ -247,9 +236,9 @@ export async function analyzeStockMomentum(
     }
     
     // Step 7: 52-Week Range Context (Weight: 10%)
-    const oneYearData = marketData.filter(d => new Date(d.date) >= new Date(new Date().setFullYear(new Date().getFullYear() - 1)));
-    
-    if (oneYearData.length > 0) {
+    const oneYearDataPoints = 252;
+    if (marketData.length >= oneYearDataPoints) {
+        const oneYearData = marketData.slice(0, oneYearDataPoints);
         let high52 = -Infinity;
         let low52 = Infinity;
 
@@ -300,4 +289,3 @@ export async function analyzeStockMomentum(
     
 
     
-
