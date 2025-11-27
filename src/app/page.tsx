@@ -164,15 +164,8 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
       
-      let marketResult = await fetchMarketData(ticker, 'full');
+      const marketResult = await fetchMarketData(ticker, 'full');
       
-      const isPremiumError = marketResult.error?.includes('premium feature');
-
-      if (isPremiumError) {
-          setInfo('Full historical data is a premium feature. Falling back to the latest 100 data points for analysis.');
-          marketResult = await fetchMarketData(ticker, 'compact');
-      }
-
       if (marketResult.error) {
         setError({message: marketResult.error, url: marketResult.url});
         setMarketData(null);
@@ -751,3 +744,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
