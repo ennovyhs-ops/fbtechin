@@ -17,12 +17,15 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
   let dataKey: string;
   let url: string;
 
-  if (isCurrencyPair(ticker)) {
+  const isForex = isCurrencyPair(ticker);
+  const isCrypto = isCryptoPair(ticker);
+
+  if (isForex) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     func = 'FX_DAILY';
     dataKey = 'Time Series FX (Daily)';
     url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
-  } else if (isCryptoPair(ticker)) {
+  } else if (isCrypto) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     func = 'DIGITAL_CURRENCY_DAILY';
     dataKey = 'Time Series (Digital Currency Daily)';
@@ -51,7 +54,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     }
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => {
-       if (isCryptoPair(ticker)) {
+       if (isCrypto) {
          return {
             date,
             open: values['1a. open (USD)'],
@@ -67,7 +70,7 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
         high: values['2. high'],
         low: values['3. low'],
         close: values['4. close'],
-        volume: isCurrencyPair(ticker) ? 'N/A' : values['5. volume'],
+        volume: isForex ? 'N/A' : values['5. volume'],
       }
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
