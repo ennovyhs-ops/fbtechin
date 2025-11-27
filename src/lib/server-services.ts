@@ -84,7 +84,7 @@ export async function fetchNewsSentimentService(ticker: string): Promise<NewsSen
     return { error: 'API key is not configured.' };
   }
 
-  const url = `${ALPHA_VANTAGE_BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=50`;
+  const url = `${ALPHA_VANTage_BASE_URL}?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=50`;
 
   try {
     const response = await fetch(url, { cache: 'no-store' });
