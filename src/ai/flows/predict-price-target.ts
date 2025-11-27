@@ -165,5 +165,3 @@ export async function predictPriceTarget(
     return { error: e.message || 'An unexpected error occurred during price target calculation.' };
   }
 }
-
-    

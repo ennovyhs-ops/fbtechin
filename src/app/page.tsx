@@ -281,20 +281,11 @@ export default function Home() {
     const latest = marketData[0];
 
     // Check for enough data for a true 52-week calculation
-    const hasFullYearData = marketData.length >= 252;
-    if (!hasFullYearData) {
-        return { latestData: latest, fiftyTwoWeek: null };
+    if (marketData.length < 252) {
+      return { latestData: latest, fiftyTwoWeek: null };
     }
 
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-    const oneYearData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
-    
-    // This check is a fallback, but hasFullYearData should be primary
-    if (oneYearData.length < 252) {
-        return { latestData: latest, fiftyTwoWeek: null };
-    }
+    const oneYearData = marketData.slice(0, 252);
 
     const high52 = Math.max(...oneYearData.map(d => parseFloat(d.high)));
     const low52 = Math.min(...oneYearData.map(d => parseFloat(d.low)));
@@ -738,7 +729,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    
