@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { explainMomentumSignal } from '@/ai/flows/explain-momentum-signal';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import type { MarketData, RsiData, MacdData, BbandsData } from '@/lib/types';
-import { calculateMultiROC } from '@/lib/technical-analysis';
+import { calculateMultiROC, calculateMAVol } from '@/lib/technical-analysis';
 
 interface SignalExplanationProps {
   ticker: string;
@@ -70,11 +70,12 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
     else if (latestRoc5 < 0 && latestRoc22 < 0 && latestRoc50 < 0) trendsState = 'Short, medium, and long-term trends are all bearish';
 
     // Volume
-    const volumes = marketData.slice(0, 20).map(d => parseFloat(d.volume));
-    const avgVolume = volumes.reduce((s, v) => s + v, 0) / volumes.length;
+    const volumesChronological = marketData.map(d => parseFloat(d.volume)).reverse();
+    const maVol = calculateMAVol(volumesChronological, 50);
     const latestVolume = parseFloat(marketData[0].volume);
+    const latestMaVol = maVol.length > 0 ? maVol[maVol.length - 1] : undefined;
     let volumeState = 'Volume is normal';
-    if (latestVolume > avgVolume * 1.5) {
+    if (latestVolume && latestMaVol && latestVolume > latestMaVol * 1.5) {
         volumeState = parseFloat(marketData[0].close) > parseFloat(marketData[0].open)
             ? 'Recent volume is high on a positive day (Accumulation)'
             : 'Recent volume is high on a negative day (Distribution)';
