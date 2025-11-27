@@ -89,7 +89,7 @@ export async function suggestOptionStrategiesDeterministic(
     // Calculate a reasonable strike distance based on recent volatility
     const recentPrices = closePrices.slice(-20);
     const stdDev = calculateStdDev(recentPrices);
-    const strikeDistance = stdDev / 2; // Use 1/2 of a standard deviation for strike distance
+    const strikeDistance = stdDev; // Use 1 standard deviation for strike distance
 
 
     // 1. Calculate Timing Score
