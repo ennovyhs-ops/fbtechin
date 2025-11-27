@@ -153,9 +153,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-14 h-8 text-sm" />
+                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-16 h-8 text-sm" />
                                     <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev</label>
-                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-14 h-8 text-sm" />
+                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-16 h-8 text-sm" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-xs">
@@ -228,11 +228,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
-                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-14 h-8 text-sm" />
+                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-16 h-8 text-sm" />
                                     <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">Slow</label>
-                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-14 h-8 text-sm" />
+                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-16 h-8 text-sm" />
                                     <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Signal</label>
-                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-14 h-8 text-sm" />
+                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-16 h-8 text-sm" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-xs">
