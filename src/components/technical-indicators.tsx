@@ -144,7 +144,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* Bollinger Bands */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2 flex-wrap">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
@@ -219,7 +219,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* MACD */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2 flex-wrap">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
