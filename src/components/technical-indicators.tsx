@@ -136,7 +136,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-16 h-7 text-xs" />
+                                    <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-14 h-8 text-xs" />
                                 </div>
                             </div>
                             <p className="font-semibold text-base">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
@@ -151,14 +151,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     </TooltipTrigger>
                                     <TooltipContent><p className="max-w-xs">A volatility indicator. When bands are wide, volatility is high. When they are narrow (a 'squeeze'), volatility is low.</p></TooltipContent>
                                 </Tooltip>
-                               <div className="flex items-center gap-x-3 gap-y-2 flex-wrap justify-end">
+                               <div className="flex items-center gap-x-2 gap-y-2 flex-wrap justify-end">
                                     <div className="flex items-center gap-1.5">
-                                        <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                        <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-16 h-7 text-xs" />
+                                        <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">P</label>
+                                        <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-14 h-8 text-xs" />
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev</label>
-                                        <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-16 h-7 text-xs" />
+                                        <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdD</label>
+                                        <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-14 h-8 text-xs" />
                                     </div>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-16 h-7 text-xs" />
+                                    <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-14 h-8 text-xs" />
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -203,8 +203,8 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipContent><p className="max-w-xs">Compares the most recent trading volume to its moving average. A spike can indicate strong conviction behind a price move.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
-                                    <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">Avg. Period</label>
-                                    <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-16 h-7 text-xs" />
+                                    <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">Avg. P</label>
+                                    <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-14 h-8 text-xs" />
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -233,15 +233,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F</label>
-                                        <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-14 h-7 text-xs" />
+                                        <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-12 h-8 text-xs" />
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">S</label>
-                                        <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-14 h-7 text-xs" />
+                                        <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-12 h-8 text-xs" />
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Sig</label>
-                                        <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-14 h-7 text-xs" />
+                                        <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-12 h-8 text-xs" />
                                     </div>
                                 </div>
                             </div>
@@ -263,8 +263,8 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="vwma-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-16 h-7 text-xs" />
-                                </div>
+                                    <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-14 h-8 text-xs" />
+                                 </div>
                             </div>
                             <p className="font-semibold text-base">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
                         </div>
@@ -287,3 +287,5 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
+    
