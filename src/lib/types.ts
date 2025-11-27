@@ -116,5 +116,3 @@ export type IndicatorPeriods = {
   maVol: number;
   vwma: number;
 };
-
-    

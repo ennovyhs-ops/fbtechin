@@ -7,7 +7,7 @@ import { isCurrencyPair, isCryptoPair, getCurrencyOrCryptoPair } from '@/lib/uti
 
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
-export async function fetchMarketDataService(ticker: string): Promise<FetchResult> {
+export async function fetchMarketDataService(ticker: string, outputsize: 'compact' | 'full' = 'full'): Promise<FetchResult> {
   const avApiKey = serverConfig.alphaVantageApiKey;
   if (!avApiKey) {
     return { error: 'API key for Alpha Vantage is not configured. Please set ALPHAVANTAGE_API_KEY in your environment variables.' };
@@ -24,16 +24,16 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     func = 'FX_DAILY';
     dataKey = 'Time Series FX (Daily)';
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=compact`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=${outputsize}`;
   } else if (isCrypto) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     func = 'DIGITAL_CURRENCY_DAILY';
     dataKey = 'Time Series (Digital Currency Daily)';
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=compact`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=${outputsize}`;
   } else {
     func = 'TIME_SERIES_DAILY';
     dataKey = 'Time Series (Daily)';
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${ticker}&apikey=${avApiKey}&outputsize=compact`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${ticker}&apikey=${avApiKey}&outputsize=${outputsize}`;
   }
   
   const urlForDisplay = url.replace(avApiKey, '[HIDDEN_API_KEY]');

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
 
@@ -49,6 +49,7 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
   const [error, setError] = useState<{message: string, url?: string} | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [submittedTicker, setSubmittedTicker] = useState<string | null>(null);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [currency, setCurrency] = useState<string | null>(null);
@@ -125,6 +126,7 @@ export default function Home() {
 
   const resetState = () => {
     setError(null);
+    setInfo(null);
     setMarketData(null);
     setSubmittedTicker(null);
     setIsHistoryExpanded(false);
@@ -137,6 +139,24 @@ export default function Home() {
     setUploadedFileName(null);
   };
   
+  const handleDataResult = (result: FetchResult, ticker: string) => {
+     if (result.data) {
+        setMarketData(result.data);
+        setCurrency('USD'); // Assuming USD for simplicity
+        setRegion('United States'); // Assuming US for simplicity
+        
+        const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
+        if (!isForexOrCrypto) {
+            calculateIndicators(result.data, defaultPeriods);
+        } else {
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
+        }
+      } else {
+        setError({message: "No market data was returned."});
+        setMarketData(null);
+      }
+  }
+
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     resetState();
 
@@ -144,25 +164,20 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
       
-      const marketResult = await fetchMarketData(ticker);
+      let marketResult = await fetchMarketData(ticker, 'full');
       
+      const isPremiumError = marketResult.error?.includes('premium feature');
+
+      if (isPremiumError) {
+          setInfo('Full historical data is a premium feature. Falling back to the latest 100 data points for analysis.');
+          marketResult = await fetchMarketData(ticker, 'compact');
+      }
+
       if (marketResult.error) {
         setError({message: marketResult.error, url: marketResult.url});
         setMarketData(null);
-      } else if (marketResult.data) {
-        setMarketData(marketResult.data);
-        setCurrency('USD'); // Assuming USD for simplicity in this reverted state
-        setRegion('United States'); // Assuming US for simplicity
-        
-        const isForexOrCrypto = isCurrencyPair(values.ticker) || isCryptoPair(values.ticker);
-        if (!isForexOrCrypto) {
-            calculateIndicators(marketResult.data, defaultPeriods);
-        } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
-        }
       } else {
-        setError({message: "No market data was returned."});
-        setMarketData(null);
+        handleDataResult(marketResult, ticker);
       }
     });
   }, [calculateIndicators]);
@@ -230,11 +245,7 @@ export default function Home() {
                 form.setValue('ticker', tickerFromFile);
                 setSubmittedTicker(tickerFromFile);
 
-                setMarketData(data);
-                setRegion('Uploaded Data');
-                setCurrency('USD'); // Default to USD for uploaded files
-                
-                calculateIndicators(data, defaultPeriods);
+                handleDataResult({ data }, tickerFromFile);
 
             } catch (err: any) {
                 setError({message: `Error parsing CSV: ${err.message}.`});
@@ -302,7 +313,6 @@ export default function Home() {
 
   const apiLimitMessage = error ? parseApiLimit(error.message) : null;
   const isApiLimitError = !!apiLimitMessage;
-  const isApiInfoNote = error?.message?.toLowerCase().includes('thank you for using');
 
 
   return (
@@ -392,10 +402,10 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">2. Data Source & API Usage</h3>
                         <p className="text-muted-foreground">
-                          All live financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a limit of 25 requests per day.
+                          All live financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which limits `outputsize=full` to a premium feature for stock data, and has a general limit of 25 requests per day.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request.</li>
+                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. It will try to get full data, but may fall back to 100 data points if you are on the free plan.</li>
                           <li><span className="font-semibold text-foreground">Upload CSV:</span> Uses **0** API requests.</li>
                           <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
                         </ul>
@@ -411,8 +421,7 @@ export default function Home() {
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators, including the stock's position within its 52-week range.</li>
-                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility, with an interpretation that considers the 52-week high/low.</li>
-                          <li><span className="font-semibold text-foreground">AI Company Name Lookup:</span> The company name is identified using an AI model to avoid using API quota.</li>
+                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility. This requires at least 252 days of data and may be unavailable on the free plan for stocks.</li>
                           <li><span className="font-semibold text-foreground">52-Week Range:</span> The high and low for the last 52 weeks are calculated locally from historical data, using no extra API calls.</li>
                           <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
                           <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> Both AI-powered and rule-based engines suggest potential option strategies based on the momentum score.</li>
@@ -442,14 +451,24 @@ export default function Home() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           )}
+          
+          {info && (
+             <Alert variant="default">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Heads up!</AlertTitle>
+              <AlertDescription>
+                {info}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {error && (
-            <Alert variant={isApiLimitError || isApiInfoNote ? 'default' : 'destructive'}>
+            <Alert variant={isApiLimitError ? 'default' : 'destructive'}>
               <AlertCircle className="h-4 w-4" />
               {isApiLimitError ? 
                 <AlertTitle>{apiLimitMessage}</AlertTitle> : 
                 <>
-                  <AlertTitle>{isApiInfoNote ? 'API Information' : 'Error'}</AlertTitle>
+                  <AlertTitle>Error</AlertTitle>
                   <AlertDescription>
                     <p>{error.message}</p>
                     {error.url && (
