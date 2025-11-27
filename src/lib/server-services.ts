@@ -64,13 +64,23 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
             volume: values['5. volume'],
          }
        }
+       if (isForex) {
+         return {
+            date,
+            open: values['1. open'],
+            high: values['2. high'],
+            low: values['3. low'],
+            close: values['4. close'],
+            volume: 'N/A',
+          }
+       }
        return {
         date,
         open: values['1. open'],
         high: values['2. high'],
         low: values['3. low'],
         close: values['4. close'],
-        volume: isForex ? 'N/A' : values['5. volume'],
+        volume: values['5. volume'],
       }
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
