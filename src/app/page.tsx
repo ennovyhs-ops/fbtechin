@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
 
@@ -32,6 +32,7 @@ import { MarketCorrelation } from '@/components/market-correlation';
 import { HistoricalVolatility } from '@/components/historical-volatility';
 import { SignalExplanation } from '@/components/signal-explanation';
 import { MonteCarloSimulation } from '@/components/monte-carlo-simulation';
+import { SynthesizedTradeIdea } from '@/components/synthesized-trade-idea';
 
 
 const FormSchema = z.object({
@@ -62,6 +63,7 @@ export default function Home() {
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
+  const [monteCarloResult, setMonteCarloResult] = useState<MonteCarloResult | null>(null);
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
   
@@ -135,6 +137,7 @@ export default function Home() {
     setIndicatorData(null);
     setIndicatorsError(null);
     setAnalysisResult(null);
+    setMonteCarloResult(null);
     setCurrency(null);
     setRegion(null);
     setIndicatorPeriods(defaultPeriods);
@@ -577,8 +580,18 @@ export default function Home() {
               <MonteCarloSimulation 
                   marketData={marketData}
                   currency={currency}
+                  onSimulationComplete={setMonteCarloResult}
               />
             </div>
+          )}
+
+          {analysisResult && analysisResult.signal !== 'N/A' && monteCarloResult && latestData && (
+              <SynthesizedTradeIdea
+                ticker={submittedTicker!}
+                analysis={analysisResult}
+                monteCarlo={monteCarloResult}
+                currentPrice={parseFloat(latestData.close)}
+              />
           )}
 
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (

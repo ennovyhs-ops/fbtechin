@@ -13,24 +13,27 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/t
 interface MonteCarloSimulationProps {
   marketData: MarketData[];
   currency: string | null;
+  onSimulationComplete: (result: MonteCarloResult | null) => void;
 }
 
 const SIMULATION_DAYS = 30;
 const NUM_SIMULATIONS = 5000;
 const CONFIDENCE_INTERVAL = 0.70; // 70%
 
-export function MonteCarloSimulation({ marketData, currency }: MonteCarloSimulationProps) {
+export function MonteCarloSimulation({ marketData, currency, onSimulationComplete }: MonteCarloSimulationProps) {
   const [result, setResult] = useState<MonteCarloResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const isForexOrCrypto = useMemo(() => {
     if (!marketData || marketData.length === 0) return false;
-    const ticker = marketData[0]?.close; // A bit of a hack to get a ticker-like value
-    return isCurrencyPair(ticker) || isCryptoPair(ticker);
+    // This is a proxy, but should work for this purpose
+    const firstClose = parseFloat(marketData[0].close);
+    return isNaN(firstClose); // Simple way to check if it's likely a currency pair
   }, [marketData]);
 
   useEffect(() => {
+    onSimulationComplete(null);
     if (marketData && marketData.length > 30) { // Need sufficient data
       setLoading(true);
       setError(null);
@@ -45,6 +48,7 @@ export function MonteCarloSimulation({ marketData, currency }: MonteCarloSimulat
 
           if (simulationResult) {
             setResult(simulationResult);
+            onSimulationComplete(simulationResult);
           } else {
             setError('Could not calculate the required historical drift and volatility.');
           }
@@ -58,7 +62,7 @@ export function MonteCarloSimulation({ marketData, currency }: MonteCarloSimulat
         setLoading(false);
         setError(`Not enough historical data to run a reliable simulation. At least 30 days of data are required.`);
     }
-  }, [marketData]);
+  }, [marketData, onSimulationComplete]);
 
   if (isForexOrCrypto) {
       return null;

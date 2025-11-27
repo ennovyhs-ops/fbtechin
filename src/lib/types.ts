@@ -125,3 +125,10 @@ export type MonteCarloResult = {
     averageTarget: number;
     confidence: number;
 }
+
+export type SynthesizeTradeIdeaOutput = {
+    strategy: string;
+    rationale: string;
+    action: string;
+    conviction: "High" | "Moderate" | "Low" | "Caution";
+};
