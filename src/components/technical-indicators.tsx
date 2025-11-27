@@ -172,7 +172,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. >70 is 'overbought', <30 is 'oversold'.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. >70 is 'overbought', &lt;30 is 'oversold'.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
