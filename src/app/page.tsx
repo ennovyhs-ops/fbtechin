@@ -152,7 +152,7 @@ export default function Home() {
             setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
         }
       } else {
-        setError({message: "No market data was returned."});
+        setError({message: result.error || "No market data was returned.", url: result.url});
         setMarketData(null);
       }
   }
@@ -166,12 +166,7 @@ export default function Home() {
       
       const marketResult = await fetchMarketData(ticker, 'full');
       
-      if (marketResult.error) {
-        setError({message: marketResult.error, url: marketResult.url});
-        setMarketData(null);
-      } else {
-        handleDataResult(marketResult, ticker);
-      }
+      handleDataResult(marketResult, ticker);
     });
   }, [calculateIndicators]);
 
@@ -282,6 +277,11 @@ export default function Home() {
   const { latestData, fiftyTwoWeek } = useMemo(() => {
     if (!marketData || marketData.length === 0) {
       return { latestData: null, fiftyTwoWeek: null };
+    }
+
+    const hasFullYearData = marketData.length >= 252;
+    if (!hasFullYearData) {
+        return { latestData: marketData[0], fiftyTwoWeek: null };
     }
 
     const oneYearAgo = new Date();
