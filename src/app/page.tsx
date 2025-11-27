@@ -567,19 +567,18 @@ export default function Home() {
           )}
 
           {submittedTicker && marketData && (
-            <StockAnalysis 
-              ticker={submittedTicker} 
-              marketData={marketData}
-              onAnalysisComplete={setAnalysisResult}
-              currency={currency}
-            />
-          )}
-
-          {submittedTicker && marketData && (
-            <MonteCarloSimulation 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <StockAnalysis 
+                ticker={submittedTicker} 
                 marketData={marketData}
+                onAnalysisComplete={setAnalysisResult}
                 currency={currency}
-            />
+              />
+              <MonteCarloSimulation 
+                  marketData={marketData}
+                  currency={currency}
+              />
+            </div>
           )}
 
           {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
@@ -599,22 +598,6 @@ export default function Home() {
                 marketData={marketData}
             />
           )}
-          
-          {submittedTicker && marketData && (
-            <HistoricalVolatility marketData={marketData} />
-          )}
-
-          {submittedTicker && (
-            <TechnicalIndicators 
-                ticker={submittedTicker}
-                data={indicatorData}
-                loading={indicatorsLoading}
-                error={indicatorsError}
-                currency={currency}
-                periods={indicatorPeriods}
-                onPeriodsChange={onPeriodsChange}
-            />
-          )}
 
           {submittedTicker && !uploadedFileName && (
             <NewsAnalysis 
@@ -623,10 +606,22 @@ export default function Home() {
            )}
           
           {submittedTicker && marketData && (
-              <MarketCorrelation 
-                baseTicker={submittedTicker}
-                baseMarketData={marketData}
-              />
+            <div className="space-y-8">
+                <TechnicalIndicators 
+                    ticker={submittedTicker}
+                    data={indicatorData}
+                    loading={indicatorsLoading}
+                    error={indicatorsError}
+                    currency={currency}
+                    periods={indicatorPeriods}
+                    onPeriodsChange={onPeriodsChange}
+                />
+                <HistoricalVolatility marketData={marketData} />
+                <MarketCorrelation 
+                  baseTicker={submittedTicker}
+                  baseMarketData={marketData}
+                />
+            </div>
           )}
 
           {submittedTicker && (
@@ -747,3 +742,4 @@ export default function Home() {
     </main>
   );
 }
+ 
