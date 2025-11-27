@@ -230,7 +230,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     </TooltipTrigger>
                                     <TooltipContent><p className="max-w-xs">A trend-following momentum indicator showing the relationship between two exponential moving averages (EMAs).</p></TooltipContent>
                                 </Tooltip>
-                                <div className="flex items-center gap-2 flex-wrap justify-end">
+                                <div className="flex items-center gap-x-2 gap-y-2 flex-wrap justify-end">
                                     <div className="flex items-center gap-1.5">
                                         <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F</label>
                                         <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-12 h-8 text-xs" />
