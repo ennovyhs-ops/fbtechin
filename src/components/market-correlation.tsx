@@ -79,7 +79,7 @@ conclusion
         return;
       }
       
-      const comparisonResult = await fetchMarketData(comparisonTicker.toUpperCase());
+      const comparisonResult = await fetchMarketData(comparisonTicker.toUpperCase(), 'compact');
       if (comparisonResult.error) {
         setError(comparisonResult.error);
         return;
