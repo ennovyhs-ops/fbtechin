@@ -53,7 +53,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
     const handleUpdateClick = () => {
         onPeriodsChange(localPeriods);
-    }
+    };
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
@@ -287,5 +287,3 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
-
-    
