@@ -16,8 +16,8 @@ const VolatilityDisplay = ({ label, value }: { label: string, value: number | nu
     const displayValue = value !== null && !isNaN(value) ? `${value.toFixed(2)}%` : 'N/A';
     return (
         <div className="flex flex-col items-center text-center gap-1">
-            <span className="font-semibold text-sm text-muted-foreground">{label}</span>
-            <span className="font-bold text-2xl text-foreground">{displayValue}</span>
+            <span className="font-semibold text-xs text-muted-foreground">{label}</span>
+            <span className="font-bold text-xl text-foreground">{displayValue}</span>
         </div>
     )
 }
@@ -75,7 +75,7 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
         </div>
       </CardHeader>
       <CardContent>
-         <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
+         <div className="flex flex-row justify-around items-center gap-4 sm:gap-6 p-3 rounded-lg bg-muted/50">
             <VolatilityDisplay label="30-Day Volatility" value={volatility.vol30} />
             <VolatilityDisplay label="60-Day Volatility" value={volatility.vol60} />
             <VolatilityDisplay label="90-Day Volatility" value={volatility.vol90} />
