@@ -142,8 +142,8 @@ export default function Home() {
   const handleDataResult = (result: FetchResult, ticker: string) => {
      if (result.data) {
         setMarketData(result.data);
-        setCurrency('USD'); // Assuming USD for simplicity
-        setRegion('United States'); // Assuming US for simplicity
+        setCurrency(result.currency || null);
+        setRegion(result.region || null);
         
         const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
         if (!isForexOrCrypto) {
@@ -152,8 +152,10 @@ export default function Home() {
             setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
         }
       } else {
-        setError({message: result.error || "No market data was returned.", url: result.url});
         setMarketData(null);
+        if (result.error) {
+            setError({message: result.error, url: result.url});
+        }
       }
   }
 
@@ -287,8 +289,15 @@ export default function Home() {
 
     const oneYearData = marketData.slice(0, 252);
 
-    const high52 = Math.max(...oneYearData.map(d => parseFloat(d.high)));
-    const low52 = Math.min(...oneYearData.map(d => parseFloat(d.low)));
+    let high52 = -Infinity;
+    let low52 = Infinity;
+
+    oneYearData.forEach(d => {
+        const h = parseFloat(d.high);
+        const l = parseFloat(d.low);
+        if (!isNaN(h) && h > high52) high52 = h;
+        if (!isNaN(l) && l < low52) low52 = l;
+    });
     
     return {
       latestData: latest,

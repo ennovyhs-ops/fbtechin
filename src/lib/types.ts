@@ -12,6 +12,8 @@ export type FetchResult = {
   data?: MarketData[] | null;
   error?: string | null;
   url?: string;
+  region?: string | null;
+  currency?: string | null;
 }
 
 export type RsiData = {
@@ -107,7 +109,7 @@ export type IndicatorPeriods = {
   macd: {
     fast: number;
     slow: number;
-    signal: number;
+signal: number;
   };
   bbands: {
     period: number;

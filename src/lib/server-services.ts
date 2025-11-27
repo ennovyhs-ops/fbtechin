@@ -16,6 +16,8 @@ export async function fetchMarketDataService(ticker: string, outputsize: 'compac
   let func: string;
   let dataKey: string;
   let url: string;
+  let metadata: Record<string, any> | null = null;
+
 
   const isForex = isCurrencyPair(ticker);
   const isCrypto = isCryptoPair(ticker);
@@ -52,6 +54,11 @@ export async function fetchMarketDataService(ticker: string, outputsize: 'compac
     if (!timeSeries) {
       return { error: `Time series data not found for "${ticker}". It may be an invalid symbol or the API endpoint for this asset type is unavailable.`, url: urlForDisplay };
     }
+    
+    if (data['Meta Data']) {
+        metadata = data['Meta Data'];
+    }
+
 
     const marketData: MarketData[] = Object.entries(timeSeries).map(([date, values]: [string, any]) => {
        if (isCrypto) {
@@ -84,7 +91,15 @@ export async function fetchMarketDataService(ticker: string, outputsize: 'compac
       }
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    return { data: marketData };
+    const result: FetchResult = { data: marketData };
+
+    if (isForex) {
+        result.currency = getCurrencyOrCryptoPair(ticker).to_symbol;
+    } else if (isCrypto) {
+        result.currency = 'USD';
+    }
+
+    return result;
 
   } catch(err: any) {
     return { error: err.message || 'An unexpected error occurred.', url: urlForDisplay };
