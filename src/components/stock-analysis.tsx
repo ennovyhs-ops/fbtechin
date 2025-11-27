@@ -198,7 +198,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
-                    <span>Calculated Analysis for {ticker}</span>
+                    <span>Analysis for {ticker}</span>
                 </CardTitle>
                 <CardDescription>
                     {analysis.interpretation}
