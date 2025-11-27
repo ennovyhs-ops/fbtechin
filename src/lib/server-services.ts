@@ -24,16 +24,16 @@ export async function fetchMarketDataService(ticker: string): Promise<FetchResul
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     func = 'FX_DAILY';
     dataKey = 'Time Series FX (Daily)';
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=compact`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&from_symbol=${from_symbol}&to_symbol=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
   } else if (isCrypto) {
     const { from_symbol, to_symbol } = getCurrencyOrCryptoPair(ticker);
     func = 'DIGITAL_CURRENCY_DAILY';
     dataKey = 'Time Series (Digital Currency Daily)';
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=compact`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${from_symbol}&market=${to_symbol}&apikey=${avApiKey}&outputsize=full`;
   } else {
     func = 'TIME_SERIES_DAILY';
     dataKey = 'Time Series (Daily)';
-    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${ticker}&apikey=${avApiKey}&outputsize=compact`;
+    url = `${ALPHA_VANTAGE_BASE_URL}?function=${func}&symbol=${ticker}&apikey=${avApiKey}&outputsize=full`;
   }
   
   const urlForDisplay = url.replace(avApiKey, '[HIDDEN_API_KEY]');
