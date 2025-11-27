@@ -1,4 +1,5 @@
 
+
 export type MarketData = {
   date: string;
   open: string;
@@ -118,3 +119,9 @@ signal: number;
   maVol: number;
   vwma: number;
 };
+
+export type MonteCarloResult = {
+    probableRange: { lower: number, upper: number };
+    averageTarget: number;
+    confidence: number;
+}

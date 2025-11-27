@@ -1,4 +1,5 @@
 
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
@@ -284,4 +285,77 @@ export const calculateVWMA = (prices: number[], volumes: number[], period: numbe
         result.push(volumeSum === 0 ? prices[i] : priceVolumeSum / volumeSum);
     }
     return result;
+};
+
+
+// Box-Muller transform to get a normally distributed random number
+const randomNormal = () => {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
+/**
+ * Runs a Monte Carlo simulation for stock price projection.
+ * @param prices - Array of chronological close prices (oldest to newest).
+ * @param daysToSimulate - Number of future days to simulate.
+ * @param numSimulations - Number of simulation paths to run.
+ * @param confidenceInterval - The confidence interval (e.g., 0.7 for 70%).
+ * @returns An object with the simulation results, or null if not enough data.
+ */
+export const runMonteCarloSimulation = (
+    prices: number[], 
+    daysToSimulate: number, 
+    numSimulations: number,
+    confidenceInterval: number
+) => {
+    if (prices.length < 2) return null;
+
+    // 1. Calculate daily log returns
+    const logReturns: number[] = [];
+    for (let i = 1; i < prices.length; i++) {
+        if (prices[i-1] <= 0 || prices[i] <= 0) continue;
+        logReturns.push(Math.log(prices[i] / prices[i - 1]));
+    }
+    
+    if (logReturns.length === 0) return null;
+
+    // 2. Calculate drift and volatility
+    const mean = logReturns.reduce((a, b) => a + b, 0) / logReturns.length;
+    const variance = logReturns.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (logReturns.length - 1);
+    const stdDev = Math.sqrt(variance);
+
+    const drift = mean - (variance / 2);
+    const volatility = stdDev;
+    
+    const lastPrice = prices[prices.length - 1];
+    const finalPrices: number[] = [];
+
+    // 3. Run simulations
+    for (let i = 0; i < numSimulations; i++) {
+        let pricePath = [lastPrice];
+        for (let j = 0; j < daysToSimulate; j++) {
+            const randomShock = randomNormal();
+            const nextPrice = pricePath[j] * Math.exp(drift + volatility * randomShock);
+            pricePath.push(nextPrice);
+        }
+        finalPrices.push(pricePath[pricePath.length - 1]);
+    }
+
+    // 4. Analyze results
+    finalPrices.sort((a, b) => a - b);
+    const averageTarget = finalPrices.reduce((a, b) => a + b, 0) / numSimulations;
+    
+    const lowerBoundIndex = Math.floor(((1 - confidenceInterval) / 2) * numSimulations);
+    const upperBoundIndex = Math.floor(((1 + confidenceInterval) / 2) * numSimulations);
+    
+    const lowerBound = finalPrices[lowerBoundIndex];
+    const upperBound = finalPrices[upperBoundIndex];
+
+    return {
+        probableRange: { lower: lowerBound, upper: upperBound },
+        averageTarget,
+        confidence: confidenceInterval * 100,
+    };
 };

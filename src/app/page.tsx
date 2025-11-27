@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useTransition, useCallback, useRef, useMemo } from 'react';
@@ -30,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { MarketCorrelation } from '@/components/market-correlation';
 import { HistoricalVolatility } from '@/components/historical-volatility';
 import { SignalExplanation } from '@/components/signal-explanation';
+import { MonteCarloSimulation } from '@/components/monte-carlo-simulation';
 
 
 const FormSchema = z.object({
@@ -570,6 +572,13 @@ export default function Home() {
               marketData={marketData}
               onAnalysisComplete={setAnalysisResult}
               currency={currency}
+            />
+          )}
+
+          {submittedTicker && marketData && (
+            <MonteCarloSimulation 
+                marketData={marketData}
+                currency={currency}
             />
           )}
 
