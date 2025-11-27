@@ -164,7 +164,7 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
       
-      const marketResult = await fetchMarketData(ticker, 'full');
+      const marketResult = await fetchMarketData(ticker, 'compact');
       
       handleDataResult(marketResult, ticker);
     });
@@ -278,10 +278,12 @@ export default function Home() {
     if (!marketData || marketData.length === 0) {
       return { latestData: null, fiftyTwoWeek: null };
     }
+    const latest = marketData[0];
 
+    // Check for enough data for a true 52-week calculation
     const hasFullYearData = marketData.length >= 252;
     if (!hasFullYearData) {
-        return { latestData: marketData[0], fiftyTwoWeek: null };
+        return { latestData: latest, fiftyTwoWeek: null };
     }
 
     const oneYearAgo = new Date();
@@ -289,15 +291,16 @@ export default function Home() {
 
     const oneYearData = marketData.filter(d => new Date(d.date) >= oneYearAgo);
     
-    if (oneYearData.length === 0) {
-        return { latestData: marketData[0], fiftyTwoWeek: null };
+    // This check is a fallback, but hasFullYearData should be primary
+    if (oneYearData.length < 252) {
+        return { latestData: latest, fiftyTwoWeek: null };
     }
 
     const high52 = Math.max(...oneYearData.map(d => parseFloat(d.high)));
     const low52 = Math.min(...oneYearData.map(d => parseFloat(d.low)));
     
     return {
-      latestData: marketData[0],
+      latestData: latest,
       fiftyTwoWeek: { high: high52, low: low52 }
     };
   }, [marketData]);
@@ -735,5 +738,7 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     

@@ -143,7 +143,7 @@ export async function predictPriceTarget(
              longTermInterpretation = `The longer-term forecast points towards a decline that may test the 52-week low, which could act as a significant support level.`;
         }
     } else if (!hasEnoughFor52Week) {
-        longTermInterpretation += ` (Note: 52-week context is unavailable as > ${oneYearDataPoints} days of data are required).`
+        longTermInterpretation = `The long-term forecast is unavailable, as this feature requires at least ${oneYearDataPoints} days of historical data to analyze the 52-week context.`
     }
 
 
@@ -154,8 +154,8 @@ export async function predictPriceTarget(
             interpretation: shortTermInterpretation,
         },
         longTerm: {
-            priceTarget: parseFloat(longTermPriceTarget.toFixed(2)),
-            timeframe: longTermTimeframe,
+            priceTarget: hasEnoughFor52Week ? parseFloat(longTermPriceTarget.toFixed(2)) : currentPrice,
+            timeframe: hasEnoughFor52Week ? longTermTimeframe : 'N/A',
             interpretation: longTermInterpretation,
         }
     };
@@ -165,3 +165,5 @@ export async function predictPriceTarget(
     return { error: e.message || 'An unexpected error occurred during price target calculation.' };
   }
 }
+
+    

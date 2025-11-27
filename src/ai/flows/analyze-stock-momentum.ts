@@ -262,6 +262,13 @@ export async function analyzeStockMomentum(
                 totalScore -= weights.fiftyTwoWeek * 0.5;
             }
         }
+    } else {
+      // If less than a year of data, this factor cannot be calculated. Redistribute weight.
+      const redistributedWeight = weights.fiftyTwoWeek / 4;
+      weights.multiRoc += redistributedWeight;
+      weights.rsi += redistributedWeight;
+      weights.macd += redistributedWeight;
+      weights.vwma += redistributedWeight;
     }
 
 
@@ -287,5 +294,8 @@ export async function analyzeStockMomentum(
     
 
     
+
+    
+
 
     
