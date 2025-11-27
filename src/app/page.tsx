@@ -19,7 +19,7 @@ import { Header } from '@/components/header';
 import { MarketDataTable } from '@/components/market-data-table';
 import { SuggestedQuestions } from '@/components/suggested-questions';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { isCurrencyPair, isCryptoPair, parseApiLimit, formatCurrency } from '@/lib/utils';
+import { isCurrencyPair, isCryptoPair, formatCurrency } from '@/lib/utils';
 import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
 import { OptionStrategies } from '@/components/option-strategies';
@@ -304,10 +304,6 @@ export default function Home() {
 
   const showInitialSkeleton = isPending && !marketData;
 
-  const apiLimitMessage = error ? parseApiLimit(error.message) : null;
-  const isApiLimitError = !!apiLimitMessage;
-
-
   return (
     <main className="container mx-auto px-4 py-8">
       <Header />
@@ -456,31 +452,26 @@ export default function Home() {
           )}
 
           {error && (
-            <Alert variant={isApiLimitError ? 'default' : 'destructive'}>
+            <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              {isApiLimitError ? 
-                <AlertTitle>{apiLimitMessage}</AlertTitle> : 
-                <>
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>
-                    <p>{error.message}</p>
-                    {error.url && (
-                        <div className="mt-2 text-xs">
-                            <p className="font-semibold">Failed URL (for diagnosis):</p>
-                            <a 
-                                href={error.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="break-all text-blue-500 underline"
-                            >
-                                {error.url}
-                            </a>
-                            <p className="mt-1">Click the link to see the raw error from the API provider. Note: the API key has been removed.</p>
-                        </div>
-                    )}
-                  </AlertDescription>
-                </>
-              }
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                <p>{error.message}</p>
+                {error.url && (
+                    <div className="mt-2 text-xs">
+                        <p className="font-semibold">Failed URL (for diagnosis):</p>
+                        <a 
+                            href={error.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="break-all text-blue-500 underline"
+                        >
+                            {error.url}
+                        </a>
+                        <p className="mt-1">Click the link to see the raw error from the API provider. Note: the API key has been removed.</p>
+                    </div>
+                )}
+              </AlertDescription>
             </Alert>
           )}
 

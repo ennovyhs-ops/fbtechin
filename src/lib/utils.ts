@@ -51,22 +51,6 @@ export function getCurrencyOrCryptoPair(ticker: string): { from_symbol: string, 
     return { from_symbol, to_symbol };
 }
 
-export function parseApiLimit(note: string): string | null {
-  if (!note || !note.includes("Alpha Vantage")) return null;
-
-  const dailyMatch = note.match(/(\d+)\s+calls\s+per\s+day/);
-  if (dailyMatch && dailyMatch[1]) {
-    return `API Limit: ${dailyMatch[1]} requests per day`;
-  }
-
-  const minuteMatch = note.match(/(\d+)\s+calls\s+per\s+minute/);
-  if (minuteMatch && minuteMatch[1]) {
-    return `API Limit: ${minuteMatch[1]} requests per minute`;
-  }
-  
-  return "You have reached the Alpha Vantage API rate limit.";
-}
-
 export function formatCurrency(value: string | number | null | undefined, currency: string | null): string {
     if (value === null || value === undefined) return 'N/A';
     
