@@ -181,7 +181,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         </TooltipTrigger>
                         <TooltipContent>
                              <div className="max-w-xs text-sm">
-                                <p className="font-semibold">This engine follows strict 'if-this-then-that' rules. Its suggestions are **prioritized**, with the first one being the primary strategy based on its analysis of momentum, timing, and volatility.</p>
+                                <p className="font-semibold">This engine follows strict 'if-this-then-that' rules based on Momentum, Volatility, and Timing. Its suggestions are **prioritized**, with the first being the primary strategy.</p>
                                 <Separator className="my-2" />
                                 <p className="font-medium">Possible strategies include:</p>
                                 <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">

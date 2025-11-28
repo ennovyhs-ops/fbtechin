@@ -65,8 +65,8 @@ const generateRationale = (strategyName: string, isBullish: boolean, latestClose
 const calculateStdDev = (data: number[]): number => {
     const n = data.length;
     if (n === 0) return 0;
-    const mean = data.reduce((a, b) => a + b) / n;
-    const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n;
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+    const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n;
     return Math.sqrt(variance);
 };
 
