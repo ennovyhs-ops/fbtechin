@@ -22,6 +22,7 @@ interface AnalysisResult {
   basePerformance: number;
   comparisonPerformance: number;
   conclusion: string;
+  explanation: string;
 }
 
 const calculatePerformance = (data: MarketData[], days: number): number | null => {
@@ -54,13 +55,17 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
     }
 
     let conclusion = '';
+    let explanation = '';
     const difference = basePerformance - comparisonPerformance;
     if (difference > 5) {
         conclusion = `${baseTicker} is significantly outperforming ${comparisonTickerName}.`;
+        explanation = `This indicates that over the past 90 days, ${baseTicker} has shown stronger upward momentum or greater resilience to downside pressure compared to ${comparisonTickerName}. Investors often look for this "relative strength" as a positive sign.`
     } else if (difference < -5) {
         conclusion = `${baseTicker} is significantly underperforming ${comparisonTickerName}.`;
+        explanation = `This means that ${baseTicker} has either declined more or gained less than ${comparisonTickerName} over the last 90 days. This "relative weakness" can be a cause for caution or further investigation.`
     } else {
         conclusion = `${baseTicker} is performing similarly to ${comparisonTickerName}.`;
+        explanation = `The performance of ${baseTicker} is closely tracking that of ${comparisonTickerName}, suggesting it is moving in line with the broader market or its direct competitor.`
     }
 
     setAnalysis({
@@ -68,7 +73,8 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
         comparisonTicker: comparisonTickerName,
         basePerformance,
         comparisonPerformance,
-conclusion
+        conclusion,
+        explanation
     });
   };
 
@@ -241,9 +247,9 @@ conclusion
                     <Separator orientation="horizontal" className="w-full md:hidden" />
                     <PerformanceDisplay label={analysis.comparisonTicker} value={analysis.comparisonPerformance} />
                 </div>
-                <div className="text-center pt-2">
-                    <h3 className="font-semibold text-sm">90-Day Performance Verdict:</h3>
-                    <p className="text-sm text-muted-foreground">{analysis.conclusion}</p>
+                <div className="text-center pt-2 space-y-1">
+                    <h3 className="font-semibold text-base">{analysis.conclusion}</h3>
+                    <p className="text-sm text-muted-foreground max-w-2xl mx-auto">{analysis.explanation}</p>
                 </div>
                 <div className="flex justify-center">
                     <Button variant="outline" size="sm" onClick={resetAnalysis} disabled={isPending}>
