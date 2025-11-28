@@ -70,7 +70,7 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
     *   **strategy:** The name of your chosen strategy.
     *   **conviction:** Your calculated conviction level.
     *   **rationale:** A 1-2 sentence explanation of *why* you chose this strategy, referencing the model agreement.
-    *   **action:** Provide a concrete, actionable trade structure. Suggest specific strike prices relative to the current price and targets, and a suitable expiration timeframe (typically 30-60 days).
+    *   **action:** You **MUST** provide a concrete, actionable trade structure. Suggest specific strike prices relative to the current price and targets, and a suitable expiration timeframe (typically 30-60 days).
 
 **Example:**
 *Inputs:* Current Price: $150, Signal: "STRONG BULLISH", Target: $165, Range: $160-$175.

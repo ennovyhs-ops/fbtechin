@@ -44,7 +44,7 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
   name: 'suggestOptionStrategiesPrompt',
   input: { schema: SuggestOptionStrategiesInputSchema },
   output: { schema: SuggestOptionStrategiesOutputSchema },
-  prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price. The momentum signal is based on daily data with indicators over the last 14-26 days, so the strategies should be for a short-to-medium term outlook.
+  prompt: `You are an expert options trading strategist. Your task is to suggest 2-3 suitable, common option strategies for {{ticker}} based on the provided momentum signal and its latest closing price.
 
 **Ticker:** {{ticker}}
 **Latest Closing Price:** {{latestClose}}
@@ -52,11 +52,11 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
 
 **Instructions:**
 1.  Analyze the signal (e.g., "STRONG BULLISH", "NEUTRAL", "MODERATE BEARISH").
-2.  Suggest 2-3 distinct and appropriate option strategies. For each strategy, provide a concise 'rationale'.
-3.  In the 'rationale', you MUST provide context for selecting a strike price relative to the latest close price (e.g., "slightly out-of-the-money").
-4.  In the 'rationale', you MUST ALSO suggest a suitable time frame for the option's expiration, typically between 3 to 8 weeks (e.g., "with 30-60 days to expiration").
+2.  Suggest 2-3 distinct and appropriate option strategies. For each strategy, you **MUST** provide a concise 'rationale'.
+3.  In the 'rationale', you **MUST** provide context for selecting a strike price relative to the latest close price (e.g., "slightly out-of-the-money", "at-the-money").
+4.  In the 'rationale', you **MUST** also suggest a suitable time frame for the option's expiration (e.g., "with 30-60 days to expiration", "with 2-4 weeks to expiration").
 5.  Do not suggest overly complex or obscure strategies. Stick to well-known ones.
-6.  You MUST include the following disclaimer verbatim in the 'disclaimer' field: "This is not financial advice. The strategies presented are for educational purposes only, based on a technical momentum signal. Options trading involves significant risk and is not suitable for all investors. Consult a qualified financial advisor before making any trading decisions."
+6.  You **MUST** include the following disclaimer verbatim in the 'disclaimer' field: "This is not financial advice. The strategies presented are for educational purposes only, based on a technical momentum signal. Options trading involves significant risk and is not suitable for all investors. Consult a qualified financial advisor before making any trading decisions."
 
 **Example for a "STRONG BULLISH" signal and a price of $150:**
 - Strategy: "Long Call"
