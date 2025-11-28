@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Lightbulb, Loader2, AlertCircle, ChevronDown, Info, BrainCircuit, Bot } from 'lucide-react';
+import { Lightbulb, Loader2, AlertCircle, ChevronDown, Info, BrainCircuit, Bot, AlertTriangle } from 'lucide-react';
 import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
 import type { SuggestOptionStrategiesOutput } from '@/ai/flows/suggest-option-strategies';
 import { suggestOptionStrategiesDeterministic } from '@/ai/flows/suggest-option-strategies-deterministic';
@@ -76,7 +76,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
 
   const isLoading = loading.ai || loading.deterministic;
   const anyError = error.ai || error.deterministic;
-  const noSuggestions = (!aiSuggestions || aiSuggestions.strategies.length === 0) && 
+  const noSuggestions = (!aiSuggestions || (aiSuggestions.strategies.length === 0 && !aiSuggestions.aggressivePlay)) && 
                         (!deterministicSuggestions || deterministicSuggestions.strategies.length === 0);
 
   if (isLoading) {
@@ -159,13 +159,27 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
 
                 {loading.ai ? <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Loading...</div> :
                  error.ai ? <div className="text-sm text-destructive flex items-center gap-2"><AlertCircle className="h-4 w-4" />Failed to load.</div> :
-                 aiSuggestions && aiSuggestions.strategies.length > 0 ? (
-                    aiSuggestions.strategies.map((strategy, index) => (
-                        <div key={`ai-${index}`} className="p-3 rounded-lg border bg-background/50 text-sm">
-                            <h4 className="font-semibold text-sm text-foreground">{strategy.name}</h4>
-                            <p className="text-xs text-muted-foreground mt-1">{strategy.rationale}</p>
-                        </div>
-                    ))
+                 aiSuggestions && (aiSuggestions.strategies.length > 0 || aiSuggestions.aggressivePlay) ? (
+                    <>
+                        {aiSuggestions.strategies.map((strategy, index) => (
+                            <div key={`ai-${index}`} className="p-3 rounded-lg border bg-background/50 text-sm">
+                                <h4 className="font-semibold text-sm text-foreground">{strategy.name}</h4>
+                                <p className="text-xs text-muted-foreground mt-1">{strategy.rationale}</p>
+                            </div>
+                        ))}
+                        {aiSuggestions.aggressivePlay && (
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center gap-2">
+                                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                                    <h4 className="font-semibold text-sm text-foreground">High-Risk Play</h4>
+                                </div>
+                                <div className="p-3 rounded-lg border border-dashed border-orange-400/50 bg-orange-500/10 text-sm">
+                                    <h5 className="font-semibold text-sm text-orange-400">{aiSuggestions.aggressivePlay.name}</h5>
+                                    <p className="text-xs text-muted-foreground mt-1">{aiSuggestions.aggressivePlay.rationale}</p>
+                                </div>
+                            </div>
+                        )}
+                    </>
                  ) : <p className="text-sm text-muted-foreground">No AI suggestions were generated.</p>}
             </div>
 
