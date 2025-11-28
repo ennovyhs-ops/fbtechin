@@ -31,7 +31,7 @@ export type SuggestOptionStrategiesDeterministicOutput = z.infer<typeof SuggestO
 const getStrikeSuggestion = (latestClose: number, strikeDistance: number, isBullish: boolean, strategyName: string) => {
     if (strategyName.includes("Credit Spread") || strategyName.includes("Iron Condor")) {
         const shortStrike = isBullish ? latestClose * 0.98 : latestClose * 1.02;
-        return `Consider selling a short-term option with a strike around $${shortStrike.toFixed(2)}`;
+        return `Consider selling an option with a strike around $${shortStrike.toFixed(2)}`;
     }
     const strike = isBullish ? latestClose + strikeDistance : latestClose - strikeDistance;
     return `Consider a strike price around $${strike.toFixed(2)}`;
@@ -43,18 +43,18 @@ const generateRationale = (strategyName: string, isBullish: boolean, latestClose
     
     const rationales: Record<string, string> = {
         "Long Calls": `For strong bullish momentum. A straightforward strategy to profit from an ${direction} price move with limited risk. ${strikeContext} with 30-60 days to expiration.`,
-        "Call Verticals": `A risk-defined bullish strategy suitable for moderate bullish outlooks. Involves buying a call and selling another at a higher strike to finance the position and cap potential profit and loss.`,
+        "Call Verticals": `A risk-defined bullish strategy suitable for moderate bullish outlooks. Involves buying a call and selling another at a higher strike to finance the position and cap potential profit and loss. ${strikeContext} with 30-45 days to expiration.`,
         "Long Puts": `For strong bearish momentum. A straightforward strategy to profit from a ${direction} price move with limited risk. ${strikeContext} with 30-60 days to expiration.`,
-        "Put Verticals": `A risk-defined bearish strategy suitable for moderate bearish outlooks. Involves buying a put at a higher strike and selling one at a lower strike.`,
-        "Debit Spreads": `This involves buying a higher-premium option and selling a lower-premium one. In a bullish case, it's a Call Debit Spread; in a bearish case, a Put Debit Spread. It offers a directional bet with a defined risk and is best in low volatility.`,
-        "Ratio Spreads": `This strategy involves buying and selling an unequal number of options. For instance, buying one call and selling two higher-strike calls. It's for capitalizing on a directional move with an expected price pinning at the short strike, best in higher volatility.`,
-        "Call Credit Spreads": `A bearish, high-probability strategy where you expect the stock to stay below a certain price. You collect a premium (credit) by selling a call and buying a higher-strike call for protection. ${strikeContext}, with 2-4 weeks to expiration.`,
-        "Put Credit Spreads": `A bullish, high-probability strategy where you expect the stock to stay above a certain price. You collect a premium by selling a put and buying a lower-strike put for protection. ${strikeContext}, with 2-4 weeks to expiration.`,
-        "Iron Condors": `A neutral, range-bound strategy that profits if the stock stays between two price points. It involves selling both a put credit spread and a call credit spread. Best for low-volatility environments where you expect little price movement.`,
-        "Calendar Spreads": `A neutral to directional strategy that profits from the passage of time and/or an increase in volatility. It involves buying a longer-term option and selling a shorter-term option of the same strike. Good for when you expect a move but are unsure of timing.`,
-        "Strangles": `A strategy that profits from a large price move in either direction, typically used when high volatility is expected (like before earnings). It involves buying an out-of-the-money call and an out-of-the-money put.`,
-        "Butterflies": `A neutral strategy that has a very narrow profit range. It profits if the stock price is at a specific point at expiration. It is a low-cost, low-probability, low-volatility trade.`,
-        "Diagonal Spreads": `This strategy involves buying a longer-dated option and selling a shorter-dated option with a different strike price. It can be set up to be bullish, bearish, or neutral and profits from time decay and/or price movement.`,
+        "Put Verticals": `A risk-defined bearish strategy suitable for moderate bearish outlooks. Involves buying a put at a higher strike and selling one at a lower strike. ${strikeContext} with 30-45 days to expiration.`,
+        "Debit Spreads": `This involves buying a higher-premium option and selling a lower-premium one. In a bullish case, it's a Call Debit Spread; in a bearish case, a Put Debit Spread. It offers a directional bet with a defined risk and is best in low volatility. ${strikeContext} with 30-60 days to expiration.`,
+        "Ratio Spreads": `This strategy involves buying and selling an unequal number of options. For instance, buying one call and selling two higher-strike calls. It's for capitalizing on a directional move with an expected price pinning at the short strike, best in higher volatility. ${strikeContext} with 30-60 days to expiration.`,
+        "Call Credit Spreads": `A bearish, high-probability strategy where you expect the stock to stay below a certain price. You collect a premium (credit) by selling a call and buying a higher-strike call for protection. ${strikeContext}, with 14-30 days to expiration.`,
+        "Put Credit Spreads": `A bullish, high-probability strategy where you expect the stock to stay above a certain price. You collect a premium by selling a put and buying a lower-strike put for protection. ${strikeContext}, with 14-30 days to expiration.`,
+        "Iron Condors": `A neutral, range-bound strategy that profits if the stock stays between two price points. It involves selling both a put credit spread and a call credit spread. Best for low-volatility environments where you expect little price movement. ${strikeContext} for the short strikes, with 14-30 days to expiration.`,
+        "Calendar Spreads": `A neutral to directional strategy that profits from the passage of time and/or an increase in volatility. It involves buying a longer-term option and selling a shorter-term option of the same strike. Good for when you expect a move but are unsure of timing. ${strikeContext} for the at-the-money strike, selling a 2-4 week option against a 5-8 week option.`,
+        "Strangles": `A strategy that profits from a large price move in either direction, typically used when high volatility is expected (like before earnings). It involves buying an out-of-the-money call and an out-of-the-money put. Consider strikes one standard deviation away from the current price, with 30-45 days to expiration.`,
+        "Butterflies": `A neutral strategy that has a very narrow profit range. It profits if the stock price is at a specific point at expiration. It is a low-cost, low-probability, low-volatility trade. Consider centering the strikes around where you expect the stock to be, with 14-30 days to expiration.`,
+        "Diagonal Spreads": `This strategy involves buying a longer-dated option and selling a shorter-dated option with a different strike price. It can be set up to be bullish, bearish, or neutral and profits from time decay and/or price movement. ${strikeContext}, selling a 2-4 week option against a 5-8 week option.`,
         "Defensive Rolls": `This is a position management technique, not an initial strategy. It suggests the market is choppy or unpredictable. It involves closing an existing position and opening a new one further out in time or at a different strike to manage risk.`
     };
 
