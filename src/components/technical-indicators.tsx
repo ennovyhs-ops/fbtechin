@@ -127,7 +127,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* ROC */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
@@ -136,7 +136,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
                             <p className="font-semibold text-lg">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
@@ -144,7 +144,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* Bollinger Bands */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center gap-2 flex-wrap">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
@@ -153,9 +153,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-20 h-8 text-sm" />
                                     <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev</label>
-                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-xs">
@@ -167,7 +167,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* RSI */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
@@ -176,7 +176,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* Volume */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
@@ -200,10 +200,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">Avg Period</label>
-                                    <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <div className="flex items-baseline gap-2">
                                      <p className="font-semibold text-lg">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
                                      <p className="text-xs text-muted-foreground">/ Avg: {latestMaVol?.MAVol ? Number(latestMaVol.MAVol).toLocaleString() : 'N/A'}</p>
@@ -219,7 +219,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* MACD */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center gap-2 flex-wrap">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
@@ -228,11 +228,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
-                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-20 h-8 text-sm" />
                                     <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">Slow</label>
-                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-20 h-8 text-sm" />
                                     <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Signal</label>
-                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-xs">
@@ -244,7 +244,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* VWMA */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
@@ -253,7 +253,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="vwma-period" className="text-xs font-medium text-muted-foreground">Period</label>
-                                    <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-16 h-8 text-sm" />
+                                    <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-20 h-8 text-sm" />
                                  </div>
                             </div>
                             <p className="font-semibold text-lg">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>

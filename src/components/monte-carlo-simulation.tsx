@@ -109,7 +109,7 @@ export function MonteCarloSimulation({ marketData, currency, onSimulationComplet
           </Alert>
         )}
         {result && !loading && (
-          <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50 text-center">
+          <div className="flex flex-col sm:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50 text-center">
             
             <div className="flex flex-col items-center gap-1">
                 <h3 className="font-semibold text-sm text-muted-foreground">{result.confidence}% Probable Range</h3>

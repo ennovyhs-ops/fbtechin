@@ -348,7 +348,7 @@ export default function Home() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex flex-col items-center gap-2 w-full sm:w-auto">
                          <input
                             type="file"
                             ref={fileInputRef}
@@ -356,9 +356,9 @@ export default function Home() {
                             accept=".csv"
                             className="hidden"
                         />
-                        <div className="w-full">
-                             <p className="text-xs text-muted-foreground mb-1 text-center">
-                                CSV: 'date' & 'close' required. 'open', 'high', 'low', 'volume' optional.
+                        <div className="w-full text-center">
+                             <p className="text-xs text-muted-foreground mb-2">
+                                CSV: 'date' & 'close' required.
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
