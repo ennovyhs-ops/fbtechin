@@ -19,6 +19,7 @@ interface StockAnalysisProps {
   ticker: string;
   marketData: MarketData[] | null;
   onAnalysisComplete: (analysis: AnalyzeStockMomentumOutput | null) => void;
+  onPredictionComplete: (prediction: any | null) => void;
   currency: string | null;
 }
 
@@ -50,7 +51,7 @@ const getSignalInfoForPrediction = (signal: string): { explanation: string } => 
     return { explanation: "'Neutral' signals indicate no clear directional edge; the market may be choppy or range-bound." };
 }
 
-export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency }: StockAnalysisProps) {
+export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredictionComplete, currency }: StockAnalysisProps) {
   const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [prediction, setPrediction] = useState<PredictPriceTargetOutput | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
       setAnalysis(null);
       setPrediction(null);
       onAnalysisComplete(null);
+      onPredictionComplete(null);
       
       const performAnalysis = async () => {
         try {
@@ -71,6 +73,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             onAnalysisComplete(analysisResult as AnalyzeStockMomentumOutput);
             const predictionResult = await predictPriceTarget(ticker, marketData, analysisResult as AnalyzeStockMomentumOutput);
             setPrediction(predictionResult);
+            onPredictionComplete(predictionResult);
           }
         } catch (e: any) {
           const errorResult = { error: e.message || 'An unexpected error occurred while generating the analysis.' };
@@ -85,7 +88,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         setLoading(false);
         onAnalysisComplete(null);
     }
-  }, [ticker, marketData, onAnalysisComplete]);
+  }, [ticker, marketData, onAnalysisComplete, onPredictionComplete]);
 
 
   if (loading) {
@@ -166,7 +169,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         );
     }
     
-    const isUp = targetData.priceTarget > parseFloat(marketData![0].close);
+    const isUp = marketData && targetData.priceTarget > parseFloat(marketData[0].close);
     const predColor = isUp ? 'text-green-400' : 'text-red-400';
 
     return (
@@ -292,5 +295,3 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     </Card>
   );
 }
-
-    

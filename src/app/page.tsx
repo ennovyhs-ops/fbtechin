@@ -10,7 +10,7 @@ import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, Trend
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA } from '@/lib/technical-analysis';
+import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility } from '@/lib/technical-analysis';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,6 +63,7 @@ export default function Home() {
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
+  const [predictionResult, setPredictionResult] = useState<any | null>(null);
   const [monteCarloResult, setMonteCarloResult] = useState<MonteCarloResult | null>(null);
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
@@ -137,6 +138,7 @@ export default function Home() {
     setIndicatorData(null);
     setIndicatorsError(null);
     setAnalysisResult(null);
+    setPredictionResult(null);
     setMonteCarloResult(null);
     setCurrency(null);
     setRegion(null);
@@ -281,32 +283,30 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  const { latestData, fiftyTwoWeek } = useMemo(() => {
+  const { latestData, fiftyTwoWeek, thirtyDayVolatility } = useMemo(() => {
     if (!marketData || marketData.length === 0) {
-      return { latestData: null, fiftyTwoWeek: null };
+      return { latestData: null, fiftyTwoWeek: null, thirtyDayVolatility: null };
     }
     const latest = marketData[0];
 
-    // Check for enough data for a true 52-week calculation
-    if (marketData.length < 252) {
-      return { latestData: latest, fiftyTwoWeek: null };
-    }
-
     const oneYearData = marketData.slice(0, 252);
-
     let high52 = -Infinity;
     let low52 = Infinity;
+    if (marketData.length >= 252) {
+      oneYearData.forEach(d => {
+          const h = parseFloat(d.high);
+          const l = parseFloat(d.low);
+          if (!isNaN(h) && h > high52) high52 = h;
+          if (!isNaN(l) && l < low52) low52 = l;
+      });
+    }
 
-    oneYearData.forEach(d => {
-        const h = parseFloat(d.high);
-        const l = parseFloat(d.low);
-        if (!isNaN(h) && h > high52) high52 = h;
-        if (!isNaN(l) && l < low52) low52 = l;
-    });
+    const vol = calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30);
     
     return {
       latestData: latest,
-      fiftyTwoWeek: { high: high52, low: low52 }
+      fiftyTwoWeek: marketData.length >= 252 ? { high: high52, low: low52 } : null,
+      thirtyDayVolatility: vol
     };
   }, [marketData]);
 
@@ -575,6 +575,7 @@ export default function Home() {
                 ticker={submittedTicker} 
                 marketData={marketData}
                 onAnalysisComplete={setAnalysisResult}
+                onPredictionComplete={setPredictionResult}
                 currency={currency}
               />
               <MonteCarloSimulation 
@@ -585,16 +586,17 @@ export default function Home() {
             </div>
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && monteCarloResult && latestData && (
+          {analysisResult && analysisResult.signal !== 'N/A' && monteCarloResult && latestData && thirtyDayVolatility && (
               <SynthesizedTradeIdea
                 ticker={submittedTicker!}
                 analysis={analysisResult}
                 monteCarlo={monteCarloResult}
                 currentPrice={parseFloat(latestData.close)}
+                volatility={thirtyDayVolatility}
               />
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
+          {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && indicatorData && (
               <SignalExplanation 
                 ticker={submittedTicker!}
                 analysis={analysisResult}
@@ -635,6 +637,22 @@ export default function Home() {
                   baseMarketData={marketData}
                 />
             </div>
+          )}
+
+          {submittedTicker && marketData && marketData.length > 0 && (
+            <Collapsible onOpenChange={setIsHistoryExpanded} open={isHistoryExpanded}>
+              <CollapsibleTrigger asChild>
+                <div className="flex justify-center">
+                  <Button variant="outline">
+                    {isHistoryExpanded ? 'Hide' : 'Show'} Full Data History
+                    {isHistoryExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                  </Button>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-4 animate-in fade-in-50 duration-500">
+                <MarketDataTable data={marketData} ticker={submittedTicker} currency={currency} />
+              </CollapsibleContent>
+            </Collapsible>
           )}
 
           {submittedTicker && (
@@ -755,4 +773,3 @@ export default function Home() {
     </main>
   );
 }
- 

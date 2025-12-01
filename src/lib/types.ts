@@ -52,34 +52,9 @@ export type VwmaData = {
     VWMA: string | null;
 }
 
-export type MomentumAnalysisInput = {
-  ticker: string;
-  isRocPositive: boolean;
-  priceAboveMiddleBand: boolean;
-  isBBSqueezing: boolean;
-  breakoutSignal: "above_upper" | "below_lower" | "none";
-  isRsiBullish: boolean;
-  divergence: "bullish" | "bearish" | "none";
-  isVolumeUp: boolean;
-  isUpDay: boolean;
-  isMacdBullish: boolean;
-  isMacdCrossoverBullish: boolean;
-};
-
-export type OptionStrategy = {
-  name: string;
-  rationale: string;
-};
-
-export type OptionStrategySuggestion = {
-  aiStrategies: OptionStrategy[];
-  deterministicStrategies: OptionStrategy[];
-  disclaimer: string;
-};
-
 export type NewsArticle = {
   title: string;
-  url: string;
+  url:string;
   time_published: string;
   summary: string;
   banner_image: string;
@@ -110,7 +85,7 @@ export type IndicatorPeriods = {
   macd: {
     fast: number;
     slow: number;
-signal: number;
+    signal: number;
   };
   bbands: {
     period: number;
@@ -125,10 +100,3 @@ export type MonteCarloResult = {
     averageTarget: number;
     confidence: number;
 }
-
-export type SynthesizeTradeIdeaOutput = {
-    strategy: string;
-    rationale: string;
-    action: string;
-    conviction: "High" | "Moderate" | "Low" | "Caution";
-};
