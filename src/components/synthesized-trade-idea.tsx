@@ -6,6 +6,7 @@ import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle } from 'lucide-re
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { synthesizeTradeIdea } from '@/ai/flows/synthesize-trade-idea';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
+import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
 import type { MonteCarloResult } from '@/lib/types';
 import type { SynthesizeTradeIdeaOutput } from '@/ai/flows/synthesize-trade-idea';
 import { Badge } from './ui/badge';
@@ -15,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 interface SynthesizedTradeIdeaProps {
   ticker: string;
   analysis: AnalyzeStockMomentumOutput;
+  prediction: PredictPriceTargetOutput | null;
   monteCarlo: MonteCarloResult;
   currentPrice: number;
   volatility: number | null;
@@ -30,13 +32,18 @@ const getConvictionColor = (conviction: string) => {
     }
 }
 
-export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
+export function SynthesizedTradeIdea({ ticker, analysis, prediction, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
   const [idea, setIdea] = useState<SynthesizeTradeIdeaOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ticker || !analysis || !monteCarlo || !currentPrice || volatility === null) return;
+    if (!ticker || !analysis || !prediction || !monteCarlo || !currentPrice || volatility === null) {
+      // If any of the dependencies aren't ready, don't do anything.
+      // Set loading to false if we have the ticker but not the other data.
+      if (ticker) setLoading(false);
+      return;
+    };
 
     setLoading(true);
     setError(null);
@@ -46,7 +53,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       ticker,
       currentPrice,
       momentumSignal: analysis.signal,
-      momentumTarget: analysis.totalScore, // This is incorrect, but what the flow expects
+      momentumTarget: prediction.shortTerm.priceTarget,
       volatility: volatility,
       monteCarloRange: monteCarlo.probableRange,
       monteCarloConfidence: monteCarlo.confidence
@@ -61,7 +68,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       .finally(() => {
         setLoading(false);
       });
-  }, [ticker, analysis, monteCarlo, currentPrice, volatility]);
+  }, [ticker, analysis, prediction, monteCarlo, currentPrice, volatility]);
   
   if (loading && !idea) {
     return (

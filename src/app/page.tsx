@@ -33,6 +33,7 @@ import { HistoricalVolatility } from '@/components/historical-volatility';
 import { SignalExplanation } from '@/components/signal-explanation';
 import { MonteCarloSimulation } from '@/components/monte-carlo-simulation';
 import { SynthesizedTradeIdea } from '@/components/synthesized-trade-idea';
+import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
 
 
 const FormSchema = z.object({
@@ -63,7 +64,7 @@ export default function Home() {
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
-  const [predictionResult, setPredictionResult] = useState<any | null>(null);
+  const [predictionResult, setPredictionResult] = useState<PredictPriceTargetOutput | null>(null);
   const [monteCarloResult, setMonteCarloResult] = useState<MonteCarloResult | null>(null);
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
@@ -586,10 +587,11 @@ export default function Home() {
             </div>
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && monteCarloResult && latestData && thirtyDayVolatility && (
+          {analysisResult && analysisResult.signal !== 'N/A' && predictionResult && monteCarloResult && latestData && thirtyDayVolatility && (
               <SynthesizedTradeIdea
                 ticker={submittedTicker!}
                 analysis={analysisResult}
+                prediction={predictionResult}
                 monteCarlo={monteCarloResult}
                 currentPrice={parseFloat(latestData.close)}
                 volatility={thirtyDayVolatility}
