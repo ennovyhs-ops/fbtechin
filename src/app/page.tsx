@@ -565,21 +565,26 @@ export default function Home() {
           )}
 
           {submittedTicker && marketData && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <StockAnalysis 
-                ticker={submittedTicker} 
-                marketData={marketData}
-                onAnalysisComplete={setAnalysisResult}
-                currency={currency}
-              />
-              <MonteCarloSimulation 
-                  marketData={marketData}
-                  currency={currency}
-                  onSimulationComplete={setMonteCarloResult}
-              />
-            </div>
+            <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <StockAnalysis 
+                    ticker={submittedTicker} 
+                    marketData={marketData}
+                    onAnalysisComplete={setAnalysisResult}
+                    currency={currency}
+                />
+                <MonteCarloSimulation 
+                    marketData={marketData}
+                    currency={currency}
+                    onSimulationComplete={setMonteCarloResult}
+                />
+                </div>
+                <div className="mt-8">
+                    <HistoricalVolatility marketData={marketData} />
+                </div>
+            </>
           )}
-
+          
           {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && indicatorData && (
               <SignalExplanation 
                 ticker={submittedTicker!}
@@ -625,7 +630,6 @@ export default function Home() {
                     periods={indicatorPeriods}
                     onPeriodsChange={onPeriodsChange}
                 />
-                <HistoricalVolatility marketData={marketData} />
                 <MarketCorrelation 
                   baseTicker={submittedTicker}
                   baseMarketData={marketData}
