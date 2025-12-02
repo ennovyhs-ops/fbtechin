@@ -582,6 +582,15 @@ export default function Home() {
             </div>
           )}
 
+          {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && indicatorData && (
+              <SignalExplanation 
+                ticker={submittedTicker!}
+                analysis={analysisResult.analysis}
+                marketData={marketData}
+                indicatorData={indicatorData}
+              />
+          )}
+
           {analysisResult?.analysis && analysisResult.prediction && monteCarloResult && latestData && thirtyDayVolatility && (
               <SynthesizedTradeIdea
                 ticker={submittedTicker!}
@@ -589,15 +598,6 @@ export default function Home() {
                 monteCarlo={monteCarloResult}
                 currentPrice={parseFloat(latestData.close)}
                 volatility={thirtyDayVolatility}
-              />
-          )}
-
-          {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && indicatorData && (
-              <SignalExplanation 
-                ticker={submittedTicker!}
-                analysis={analysisResult.analysis}
-                marketData={marketData}
-                indicatorData={indicatorData}
               />
           )}
 
@@ -769,5 +769,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

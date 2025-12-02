@@ -13,6 +13,7 @@ import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
 import { formatCurrency, isCryptoPair, isCurrencyPair } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { SignalExplanation } from './signal-explanation';
 
 
 interface StockAnalysisProps {
@@ -319,5 +320,3 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     </Card>
   );
 }
-
-    
