@@ -108,7 +108,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
       })
       .catch(e => {
         console.error('Failed to get signal explanation:', e);
-        setError('The AI could not generate an explanation at this time.');
+        setError('What happened? Why AI suddenly cannot generate');
       })
       .finally(() => {
         setLoading(false);
