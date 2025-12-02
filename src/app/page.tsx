@@ -280,9 +280,9 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  const { latestData, fiftyTwoWeek, thirtyDayVolatility } = useMemo(() => {
+  const { latestData, fiftyTwoWeek } = useMemo(() => {
     if (!marketData || marketData.length === 0) {
-      return { latestData: null, fiftyTwoWeek: null, thirtyDayVolatility: null };
+      return { latestData: null, fiftyTwoWeek: null };
     }
     const latest = marketData[0];
 
@@ -297,17 +297,15 @@ export default function Home() {
           if (!isNaN(l) && l < low52) low52 = l;
       });
     }
-
-    const vol = calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30);
     
     return {
       latestData: latest,
       fiftyTwoWeek: marketData.length >= 252 ? { high: high52, low: low52 } : null,
-      thirtyDayVolatility: vol
     };
   }, [marketData]);
 
   const showInitialSkeleton = isPending && !marketData;
+  const thirtyDayVolatility = marketData ? calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30) : null;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -594,7 +592,7 @@ export default function Home() {
           {analysisResult?.analysis && analysisResult.prediction && monteCarloResult && latestData && thirtyDayVolatility && (
               <SynthesizedTradeIdea
                 ticker={submittedTicker!}
-                analysisResult={analysisResult}
+                analysis={analysisResult}
                 monteCarlo={monteCarloResult}
                 currentPrice={parseFloat(latestData.close)}
                 volatility={thirtyDayVolatility}

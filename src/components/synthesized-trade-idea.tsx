@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 
 interface SynthesizedTradeIdeaProps {
   ticker: string;
-  analysisResult: CombinedAnalysisResult | null;
+  analysis: CombinedAnalysisResult | null;
   monteCarlo: MonteCarloResult | null;
   currentPrice: number;
   volatility: number | null;
@@ -29,16 +29,17 @@ const getConvictionColor = (conviction: string) => {
     }
 }
 
-export function SynthesizedTradeIdea({ ticker, analysisResult, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
+export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
   const [idea, setIdea] = useState<SynthesizeTradeIdeaOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const { analysis, prediction } = analysisResult || {};
+    const momentumAnalysis = analysis?.analysis;
+    const prediction = analysis?.prediction;
 
-    if (!ticker || !analysis || !prediction || !monteCarlo || !currentPrice || volatility === null || prediction.error) {
-      if (ticker) setLoading(false);
+    if (!ticker || !momentumAnalysis || !prediction || !monteCarlo || !currentPrice || volatility === null) {
+      setLoading(false);
       return;
     };
 
@@ -49,7 +50,7 @@ export function SynthesizedTradeIdea({ ticker, analysisResult, monteCarlo, curre
     synthesizeTradeIdea({
       ticker,
       currentPrice,
-      momentumSignal: analysis.signal,
+      momentumSignal: momentumAnalysis.signal,
       momentumTarget: prediction.shortTerm.priceTarget,
       volatility: volatility,
       monteCarloRange: monteCarlo.probableRange,
@@ -65,7 +66,7 @@ export function SynthesizedTradeIdea({ ticker, analysisResult, monteCarlo, curre
       .finally(() => {
         setLoading(false);
       });
-  }, [ticker, analysisResult, monteCarlo, currentPrice, volatility]);
+  }, [ticker, analysis, monteCarlo, currentPrice, volatility]);
   
   if (loading && !idea) {
     return (
