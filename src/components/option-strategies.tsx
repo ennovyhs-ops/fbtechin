@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Lightbulb, Loader2, AlertCircle, ChevronDown, Info, BrainCircuit, Bot, AlertTriangle } from 'lucide-react';
+import { Lightbulb, Loader2, AlertCircle, ChevronDown, Info, BrainCircuit, Bot, AlertTriangle, HelpCircle } from 'lucide-react';
 import { suggestOptionStrategies } from '@/ai/flows/suggest-option-strategies';
 import type { SuggestOptionStrategiesOutput } from '@/ai/flows/suggest-option-strategies';
 import { suggestOptionStrategiesDeterministic } from '@/ai/flows/suggest-option-strategies-deterministic';
@@ -169,10 +170,19 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         ))}
                         {aiSuggestions.aggressivePlay && (
                             <div className="space-y-2 pt-2">
-                                <div className="flex items-center gap-2">
-                                    <AlertTriangle className="h-4 w-4 text-orange-400" />
-                                    <h4 className="font-semibold text-sm text-foreground">High-Risk Play</h4>
-                                </div>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-2 cursor-help">
+                                                <AlertTriangle className="h-4 w-4 text-orange-400" />
+                                                <h4 className="font-semibold text-sm text-foreground">High-Risk Play</h4>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="max-w-xs">This is a speculative, low-probability 'lotto ticket' play. It's designed to profit from a large, fast move and is very likely to expire worthless.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 <div className="p-3 rounded-lg border border-dashed border-orange-400/50 bg-orange-500/10 text-sm">
                                     <h5 className="font-semibold text-sm text-orange-400">{aiSuggestions.aggressivePlay.name}</h5>
                                     <p className="text-xs text-muted-foreground mt-1">{aiSuggestions.aggressivePlay.rationale}</p>

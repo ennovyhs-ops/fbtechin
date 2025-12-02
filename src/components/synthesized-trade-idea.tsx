@@ -38,7 +38,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
     const momentumAnalysis = analysis?.analysis;
     const prediction = analysis?.prediction;
 
-    if (!ticker || !momentumAnalysis || !prediction || !monteCarlo || !currentPrice || volatility === null) {
+    if (!ticker || !momentumAnalysis || !prediction || !('totalScore' in momentumAnalysis) || !('shortTerm' in prediction) || !monteCarlo || !currentPrice || volatility === null) {
       setLoading(false);
       return;
     };

@@ -305,7 +305,10 @@ export default function Home() {
   }, [marketData]);
 
   const showInitialSkeleton = isPending && !marketData;
-  const thirtyDayVolatility = marketData ? calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30) : null;
+  const thirtyDayVolatility = useMemo(() => {
+    if (!marketData) return null;
+    return calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30)
+  }, [marketData]);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -583,7 +586,7 @@ export default function Home() {
             </>
           )}
           
-          {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && indicatorData && (
+          {analysisResult?.analysis && 'totalScore' in analysisResult.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && indicatorData && (
               <SignalExplanation 
                 ticker={submittedTicker!}
                 analysis={analysisResult.analysis}
@@ -592,7 +595,7 @@ export default function Home() {
               />
           )}
 
-          {analysisResult?.analysis && analysisResult.prediction && monteCarloResult && latestData && thirtyDayVolatility && (
+          {analysisResult?.analysis && 'totalScore' in analysisResult.analysis && analysisResult.prediction && !('error' in analysisResult.prediction) && monteCarloResult && latestData && thirtyDayVolatility && (
               <SynthesizedTradeIdea
                 ticker={submittedTicker!}
                 analysis={analysisResult}
@@ -602,7 +605,7 @@ export default function Home() {
               />
           )}
 
-          {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && (
+          {analysisResult?.analysis && 'totalScore' in analysisResult.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && (
             <OptionStrategies 
                 ticker={submittedTicker!} 
                 analysis={analysisResult.analysis}
