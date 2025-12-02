@@ -1,23 +1,20 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { synthesizeTradeIdea } from '@/ai/flows/synthesize-trade-idea';
-import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
-import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
-import type { MonteCarloResult } from '@/lib/types';
-import type { SynthesizeTradeIdeaOutput } from '@/ai/flows/synthesize-trade-idea';
+import type { CombinedAnalysisResult, MonteCarloResult, SynthesizeTradeIdeaOutput } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 
 interface SynthesizedTradeIdeaProps {
   ticker: string;
-  analysis: AnalyzeStockMomentumOutput;
-  prediction: PredictPriceTargetOutput | null;
-  monteCarlo: MonteCarloResult;
+  analysisResult: CombinedAnalysisResult | null;
+  monteCarlo: MonteCarloResult | null;
   currentPrice: number;
   volatility: number | null;
 }
@@ -32,15 +29,15 @@ const getConvictionColor = (conviction: string) => {
     }
 }
 
-export function SynthesizedTradeIdea({ ticker, analysis, prediction, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
+export function SynthesizedTradeIdea({ ticker, analysisResult, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
   const [idea, setIdea] = useState<SynthesizeTradeIdeaOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ticker || !analysis || !prediction || !monteCarlo || !currentPrice || volatility === null) {
-      // If any of the dependencies aren't ready, don't do anything.
-      // Set loading to false if we have the ticker but not the other data.
+    const { analysis, prediction } = analysisResult || {};
+
+    if (!ticker || !analysis || !prediction || !monteCarlo || !currentPrice || volatility === null || prediction.error) {
       if (ticker) setLoading(false);
       return;
     };
@@ -68,7 +65,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, prediction, monteCarlo,
       .finally(() => {
         setLoading(false);
       });
-  }, [ticker, analysis, prediction, monteCarlo, currentPrice, volatility]);
+  }, [ticker, analysisResult, monteCarlo, currentPrice, volatility]);
   
   if (loading && !idea) {
     return (
@@ -163,3 +160,5 @@ export function SynthesizedTradeIdea({ ticker, analysis, prediction, monteCarlo,
     </Card>
   );
 }
+
+    

@@ -5,9 +5,8 @@
 import { useEffect, useState } from 'react';
 import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar } from 'lucide-react';
 import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
-import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
-import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
+import type { CombinedAnalysisResult } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { MarketData } from '@/lib/types';
@@ -19,8 +18,7 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/t
 interface StockAnalysisProps {
   ticker: string;
   marketData: MarketData[] | null;
-  onAnalysisComplete: (analysis: AnalyzeStockMomentumOutput | null) => void;
-  onPredictionComplete: (prediction: any | null) => void;
+  onAnalysisComplete: (result: CombinedAnalysisResult | null) => void;
   currency: string | null;
 }
 
@@ -52,48 +50,68 @@ const getSignalInfoForPrediction = (signal: string): { explanation: string } => 
     return { explanation: "'Neutral' signals indicate no clear directional edge; the market may be choppy or range-bound." };
 }
 
-export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredictionComplete, currency }: StockAnalysisProps) {
-  const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
-  const [prediction, setPrediction] = useState<PredictPriceTargetOutput | { error: string } | null>(null);
+export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency }: StockAnalysisProps) {
+  const [analysis, setAnalysis] = useState<CombinedAnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
   useEffect(() => {
+    let isCancelled = false;
     if (ticker && marketData && !hasAnalyzed) {
       setLoading(true);
       setAnalysis(null);
-      setPrediction(null);
       onAnalysisComplete(null);
-      onPredictionComplete(null);
       
       const performAnalysis = async () => {
         try {
-          const analysisResult = await analyzeStockMomentum(ticker, marketData);
-          setAnalysis(analysisResult);
+          const momentumResult = await analyzeStockMomentum(ticker, marketData);
+          if (isCancelled) return;
           
-          if (analysisResult && !analysisResult.error) {
-            onAnalysisComplete(analysisResult as AnalyzeStockMomentumOutput);
-            const predictionResult = await predictPriceTarget(ticker, marketData, analysisResult as AnalyzeStockMomentumOutput);
-            setPrediction(predictionResult);
-            onPredictionComplete(predictionResult);
+          let result: CombinedAnalysisResult;
+
+          if (momentumResult && !momentumResult.error) {
+            const predictionResult = await predictPriceTarget(ticker, marketData, momentumResult);
+            if (isCancelled) return;
+
+            result = {
+              analysis: momentumResult,
+              prediction: predictionResult,
+              error: predictionResult.error ? predictionResult.error : undefined,
+            }
+          } else {
+             result = {
+              analysis: null,
+              prediction: null,
+              error: momentumResult.error || 'An unknown analysis error occurred.',
+            }
           }
+          
+          setAnalysis(result);
+          onAnalysisComplete(result);
+          
         } catch (e: any) {
-          const errorResult = { error: e.message || 'An unexpected error occurred while generating the analysis.' };
+          if (isCancelled) return;
+          const errorResult = { analysis: null, prediction: null, error: e.message || 'An unexpected error occurred.' };
           setAnalysis(errorResult);
-          onAnalysisComplete(null);
+          onAnalysisComplete(errorResult);
         } finally {
-          setLoading(false);
-          setHasAnalyzed(true);
+          if (!isCancelled) {
+            setLoading(false);
+            setHasAnalyzed(true);
+          }
         }
       }
       performAnalysis();
+
     } else if (!marketData) {
         // Reset when marketData is cleared
         setHasAnalyzed(false);
         setAnalysis(null);
-        setPrediction(null);
     }
-  }, [ticker, marketData, onAnalysisComplete, onPredictionComplete, hasAnalyzed]);
+     return () => {
+      isCancelled = true;
+    };
+  }, [ticker, marketData, onAnalysisComplete, hasAnalyzed]);
 
 
   if (loading) {
@@ -120,7 +138,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
   
   if (!analysis) return null;
 
-  if (analysis.error) {
+  if (analysis.error || !analysis.analysis || !analysis.prediction) {
     return (
         <Card>
             <CardHeader>
@@ -142,16 +160,17 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
     );
   }
   
-  const { icon, color } = getSignalInfo(analysis.signal);
-  const actionExplanation = actionGlossary[analysis.tradeAction];
-  const isPredictionError = !prediction || 'error' in prediction;
-  const signalInfo = getSignalInfoForPrediction(analysis.signal);
+  const { analysis: momentumAnalysis, prediction } = analysis;
+  const { icon, color } = getSignalInfo(momentumAnalysis.signal);
+  const actionExplanation = actionGlossary[momentumAnalysis.tradeAction];
+  const isPredictionError = 'error' in prediction;
+  const signalInfo = getSignalInfoForPrediction(momentumAnalysis.signal);
 
   const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
     if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div>;
     if (isPredictionError) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Failed</div>;
     
-    const targetData = (prediction as PredictPriceTargetOutput)[targetType];
+    const targetData = prediction[targetType];
     const isNotApplicable = targetData.timeframe === "N/A";
     
     if (isNotApplicable) {
@@ -200,7 +219,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
   }
 
   // Simplified view for Forex/Crypto
-  if (analysis.signal === 'N/A') {
+  if (momentumAnalysis.signal === 'N/A') {
       return (
            <Card className="animate-in fade-in-50 duration-500 delay-300">
             <CardHeader>
@@ -209,7 +228,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
                     <span>Analysis for {ticker}</span>
                 </CardTitle>
                 <CardDescription>
-                    {analysis.interpretation}
+                    {momentumAnalysis.interpretation}
                 </CardDescription>
             </CardHeader>
              <CardContent className="space-y-6">
@@ -242,13 +261,13 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
-                <p className="text-4xl font-bold text-foreground">{analysis.totalScore.toFixed(2)}</p>
+                <p className="text-4xl font-bold text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className={`flex items-center gap-1.5 font-semibold text-md ${color} cursor-help`}>
                                 {icon}
-                                <span>{analysis.signal}</span>
+                                <span>{momentumAnalysis.signal}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -256,7 +275,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                 <p className="text-sm text-muted-foreground">{analysis.interpretation}</p>
+                 <p className="text-sm text-muted-foreground">{momentumAnalysis.interpretation}</p>
             </div>
 
             <Separator orientation="vertical" className="h-24 hidden md:block" />
@@ -276,7 +295,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
         <div className="space-y-2 text-center pt-2">
             <div className="flex items-center justify-center gap-2">
                 <h3 className="font-semibold text-sm">Suggested Action:</h3>
-                 <div className="text-sm font-semibold text-primary-foreground bg-primary px-3 py-1 rounded-md">{analysis.tradeAction}</div>
+                 <div className="text-sm font-semibold text-primary-foreground bg-primary px-3 py-1 rounded-md">{momentumAnalysis.tradeAction}</div>
                 {actionExplanation && (
                     <Dialog>
                         <DialogTrigger asChild>
@@ -300,3 +319,5 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
     </Card>
   );
 }
+
+    

@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility } from '@/lib/technical-analysis';
 
@@ -25,7 +25,6 @@ import { TechnicalIndicators } from '@/components/technical-indicators';
 import { StockAnalysis } from '@/components/stock-analysis';
 import { OptionStrategies } from '@/components/option-strategies';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { NewsAnalysis } from '@/components/news-analysis';
 import { Input } from '@/components/ui/input';
 import { MarketCorrelation } from '@/components/market-correlation';
@@ -33,7 +32,6 @@ import { HistoricalVolatility } from '@/components/historical-volatility';
 import { SignalExplanation } from '@/components/signal-explanation';
 import { MonteCarloSimulation } from '@/components/monte-carlo-simulation';
 import { SynthesizedTradeIdea } from '@/components/synthesized-trade-idea';
-import type { PredictPriceTargetOutput } from '@/ai/flows/predict-price-target';
 
 
 const FormSchema = z.object({
@@ -63,8 +61,7 @@ export default function Home() {
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
-  const [analysisResult, setAnalysisResult] = useState<AnalyzeStockMomentumOutput | null>(null);
-  const [predictionResult, setPredictionResult] = useState<PredictPriceTargetOutput | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<CombinedAnalysisResult | null>(null);
   const [monteCarloResult, setMonteCarloResult] = useState<MonteCarloResult | null>(null);
   
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
@@ -139,7 +136,6 @@ export default function Home() {
     setIndicatorData(null);
     setIndicatorsError(null);
     setAnalysisResult(null);
-    setPredictionResult(null);
     setMonteCarloResult(null);
     setCurrency(null);
     setRegion(null);
@@ -576,7 +572,6 @@ export default function Home() {
                 ticker={submittedTicker} 
                 marketData={marketData}
                 onAnalysisComplete={setAnalysisResult}
-                onPredictionComplete={setPredictionResult}
                 currency={currency}
               />
               <MonteCarloSimulation 
@@ -587,30 +582,29 @@ export default function Home() {
             </div>
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && predictionResult && monteCarloResult && latestData && thirtyDayVolatility && (
+          {analysisResult?.analysis && analysisResult.prediction && monteCarloResult && latestData && thirtyDayVolatility && (
               <SynthesizedTradeIdea
                 ticker={submittedTicker!}
-                analysis={analysisResult}
-                prediction={predictionResult}
+                analysisResult={analysisResult}
                 monteCarlo={monteCarloResult}
                 currentPrice={parseFloat(latestData.close)}
                 volatility={thirtyDayVolatility}
               />
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && indicatorData && (
+          {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && indicatorData && (
               <SignalExplanation 
                 ticker={submittedTicker!}
-                analysis={analysisResult}
+                analysis={analysisResult.analysis}
                 marketData={marketData}
                 indicatorData={indicatorData}
               />
           )}
 
-          {analysisResult && analysisResult.signal !== 'N/A' && latestData && marketData && (
+          {analysisResult?.analysis && analysisResult.analysis.signal !== 'N/A' && latestData && marketData && (
             <OptionStrategies 
                 ticker={submittedTicker!} 
-                analysis={analysisResult}
+                analysis={analysisResult.analysis}
                 latestClose={latestData.close}
                 marketData={marketData}
             />
@@ -775,3 +769,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

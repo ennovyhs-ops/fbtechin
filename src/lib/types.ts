@@ -1,5 +1,9 @@
 
 
+import type { AnalyzeStockMomentumOutput } from "@/ai/flows/analyze-stock-momentum";
+import type { PredictPriceTargetOutput } from "@/ai/flows/predict-price-target";
+import type { SynthesizeTradeIdeaOutput as SynthesizeTradeIdeaOutputFlow } from "@/ai/flows/synthesize-trade-idea";
+
 export type MarketData = {
   date: string;
   open: string;
@@ -100,3 +104,13 @@ export type MonteCarloResult = {
     averageTarget: number;
     confidence: number;
 }
+
+export type CombinedAnalysisResult = {
+  analysis: AnalyzeStockMomentumOutput | { error: string } | null;
+  prediction: PredictPriceTargetOutput | { error: string } | null;
+  error?: string;
+}
+
+export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
+
+    
