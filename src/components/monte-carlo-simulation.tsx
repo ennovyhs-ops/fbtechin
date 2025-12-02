@@ -86,8 +86,8 @@ export function MonteCarloSimulation({ marketData, currency, onSimulationComplet
                     </TooltipTrigger>
                     <TooltipContent>
                         <div className='max-w-xs space-y-2'>
-                          <p>This model simulates thousands of future price paths based on the stock's historical trend (drift) and volatility, providing a probable price range rather than a single target.</p>
-                          <p className='font-semibold'>This forecast is based on recent historical data, making it adaptive to current market conditions but also more sensitive to short-term trends and noise.</p>
+                          <p>This model simulates thousands of potential future price paths based on the stock's historical trend (drift) and volatility, providing a probable price range rather than a single target.</p>
+                          <p className='font-semibold'>This forecast is adaptive to current market conditions, making it useful for short-term analysis, but also more sensitive to recent trends and statistical noise.</p>
                         </div>
                     </TooltipContent>
                 </Tooltip>

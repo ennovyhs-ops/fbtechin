@@ -44,8 +44,8 @@ const actionGlossary: Record<string, { title: string; description: string; }> = 
 }
 
 const getSignalInfoForPrediction = (signal: string): { explanation: string } => {
-    if (signal.includes('STRONG')) return { explanation: "'Strong' signals indicate that multiple key technical indicators are aligned, pointing to a high-conviction trend." };
-    if (signal.includes('MODERATE')) return { explanation: "'Moderate' signals suggest a good level of indicator alignment, but some conflicting signals may exist." };
+    if (signal.includes('STRONG')) return { explanation: "'Strong' signals mean that multiple key technical indicators are aligned, pointing to a high-conviction trend." };
+    if (signal.includes('MODERATE')) return { explanation: "'Moderate' signals suggest a good level of indicator alignment, but some conflicting data may exist." };
     if (signal.includes('MILD')) return { explanation: "'Mild' signals suggest that technical indicators are not strongly aligned and the trend is weak or unclear. Interpret with caution." };
     return { explanation: "'Neutral' signals indicate no clear directional edge; the market may be choppy or range-bound." };
 }

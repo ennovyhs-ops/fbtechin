@@ -132,7 +132,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">Measures the percentage change in price between the current price and the price a certain number of periods ago.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">Measures the percentage change in price between the current price and the price a set number of periods ago. It indicates momentum.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">Period</label>
@@ -149,7 +149,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">A volatility indicator. When bands are wide, volatility is high. When they are narrow (a 'squeeze'), volatility is low.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">A volatility indicator. When bands are wide, volatility is high. When they are narrow (a 'squeeze'), it signals low volatility and a potential for a large price move.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">Period</label>
@@ -172,7 +172,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">A momentum oscillator measuring speed and change of price movements. >70 is 'overbought', &lt;30 is 'oversold'.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">A momentum oscillator that measures the speed and change of price movements on a scale of 0 to 100. A value above 70 is considered 'overbought', and below 30 is 'oversold'.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">Period</label>
@@ -196,7 +196,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">Compares the most recent trading volume to its moving average. A spike can indicate strong conviction behind a price move.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">Compares the most recent trading volume to its moving average. A significant spike in volume can indicate strong conviction behind a price move.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">Avg Period</label>
@@ -224,7 +224,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">A trend-following momentum indicator showing the relationship between two exponential moving averages (EMAs).</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">A trend-following momentum indicator that shows the relationship between two moving averages of a security's price. A crossover of the MACD line and signal line can indicate a change in trend.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2 flex-wrap justify-end">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">Fast</label>
@@ -249,7 +249,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent><p className="max-w-xs">An average price that gives more weight to prices with higher trading volume. A truer average price.</p></TooltipContent>
+                                    <TooltipContent><p className="max-w-xs">An average price over a period, where prices with higher trading volume are given more weight. It's often considered a truer representation of the average price.</p></TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="vwma-period" className="text-xs font-medium text-muted-foreground">Period</label>

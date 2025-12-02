@@ -152,7 +152,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p className="max-w-xs">These suggestions are from a large language model (AI) acting as a creative strategist. It considers the momentum signal and volatility to generate a diverse set of unranked ideas, including a high-risk play.</p>
+                            <p className="max-w-xs">These suggestions come from a creative AI strategist. It generates a diverse set of unranked ideas based on the momentum signal, including a high-risk speculative play.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -195,13 +195,12 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         </TooltipTrigger>
                         <TooltipContent>
                              <div className="max-w-xs text-sm">
-                                <p className="font-semibold">This engine acts like a quantitative analyst, following strict 'if-this-then-that' rules based on Momentum, Volatility, and Timing. Its suggestions are **prioritized**, with the first being the most technically sound strategy.</p>
+                                <p className="font-semibold">This engine acts as a quantitative analyst, following a strict decision tree based on Momentum, Volatility, and Timing. Its suggestions are prioritized, with the first being the most technically suitable strategy.</p>
                                 <Separator className="my-2" />
                                 <p className="font-medium">Possible strategies include:</p>
                                 <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">
-                                    <li>Long Calls/Puts</li>
-                                    <li>Verticals & Debit/Credit Spreads</li>
-                                    <li>Ratio Spreads</li>
+                                    <li>Long Calls/Puts & Spreads</li>
+                                    <li>Credit/Debit & Ratio Spreads</li>
                                     <li>Iron Condors & Butterflies</li>
                                     <li>Calendar & Diagonal Spreads</li>
                                     <li>Strangles & Defensive Rolls</li>
