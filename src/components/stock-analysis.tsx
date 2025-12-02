@@ -263,7 +263,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
-                <p className="text-3xl font-bold text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
