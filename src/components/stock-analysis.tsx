@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -55,9 +56,10 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
   const [analysis, setAnalysis] = useState<(AnalyzeStockMomentumOutput & { error?: undefined }) | { error: string } | null>(null);
   const [prediction, setPrediction] = useState<PredictPriceTargetOutput | { error: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
   useEffect(() => {
-    if (ticker && marketData) {
+    if (ticker && marketData && !hasAnalyzed) {
       setLoading(true);
       setAnalysis(null);
       setPrediction(null);
@@ -81,14 +83,17 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, onPredic
           onAnalysisComplete(null);
         } finally {
           setLoading(false);
+          setHasAnalyzed(true);
         }
       }
       performAnalysis();
-    } else if (ticker) {
-        setLoading(false);
-        onAnalysisComplete(null);
+    } else if (!marketData) {
+        // Reset when marketData is cleared
+        setHasAnalyzed(false);
+        setAnalysis(null);
+        setPrediction(null);
     }
-  }, [ticker, marketData, onAnalysisComplete, onPredictionComplete]);
+  }, [ticker, marketData, onAnalysisComplete, onPredictionComplete, hasAnalyzed]);
 
 
   if (loading) {
