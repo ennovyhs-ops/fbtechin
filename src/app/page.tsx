@@ -579,9 +579,7 @@ export default function Home() {
                     onSimulationComplete={setMonteCarloResult}
                 />
                 </div>
-                <div className="mt-8">
-                    <HistoricalVolatility marketData={marketData} />
-                </div>
+                <HistoricalVolatility marketData={marketData} />
             </>
           )}
           
