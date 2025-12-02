@@ -106,7 +106,7 @@ export type MonteCarloResult = {
 }
 
 export type CombinedAnalysisResult = {
-  analysis: AnalyzeStockMomentumOutput | { error: string } | null;
+  analysis: AnalyzeStockMomentumOutput | null;
   prediction: PredictPriceTargetOutput | { error: string } | null;
   error?: string;
 }

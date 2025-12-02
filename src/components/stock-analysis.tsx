@@ -64,6 +64,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
       }
       
       setLoading(true);
+      onAnalysisComplete(null);
       setAnalysis(null);
 
       try {
