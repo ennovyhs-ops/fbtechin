@@ -316,7 +316,7 @@ export default function Home() {
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
-            <CardDescription>Enter a symbol to fetch live data, or upload a CSV file with historical data.</CardDescription>
+            <CardDescription>Enter a symbol to fetch data, or upload a CSV file with historical data.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -379,7 +379,7 @@ export default function Home() {
                   </DialogTrigger>
                   <DialogContent className="max-h-[90vh] flex flex-col">
                     <DialogHeader>
-                      <DialogTitle>Application Guide</DialogTitle>
+                      <DialogTitle className="font-headline text-2xl">Application Guide</DialogTitle>
                       <DialogDescription>
                         This guide explains the app's features, data sources, and how it uses AI to provide financial insights.
                       </DialogDescription>
@@ -389,14 +389,14 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">1. Data Input</h3>
                         <p className="text-muted-foreground">
-                            You can fetch live market data by entering a ticker, or upload your own historical data via a CSV file. For best results with CSV uploads, name your file with the ticker (e.g., "SPY.csv"). The CSV file must have 'date' and 'close' columns; 'open', 'high', 'low', and 'volume' are optional but recommended for full analysis.
+                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV file. For best results with CSV uploads, name your file with the ticker (e.g., "SPY.csv"). The CSV file must have 'date' and 'close' columns; 'open', 'high', 'low', and 'volume' are optional but recommended for full analysis.
                         </p>
                       </div>
 
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">2. Data Source & API Usage</h3>
                         <p className="text-muted-foreground">
-                          All live financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which limits `outputsize=full` to a premium feature for stock data, and has a general limit of 25 requests per day.
+                          All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which limits `outputsize=full` to a premium feature for stock data, and has a general limit of 25 requests per day.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. It will try to get full data, but may fall back to 100 data points if you are on the free plan.</li>
@@ -769,5 +769,7 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     
