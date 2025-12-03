@@ -207,7 +207,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                         <div className="flex items-center gap-3">
                             <Icon className={`h-5 w-5 text-muted-foreground`} />
                             <div className="flex flex-col items-center">
-                                <span className={`font-bold text-2xl ${predColor}`}>{formatCurrency(targetData.priceTarget, currency)}</span>
+                                <span className={`font-bold text-xl ${predColor}`}>{formatCurrency(targetData.priceTarget, currency)}</span>
                                 <span className="text-xs text-muted-foreground">{targetData.timeframe}</span>
                             </div>
                         </div>
