@@ -188,7 +188,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                             </div>
                         </div>
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
+                    <TooltipContent>
                         <p>{targetData.interpretation}</p>
                     </TooltipContent>
                 </Tooltip>
@@ -213,7 +213,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                         </div>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
+                <TooltipContent>
                      <p>{targetData.interpretation}</p>
                 </TooltipContent>
             </Tooltip>
@@ -273,7 +273,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                                 <span>{momentumAnalysis.signal}</span>
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
+                        <TooltipContent>
                             <p>{signalInfo.explanation}</p>
                         </TooltipContent>
                     </Tooltip>

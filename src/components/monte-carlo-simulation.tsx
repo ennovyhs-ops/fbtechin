@@ -82,7 +82,7 @@ export function MonteCarloSimulation({ marketData, currency, onSimulationComplet
                     <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
+                    <TooltipContent>
                         <p>This model simulates thousands of potential future price paths based on the stock's historical trend (drift) and volatility, providing a probable price range rather than a single target.</p>
                     </TooltipContent>
                 </Tooltip>
