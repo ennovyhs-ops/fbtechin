@@ -206,6 +206,8 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         <TooltipContent>
                              <div className="max-w-xs text-sm space-y-2">
                                 <p><span className="font-semibold">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum, volatility, and timing to produce a ranked list of technically suitable strategies.</p>
+                                <p><span className="font-semibold">Possible strategies include:</span> Long Calls/Puts, Spreads (Credit, Debit, Ratio), Iron Condors, Butterflies, and more.</p>
+                                <Separator />
                                 <p className="text-xs text-muted-foreground">This is different from the <span className="font-semibold">AI Synthesized Idea</span>, which combines multiple models to create a single, specific trade plan, rather than a list of options.</p>
                             </div>
                         </TooltipContent>
