@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar, HelpCircle } from 'lucide-react';
 import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 import type { CombinedAnalysisResult } from '@/lib/types';
@@ -170,7 +170,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   const signalInfo = getSignalInfoForPrediction(momentumAnalysis.signal);
 
   const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
-    if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div>;
+    if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/></div>;
     if (isPredictionError || !prediction) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Failed</div>;
     
     const targetData = prediction[targetType];
@@ -264,7 +264,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
-                <p className="text-2xl font-bold text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                <p className="text-xl font-bold text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -286,7 +286,19 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
 
             {/* Right side: Price Target */}
              <div className="flex flex-col items-center gap-4 text-center">
-                 <h3 className="font-semibold text-sm text-muted-foreground">Calculated Price Targets</h3>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
+                                Calculated Price Targets
+                                <HelpCircle className="h-4 w-4" />
+                            </h3>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>This is a deterministic calculation based on the momentum score and recent volatility, not an AI prediction.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
                  <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-6">
                     <PriceTargetContent targetType="shortTerm" icon={Clock} />
                     <Separator orientation="vertical" className="h-12 hidden sm:block" />
@@ -298,7 +310,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         <div className="space-y-2 text-center pt-2">
             <div className="flex items-center justify-center gap-2">
                 <h3 className="font-semibold text-sm">Suggested Action:</h3>
-                 <div className="text-sm font-semibold text-primary bg-muted/50 px-3 py-1 rounded-md border">{momentumAnalysis.tradeAction}</div>
+                 <div className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-md border border-primary/20">{momentumAnalysis.tradeAction}</div>
                 {actionExplanation && (
                     <Dialog>
                         <DialogTrigger asChild>
