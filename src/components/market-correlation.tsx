@@ -305,9 +305,9 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
                     <Separator orientation="horizontal" className="w-full md:hidden" />
                     <PerformanceDisplay label={analysis.comparisonTicker} value={analysis.comparisonPerformance} />
                 </div>
-                <div className="text-center pt-2 space-y-1">
+                <div className="pt-2 space-y-1">
                     <h3 className="font-semibold text-base">{analysis.conclusion}</h3>
-                    <p className="text-sm text-muted-foreground max-w-2xl mx-auto">{analysis.explanation}</p>
+                    <p className="text-sm text-muted-foreground max-w-2xl">{analysis.explanation}</p>
                 </div>
                 <div className="flex justify-center">
                     <Button variant="outline" size="sm" onClick={resetAnalysis} disabled={isPending}>
