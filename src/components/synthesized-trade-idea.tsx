@@ -112,7 +112,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
   if (!idea) return null;
 
   return (
-    <Card className="border-primary/20 bg-primary/5 animate-in fade-in-50 duration-500">
+    <Card className="animate-in fade-in-50 duration-500">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Sparkles className="h-6 w-6 text-primary" />
