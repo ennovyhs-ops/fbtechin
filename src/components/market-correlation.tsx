@@ -81,15 +81,16 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
     let conclusion = '';
     let explanation = '';
     const difference = basePerformance - comparisonPerformance;
+
     if (difference > 5) {
-        conclusion = `${baseTicker} is significantly outperforming ${comparisonTickerName}.`;
-        explanation = `This indicates that over the past 90 days, ${baseTicker} has shown stronger upward momentum or greater resilience to downside pressure compared to ${comparisonTickerName}. Investors often look for this "relative strength" as a positive sign.`
+        conclusion = `${baseTicker} Demonstrates Strong Relative Strength`;
+        explanation = `Over the past 90 days, ${baseTicker} has significantly outperformed ${comparisonTickerName}. This outperformance, known as 'relative strength,' suggests robust buying interest or superior resilience compared to its peer. Investors often view sustained relative strength as a key bullish indicator.`
     } else if (difference < -5) {
-        conclusion = `${baseTicker} is significantly underperforming ${comparisonTickerName}.`;
-        explanation = `This means that ${baseTicker} has either declined more or gained less than ${comparisonTickerName} over the last 90 days. This "relative weakness" can be a cause for caution or further investigation.`
+        conclusion = `${baseTicker} Shows Signs of Relative Weakness`;
+        explanation = `Compared to ${comparisonTickerName}, ${baseTicker} has underperformed over the last 90 days. This 'relative weakness' can signal lagging momentum or heightened sensitivity to negative pressures. This warrants a cautious stance and deeper investigation into the factors driving the underperformance.`
     } else {
-        conclusion = `${baseTicker} is performing similarly to ${comparisonTickerName}.`;
-        explanation = `The performance of ${baseTicker} is closely tracking that of ${comparisonTickerName}, suggesting it is moving in line with its benchmark. This can indicate that broader market trends are the primary driver of its price.`
+        conclusion = `Performance is Highly Correlated with Benchmark`;
+        explanation = `The performance of ${baseTicker} is closely tracking that of ${comparisonTickerName}, indicating that its price movements are largely in line with its benchmark. This suggests that broader market or sector trends are the primary drivers, rather than company-specific factors.`
     }
 
     setAnalysis({
