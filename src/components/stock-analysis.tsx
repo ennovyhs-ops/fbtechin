@@ -298,7 +298,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
         <div className="space-y-2 text-center pt-2">
             <div className="flex items-center justify-center gap-2">
                 <h3 className="font-semibold text-sm">Suggested Action:</h3>
-                 <div className="text-sm font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-md">{momentumAnalysis.tradeAction}</div>
+                 <div className="text-sm font-semibold text-primary bg-muted/50 px-3 py-1 rounded-md">{momentumAnalysis.tradeAction}</div>
                 {actionExplanation && (
                     <Dialog>
                         <DialogTrigger asChild>
