@@ -127,15 +127,13 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
                     <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                        <div className="max-w-xs space-y-2">
-                            <p>The AI acts as a quantitative strategist, synthesizing three models into one idea:</p>
-                            <ul className="list-disc list-inside text-xs space-y-1">
-                                <li><span className="font-semibold">Momentum Model:</span> Provides a deterministic score (-1 to 1) indicating trend strength.</li>
-                                <li><span className="font-semibold">Monte Carlo Model:</span> A probabilistic forecast that provides a likely 30-day price range.</li>
-                                <li><span className="font-semibold">Volatility Model:</span> Helps select the right type of option strategy (e.g., buying vs. selling premium).</li>
-                            </ul>
-                        </div>
+                    <TooltipContent className="max-w-xs space-y-2">
+                        <p>The AI acts as a quantitative strategist, synthesizing three models into one idea:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                            <li><span className="font-semibold text-foreground">Momentum Model:</span> Provides a deterministic score (-1 to 1) indicating trend strength.</li>
+                            <li><span className="font-semibold text-foreground">Monte Carlo Model:</span> A probabilistic forecast that provides a likely 30-day price range.</li>
+                            <li><span className="font-semibold text-foreground">Volatility Model:</span> Helps select the right type of option strategy (e.g., buying vs. selling premium).</li>
+                        </ul>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>

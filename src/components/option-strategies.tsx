@@ -152,8 +152,8 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                                 <h3 className="font-semibold text-md text-foreground">AI-Powered Ideas</h3>
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                            <p className="max-w-xs">These suggestions come from a creative AI strategist. It generates a diverse set of unranked ideas based on the momentum signal, including a high-risk speculative play.</p>
+                        <TooltipContent className="max-w-xs">
+                            <p>These suggestions come from a creative AI strategist. It generates a diverse set of unranked ideas based on the momentum signal, including a high-risk speculative play.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -178,8 +178,8 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                                                 <h4 className="font-semibold text-sm text-foreground">High-Risk Play</h4>
                                             </div>
                                         </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p className="max-w-xs">This is a speculative, low-probability 'lotto ticket' play. It's designed to profit from a large, fast move and is very likely to expire worthless.</p>
+                                        <TooltipContent className="max-w-xs">
+                                            <p>This is a speculative, low-probability 'lotto ticket' play. It's designed to profit from a large, fast move and is very likely to expire worthless.</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -203,13 +203,16 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                                 <h3 className="font-semibold text-md text-foreground">Rule-Based Suggestions</h3>
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                             <div className="max-w-xs text-sm space-y-2">
-                                <p><span className="font-semibold">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum, volatility, and timing to produce a ranked list of technically suitable strategies.</p>
-                                <p><span className="font-semibold">Possible strategies include:</span> Long Calls/Puts, Spreads (Credit, Debit, Ratio), Iron Condors, Butterflies, and more.</p>
-                                <Separator />
-                                <p className="text-xs text-muted-foreground">This is different from the <span className="font-semibold">AI Synthesized Idea</span>, which combines multiple models to create a single, specific trade plan, rather than a list of options.</p>
-                            </div>
+                        <TooltipContent className="max-w-xs space-y-2">
+                             <div>
+                                <p><span className="font-semibold text-foreground">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum, volatility, and timing to produce a ranked list of technically suitable strategies.</p>
+                             </div>
+                             <div>
+                                <p className="font-semibold text-foreground">Possible strategies include:</p>
+                                <p>Long Calls/Puts, Spreads (Credit, Debit, Ratio), Iron Condors, Butterflies, and more.</p>
+                             </div>
+                            <Separator />
+                            <p>This is different from the <span className="font-semibold text-foreground">AI Synthesized Idea</span>, which combines multiple models to create a single, specific trade plan, rather than a list of options.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

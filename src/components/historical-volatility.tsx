@@ -67,8 +67,8 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
                     <TooltipTrigger asChild>
                         <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                        <p className='max-w-xs'>Annualized historical volatility is calculated from the standard deviation of daily returns. Higher percentages indicate a more volatile, riskier stock, while lower percentages suggest more stability.</p>
+                    <TooltipContent className="max-w-xs">
+                        <p>Annualized historical volatility is calculated from the standard deviation of daily returns. Higher percentages indicate a more volatile, riskier stock, while lower percentages suggest more stability.</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
@@ -84,5 +84,3 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
     </Card>
   );
 }
-
-    
