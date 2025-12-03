@@ -74,24 +74,45 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
       base: basePoint.performance,
       comparison: comparisonSeries[index]?.performance,
     }));
+    
+    // --- Enhanced Analysis Logic ---
+    const midPointIndex = Math.floor(chartData.length / 2);
+    const endPointIndex = chartData.length - 1;
 
-    const basePerformance = baseSeries[baseSeries.length - 1].performance;
-    const comparisonPerformance = comparisonSeries[comparisonSeries.length - 1].performance;
+    const basePerformance = chartData[endPointIndex].base;
+    const comparisonPerformance = chartData[endPointIndex].comparison;
+    const finalDifference = basePerformance - comparisonPerformance;
+    
+    const midBasePerformance = chartData[midPointIndex].base;
+    const midComparisonPerformance = chartData[midPointIndex].comparison;
+    const midDifference = midBasePerformance - midComparisonPerformance;
 
     let conclusion = '';
     let explanation = '';
-    const difference = basePerformance - comparisonPerformance;
 
-    if (difference > 5) {
+    if (finalDifference > 5) {
         conclusion = `${baseTicker} Demonstrates Strong Relative Strength`;
-        explanation = `Over the past 90 days, ${baseTicker} has significantly outperformed ${comparisonTickerName}. This outperformance, known as 'relative strength,' suggests robust buying interest or superior resilience compared to its peer. Investors often view sustained relative strength as a key bullish indicator.`
-    } else if (difference < -5) {
+        if (midDifference < 0 && finalDifference > 5) { // Was lagging, now leading
+             explanation = `After lagging behind ${comparisonTickerName} for the first half of the period, ${baseTicker} has shown a significant positive reversal, strongly outperforming in the last 45 days. This sharp divergence suggests a recent catalyst or a fundamental shift in momentum has favored ${baseTicker}.`;
+        } else { // Consistent outperformance
+             explanation = `Over the past 90 days, ${baseTicker} has consistently and significantly outperformed ${comparisonTickerName}. This sustained 'relative strength' indicates robust buying interest and superior resilience, a key bullish indicator for many investors.`;
+        }
+    } else if (finalDifference < -5) {
         conclusion = `${baseTicker} Shows Signs of Relative Weakness`;
-        explanation = `Compared to ${comparisonTickerName}, ${baseTicker} has underperformed over the last 90 days. This 'relative weakness' can signal lagging momentum or heightened sensitivity to negative pressures. This warrants a cautious stance and deeper investigation into the factors driving the underperformance.`
+         if (midDifference > 0 && finalDifference < -5) { // Was leading, now lagging
+             explanation = `Despite outperforming ${comparisonTickerName} in the first half of the period, ${baseTicker} has experienced a negative reversal, significantly underperforming in the latter 45 days. This recent divergence signals a potential loss of momentum or new headwinds affecting ${baseTicker}.`;
+        } else { // Consistent underperformance
+             explanation = `Compared to ${comparisonTickerName}, ${baseTicker} has demonstrated consistent underperformance over the last 90 days. This 'relative weakness' signals lagging momentum and may warrant a more cautious stance, as it struggles to keep pace with its benchmark.`;
+        }
     } else {
         conclusion = `Performance is Highly Correlated with Benchmark`;
-        explanation = `The performance of ${baseTicker} is closely tracking that of ${comparisonTickerName}, indicating that its price movements are largely in line with its benchmark. This suggests that broader market or sector trends are the primary drivers, rather than company-specific factors.`
+        if (Math.abs(midDifference) > 10) { // Was divergent, now converged
+            explanation = `While there were periods of significant divergence, the performance of ${baseTicker} has recently reconverged with ${comparisonTickerName}. This indicates that while company-specific factors may have caused short-term volatility, its performance has now realigned with the broader trends of its benchmark.`;
+        } else { // Consistently correlated
+            explanation = `The performance of ${baseTicker} has been closely tracking that of ${comparisonTickerName}, with no significant divergence over the 90-day period. This suggests that its price action is primarily driven by broader market or sector trends, rather than company-specific catalysts.`;
+        }
     }
+
 
     setAnalysis({
         baseTicker,
