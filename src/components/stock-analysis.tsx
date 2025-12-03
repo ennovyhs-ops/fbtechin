@@ -294,7 +294,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="max-w-xs">
                             <p>This is a deterministic calculation based on the momentum score and recent volatility, not an AI prediction.</p>
                         </TooltipContent>
                     </Tooltip>
