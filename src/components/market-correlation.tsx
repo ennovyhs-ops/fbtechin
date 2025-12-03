@@ -10,10 +10,17 @@ import { Loader2, AlertCircle, BarChart, TrendingUp, TrendingDown, Upload } from
 import { fetchMarketData } from '@/app/actions';
 import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
+import { LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
 
 interface MarketCorrelationProps {
   baseTicker: string;
   baseMarketData: MarketData[];
+}
+
+interface PerformanceDataPoint {
+  date: string;
+  base: number;
+  comparison: number;
 }
 
 interface AnalysisResult {
@@ -21,16 +28,24 @@ interface AnalysisResult {
   comparisonTicker: string;
   basePerformance: number;
   comparisonPerformance: number;
+  chartData: PerformanceDataPoint[];
   conclusion: string;
   explanation: string;
 }
 
-const calculatePerformance = (data: MarketData[], days: number): number | null => {
-  if (data.length < days) return null;
-  const latestClose = parseFloat(data[0].close);
-  const startClose = parseFloat(data[days - 1].close);
-  if (isNaN(latestClose) || isNaN(startClose) || startClose === 0) return null;
-  return ((latestClose - startClose) / startClose) * 100;
+const ANALYSIS_DAYS = 90;
+
+const calculatePerformanceSeries = (data: MarketData[]): { date: string, performance: number }[] => {
+  const relevantData = data.slice(0, ANALYSIS_DAYS).reverse(); // Oldest to newest
+  if (relevantData.length === 0) return [];
+  
+  const startPrice = parseFloat(relevantData[0].close);
+  if (isNaN(startPrice) || startPrice === 0) return [];
+
+  return relevantData.map(d => ({
+      date: d.date,
+      performance: ((parseFloat(d.close) - startPrice) / startPrice) * 100,
+  }));
 };
 
 export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelationProps) {
@@ -44,15 +59,24 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
     comparisonData: MarketData[],
     comparisonTickerName: string
   ) => {
-    const analysisDays = 90;
 
-    const basePerformance = calculatePerformance(baseMarketData, analysisDays);
-    const comparisonPerformance = calculatePerformance(comparisonData, analysisDays);
-    
-    if (basePerformance === null || comparisonPerformance === null) {
-        setError(`Not enough historical data for a ${analysisDays}-day comparison for one or both tickers.`);
+    const baseSeries = calculatePerformanceSeries(baseMarketData);
+    const comparisonSeries = calculatePerformanceSeries(comparisonData);
+
+    if (baseSeries.length < ANALYSIS_DAYS || comparisonSeries.length < ANALYSIS_DAYS) {
+        setError(`Not enough historical data for a ${ANALYSIS_DAYS}-day comparison for one or both tickers.`);
+        setAnalysis(null);
         return;
     }
+
+    const chartData = baseSeries.map((basePoint, index) => ({
+      date: basePoint.date,
+      base: basePoint.performance,
+      comparison: comparisonSeries[index]?.performance,
+    }));
+
+    const basePerformance = baseSeries[baseSeries.length - 1].performance;
+    const comparisonPerformance = comparisonSeries[comparisonSeries.length - 1].performance;
 
     let conclusion = '';
     let explanation = '';
@@ -65,7 +89,7 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
         explanation = `This means that ${baseTicker} has either declined more or gained less than ${comparisonTickerName} over the last 90 days. This "relative weakness" can be a cause for caution or further investigation.`
     } else {
         conclusion = `${baseTicker} is performing similarly to ${comparisonTickerName}.`;
-        explanation = `The performance of ${baseTicker} is closely tracking that of ${comparisonTickerName}, suggesting it is moving in line with the broader market or its direct competitor.`
+        explanation = `The performance of ${baseTicker} is closely tracking that of ${comparisonTickerName}, suggesting it is moving in line with its benchmark. This can indicate that broader market trends are the primary driver of its price.`
     }
 
     setAnalysis({
@@ -73,9 +97,11 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
         comparisonTicker: comparisonTickerName,
         basePerformance,
         comparisonPerformance,
+        chartData,
         conclusion,
         explanation
     });
+    setError(null);
   };
 
   const handleApiAnalysis = () => {
@@ -165,7 +191,7 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
     const Icon = isPositive ? TrendingUp : TrendingDown;
     return (
         <div className="flex flex-col items-center text-center gap-1">
-            <span className="font-semibold text-sm text-muted-foreground">{label}</span>
+            <span className="font-semibold text-sm text-muted-foreground">{label} (90-Day)</span>
             <div className={`flex items-center gap-1.5 font-bold text-2xl ${color}`}>
                 <Icon className="h-6 w-6" />
                 <span>{value.toFixed(2)}%</span>
@@ -240,7 +266,39 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
         )}
         
         {analysis && (
-            <div className="animate-in fade-in-50 duration-500 space-y-4">
+            <div className="animate-in fade-in-50 duration-500 space-y-6">
+                <div className="h-64 w-full">
+                   <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={analysis.chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis 
+                                dataKey="date" 
+                                tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                angle={-30}
+                                textAnchor="end"
+                                height={40}
+                                tick={{ fontSize: 12 }}
+                                interval="preserveStartEnd"
+                            />
+                            <YAxis 
+                                tickFormatter={(tick) => `${tick}%`}
+                                tick={{ fontSize: 12 }}
+                            />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--background))',
+                                    borderColor: 'hsl(var(--border))'
+                                }}
+                                labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                                formatter={(value: number, name: string) => [`${value.toFixed(2)}%`, name]}
+                            />
+                            <Legend />
+                            <Line type="monotone" dataKey="base" name={analysis.baseTicker} stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="comparison" name={analysis.comparisonTicker} stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+
                  <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
                     <PerformanceDisplay label={analysis.baseTicker} value={analysis.basePerformance} />
                     <Separator orientation="vertical" className="h-16 hidden md:block" />
