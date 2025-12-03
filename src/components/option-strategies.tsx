@@ -183,7 +183,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                <div className="p-3 rounded-lg border border-dashed border-orange-400/50 bg-orange-500/10 text-sm">
+                                <div className="p-3 rounded-lg border border-dashed border-orange-400/50 bg-background text-sm">
                                     <h5 className="font-semibold text-sm text-orange-400">{aiSuggestions.aggressivePlay.name}</h5>
                                     <p className="text-xs text-muted-foreground mt-1">{aiSuggestions.aggressivePlay.rationale}</p>
                                 </div>
