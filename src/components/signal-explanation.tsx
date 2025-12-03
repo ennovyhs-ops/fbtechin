@@ -142,7 +142,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
   }
 
   return (
-    <Card className="bg-muted/30 border-dashed animate-in fade-in-50 duration-500">
+    <Card className="bg-background border-dashed animate-in fade-in-50 duration-500">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-lg">
           <BrainCircuit className="h-5 w-5 text-accent" />
