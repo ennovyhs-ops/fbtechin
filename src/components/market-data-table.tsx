@@ -56,5 +56,3 @@ export function MarketDataTable({ data, ticker, currency }: MarketDataTableProps
     </Card>
   );
 }
-
-    
