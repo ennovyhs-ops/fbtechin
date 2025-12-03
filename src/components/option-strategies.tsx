@@ -209,7 +209,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                              </div>
                              <div>
                                 <p className="font-semibold text-foreground">Possible strategies include:</p>
-                                <p>Long Calls/Puts, Spreads (Credit, Debit, Ratio), Iron Condors, Butterflies, and more.</p>
+                                <p>Long Calls/Puts, Spreads (Vertical, Debit, Credit, Ratio, Calendar, Diagonal), Iron Condors, Strangles, Butterflies, and Defensive Rolls.</p>
                              </div>
                             <Separator />
                             <p>This is different from the <span className="font-semibold text-foreground">AI Synthesized Idea</span>, which combines multiple models to create a single, specific trade plan, rather than a list of options.</p>
