@@ -505,7 +505,7 @@ export default function Home() {
              <CardContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
-                      <p className="text-4xl md:text-5xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
+                      <p className="text-2xl md:text-3xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
                       <p className="text-lg text-muted-foreground font-medium sm:pb-1">Close</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
