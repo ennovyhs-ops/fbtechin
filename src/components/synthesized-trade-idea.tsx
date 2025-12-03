@@ -149,11 +149,11 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
             </Badge>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 border p-3 rounded-lg">
             <h4 className="text-sm font-semibold text-muted-foreground">Rationale</h4>
             <p className="text-sm text-foreground">{idea.rationale}</p>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 border p-3 rounded-lg">
             <h4 className="text-sm font-semibold text-muted-foreground">Actionable Plan</h4>
             <p className="text-sm text-foreground">{idea.action}</p>
         </div>
