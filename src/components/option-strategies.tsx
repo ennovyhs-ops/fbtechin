@@ -204,17 +204,9 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                             <div className="max-w-xs text-sm">
-                                <p className="font-semibold">This engine acts as a quantitative analyst, following a strict decision tree based on Momentum, Volatility, and Timing. Its suggestions are prioritized, with the first being the most technically suitable strategy.</p>
-                                <Separator className="my-2" />
-                                <p className="font-medium">Possible strategies include:</p>
-                                <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">
-                                    <li>Long Calls/Puts & Spreads</li>
-                                    <li>Credit/Debit & Ratio Spreads</li>
-                                    <li>Iron Condors & Butterflies</li>
-                                    <li>Calendar & Diagonal Spreads</li>
-                                    <li>Strangles & Defensive Rolls</li>
-                                </ul>
+                             <div className="max-w-xs text-sm space-y-2">
+                                <p><span className="font-semibold">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum, volatility, and timing to produce a ranked list of technically suitable strategies.</p>
+                                <p className="text-xs text-muted-foreground">This is different from the <span className="font-semibold">AI Synthesized Idea</span>, which combines multiple models to create a single, specific trade plan, rather than a list of options.</p>
                             </div>
                         </TooltipContent>
                     </Tooltip>
