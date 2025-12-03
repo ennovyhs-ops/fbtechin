@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -127,7 +126,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
                     <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs space-y-2">
+                    <TooltipContent className="max-w-xs">
                         <p>The AI acts as a quantitative strategist, synthesizing three models into one idea:</p>
                         <ul className="list-disc list-inside space-y-1">
                             <li><span className="font-semibold text-foreground">Momentum Model:</span> Provides a deterministic score (-1 to 1) indicating trend strength.</li>
@@ -139,21 +138,16 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
             </TooltipProvider>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-            <h3 className="font-semibold text-lg text-foreground">{idea.strategy}</h3>
-            <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
-                Conviction: {idea.conviction}
-            </Badge>
-        </div>
-
-        <div className="space-y-1 border p-3 rounded-lg">
-            <h4 className="text-sm font-semibold text-muted-foreground">Rationale</h4>
-            <p className="text-sm text-foreground">{idea.rationale}</p>
-        </div>
-        <div className="space-y-1 border p-3 rounded-lg">
-            <h4 className="text-sm font-semibold text-muted-foreground">Actionable Plan</h4>
-            <p className="text-sm text-foreground">{idea.action}</p>
+      <CardContent>
+        <div className="p-3 rounded-lg border bg-background/50 text-sm space-y-3">
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+              <h3 className="font-semibold text-base text-foreground">{idea.strategy}</h3>
+              <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
+                  Conviction: {idea.conviction}
+              </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground"><span className="font-semibold text-muted-foreground">RATIONALE:</span> {idea.rationale}</p>
+          <p className="text-xs text-muted-foreground"><span className="font-semibold text-muted-foreground">ACTION:</span> {idea.action}</p>
         </div>
       </CardContent>
     </Card>
