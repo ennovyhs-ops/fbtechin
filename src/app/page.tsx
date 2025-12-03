@@ -201,12 +201,12 @@ export default function Home() {
                 const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
                 const headerMap: { [key: string]: number } = {};
                 
-                const requiredHeaders = ['date', 'close'];
-                const optionalHeaders = ['open', 'high', 'low', 'volume'];
+                const requiredHeaders = ['date', 'close', 'volume'];
+                const optionalHeaders = ['open', 'high', 'low'];
 
                 const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
                 if (missingHeaders.length > 0) {
-                     throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low, volume.`);
+                     throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low.`);
                 }
                 
                 [...requiredHeaders, ...optionalHeaders].forEach(header => {
@@ -216,16 +216,16 @@ export default function Home() {
                 const data: MarketData[] = lines.slice(1).map((line, index) => {
                     const values = line.split(',');
                     const closeValue = values[headerMap['close']];
-                     if (!closeValue || !values[headerMap['date']]) {
-                        throw new Error(`Row ${index + 2} is missing required data for date or close.`);
+                     if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) {
+                        throw new Error(`Row ${index + 2} is missing required data for date, close, or volume.`);
                     }
                     return {
                         date: values[headerMap['date']],
                         close: closeValue,
+                        volume: values[headerMap['volume']],
                         open: headerMap['open'] !== -1 ? values[headerMap['open']] : closeValue,
                         high: headerMap['high'] !== -1 ? values[headerMap['high']] : closeValue,
                         low: headerMap['low'] !== -1 ? values[headerMap['low']] : closeValue,
-                        volume: headerMap['volume'] !== -1 ? values[headerMap['volume']] : '0',
                     };
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Ensure descending order
 
@@ -355,7 +355,7 @@ export default function Home() {
                         />
                         <div className="w-full text-center">
                              <p className="text-xs text-muted-foreground mb-2">
-                                CSV: 'date' & 'close' required.
+                                CSV format; "Date", "Close" & "Volume" required
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
@@ -504,7 +504,7 @@ export default function Home() {
              <CardContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
-                      <p className="text-2xl md:text-3xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
+                      <p className="text-3xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
                     <div className="flex items-center gap-2">
@@ -769,6 +769,8 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     
 
