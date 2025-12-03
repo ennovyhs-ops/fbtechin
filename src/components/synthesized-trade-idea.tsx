@@ -127,8 +127,9 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
+                        <p className="font-semibold text-foreground mb-1">How this is generated:</p>
                         <p>The AI acts as a quantitative strategist, synthesizing three models into one idea:</p>
-                        <ul className="list-disc list-inside space-y-1">
+                        <ul className="list-disc list-inside space-y-1 mt-1">
                             <li><span className="font-semibold text-foreground">Momentum Model:</span> Provides a deterministic score (-1 to 1) indicating trend strength.</li>
                             <li><span className="font-semibold text-foreground">Monte Carlo Model:</span> A probabilistic forecast that provides a likely 30-day price range.</li>
                             <li><span className="font-semibold text-foreground">Volatility Model:</span> Helps select the right type of option strategy (e.g., buying vs. selling premium).</li>
@@ -146,8 +147,8 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
                   Conviction: {idea.conviction}
               </Badge>
           </div>
-          <p className="text-xs text-muted-foreground"><span className="font-semibold text-muted-foreground">RATIONALE:</span> {idea.rationale}</p>
-          <p className="text-xs text-muted-foreground"><span className="font-semibold text-muted-foreground">ACTION:</span> {idea.action}</p>
+          <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
+          <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
         </div>
       </CardContent>
     </Card>
