@@ -490,7 +490,7 @@ export default function Home() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                        <div className="flex items-center gap-2">
                          <Calendar className="h-4 w-4" />
-                         <span>As of {new Date(latestData.date).toDateString()}</span>
+                         <span>As of {new Date(latestData.date).toDateString()} Close</span>
                        </div>
                        {region && (
                           <div className="flex items-center gap-2">
@@ -675,7 +675,6 @@ export default function Home() {
                         <div className="flex flex-col gap-4">
                             <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
                                 <div className="h-12 w-32 bg-muted/80 rounded-md"></div>
-                                <div className="h-6 w-16 bg-muted/80 rounded-md sm:pb-1"></div>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                                 <div className="h-10 w-24 bg-muted/80 rounded-md"></div>
@@ -770,3 +769,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
