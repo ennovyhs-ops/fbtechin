@@ -123,7 +123,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
     return (
        <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                <CardTitle className="font-headline text-2xl flex items-center gap-2">
                     <BrainCircuit className="h-6 w-6 text-accent" />
                     <span>AI Signal Explanation</span>
                 </CardTitle>
@@ -144,7 +144,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
   return (
     <Card className="bg-background border-dashed animate-in fade-in-50 duration-500">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-headline text-lg">
+        <CardTitle className="font-headline text-2xl flex items-center gap-2">
           <BrainCircuit className="h-5 w-5 text-accent" />
           <span>Why is the signal "{analysis.signal}"?</span>
         </CardTitle>
@@ -156,7 +156,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
                 <span>{error}</span>
             </div>
         }
-        {explanation && <p className="text-sm text-foreground">{explanation}</p>}
+        {explanation && <p className="text-sm text-muted-foreground">{explanation}</p>}
       </CardContent>
     </Card>
   );
