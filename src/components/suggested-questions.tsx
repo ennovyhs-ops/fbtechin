@@ -81,7 +81,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
                                 rel="noopener noreferrer"
                                 className={cn(
                                   buttonVariants({ variant: 'outline' }),
-                                  'text-left h-auto whitespace-normal no-print'
+                                  'text-left h-auto whitespace-normal no-print text-muted-foreground hover:text-accent-foreground'
                                 )}
                               >
                                 {q}
