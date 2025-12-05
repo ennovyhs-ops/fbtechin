@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition, useCallback, useRef, useMemo } from 'react';
+import { useState, useTransition, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -166,6 +166,53 @@ export default function Home() {
       }
   }
 
+  const handleAnalysis = useCallback(async () => {
+    if (!marketData || !submittedTicker) return;
+
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setMonteCarloResult(null);
+
+    try {
+        // Momentum & Price Target Analysis
+        const momentumResult = await analyzeStockMomentum(submittedTicker, marketData);
+        let combinedResult: CombinedAnalysisResult = { analysis: null, prediction: null };
+
+        if (momentumResult && !momentumResult.error) {
+            const predictionResult = await predictPriceTarget(submittedTicker, marketData, momentumResult);
+            combinedResult = {
+                analysis: momentumResult,
+                prediction: predictionResult.error ? { error: predictionResult.error } : predictionResult,
+            };
+        } else {
+            combinedResult.error = momentumResult.error || 'An unknown analysis error occurred.';
+        }
+        setAnalysisResult(combinedResult);
+        
+        // Monte Carlo Simulation
+        const closePrices = marketData.map(d => parseFloat(d.close)).reverse();
+        if (closePrices.length > 30) {
+             const simulationResult = runMonteCarloSimulation(closePrices, 30, 5000, 0.70);
+             setMonteCarloResult(simulationResult);
+        }
+
+    } catch (e: any) {
+        setError({message: e.message || "An unexpected error occurred during analysis."});
+    } finally {
+        setIsAnalyzing(false);
+    }
+  }, [marketData, submittedTicker]);
+
+  useEffect(() => {
+    if(marketData && submittedTicker) {
+        const timer = setTimeout(() => {
+            handleAnalysis();
+        }, 50); // Use a short timeout to allow the initial data state to render
+        return () => clearTimeout(timer);
+    }
+  }, [marketData, submittedTicker, handleAnalysis]);
+
+
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
     resetState();
 
@@ -253,46 +300,6 @@ export default function Home() {
 
     // Reset file input to allow re-uploading the same file
     event.target.value = '';
-  };
-
-  const handleAnalysis = async () => {
-    if (!marketData || !submittedTicker) return;
-
-    setIsAnalyzing(true);
-    setAnalysisResult(null);
-    setMonteCarloResult(null);
-    
-    // Using a timeout to ensure the UI updates to the loading state before the heavy computation begins
-    setTimeout(async () => {
-        try {
-            // Momentum & Price Target Analysis
-            const momentumResult = await analyzeStockMomentum(submittedTicker, marketData);
-            let combinedResult: CombinedAnalysisResult = { analysis: null, prediction: null };
-
-            if (momentumResult && !momentumResult.error) {
-                const predictionResult = await predictPriceTarget(submittedTicker, marketData, momentumResult);
-                combinedResult = {
-                    analysis: momentumResult,
-                    prediction: predictionResult.error ? { error: predictionResult.error } : predictionResult,
-                };
-            } else {
-                combinedResult.error = momentumResult.error || 'An unknown analysis error occurred.';
-            }
-            setAnalysisResult(combinedResult);
-            
-            // Monte Carlo Simulation
-            const closePrices = marketData.map(d => parseFloat(d.close)).reverse();
-            if (closePrices.length > 30) {
-                 const simulationResult = runMonteCarloSimulation(closePrices, 30, 5000, 0.70);
-                 setMonteCarloResult(simulationResult);
-            }
-
-        } catch (e: any) {
-            setError({message: e.message || "An unexpected error occurred during analysis."});
-        } finally {
-            setIsAnalyzing(false);
-        }
-    }, 50);
   };
   
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
@@ -457,7 +464,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">3. Calculated & AI-Powered Analysis</h3>
                         <p className="text-muted-foreground">
-                            After loading data, click the "Run Full Analysis" button. The application uses a mix of deterministic calculations and generative AI to provide insights.
+                            After loading data, the application automatically uses a mix of deterministic calculations and generative AI to provide insights.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators.</li>
@@ -606,10 +613,6 @@ export default function Home() {
                  <Button variant="outline" onClick={downloadCsv}>
                     <Download className="mr-2 h-4 w-4" />
                     Download as CSV
-                </Button>
-                <Button onClick={handleAnalysis} disabled={isAnalyzing}>
-                    {isAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
-                    {isAnalyzing ? 'Analyzing...' : 'Run Full Analysis'}
                 </Button>
              </CardFooter>
            </Card>
@@ -822,3 +825,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
