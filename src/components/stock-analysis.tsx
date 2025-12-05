@@ -4,8 +4,6 @@
 
 import { useEffect, useState } from 'react';
 import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar, HelpCircle, ArrowRight } from 'lucide-react';
-import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
-import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 import type { CombinedAnalysisResult } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -18,8 +16,9 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/t
 interface StockAnalysisProps {
   ticker: string;
   marketData: MarketData[] | null;
-  onAnalysisComplete: (result: CombinedAnalysisResult | null) => void;
+  analysisResult: CombinedAnalysisResult | null;
   currency: string | null;
+  loading: boolean;
 }
 
 const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string } => {
@@ -65,68 +64,7 @@ const FibonacciDisplay = ({ label, value, currency }: { label: string; value: nu
 );
 
 
-export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency }: StockAnalysisProps) {
-  const [loading, setLoading] = useState(true);
-  const [analysis, setAnalysis] = useState<CombinedAnalysisResult | null>(null);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    async function performAnalysis() {
-      if (!ticker || !marketData) {
-        setLoading(false);
-        return;
-      }
-      
-      setLoading(true);
-      onAnalysisComplete(null);
-      setAnalysis(null);
-
-      try {
-        const momentumResult = await analyzeStockMomentum(ticker, marketData);
-        if (isCancelled) return;
-
-        let result: CombinedAnalysisResult;
-
-        if (momentumResult && !momentumResult.error) {
-          const predictionResult = await predictPriceTarget(ticker, marketData, momentumResult);
-          if (isCancelled) return;
-
-          result = {
-            analysis: momentumResult,
-            prediction: predictionResult.error ? null : predictionResult,
-            error: predictionResult.error ? predictionResult.error : undefined,
-          };
-        } else {
-          result = {
-            analysis: null,
-            prediction: null,
-            error: momentumResult.error || 'An unknown analysis error occurred.',
-          };
-        }
-        
-        setAnalysis(result);
-        onAnalysisComplete(result);
-
-      } catch (e: any) {
-        if (isCancelled) return;
-        const errorResult = { analysis: null, prediction: null, error: e.message || 'An unexpected error occurred.' };
-        setAnalysis(errorResult);
-        onAnalysisComplete(errorResult);
-      } finally {
-        if (!isCancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    performAnalysis();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [ticker, marketData, onAnalysisComplete]);
-
+export function StockAnalysis({ ticker, marketData, analysisResult, currency, loading }: StockAnalysisProps) {
 
   if (loading) {
     return (
@@ -150,9 +88,9 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
     );
   }
   
-  if (!analysis) return null;
+  if (!analysisResult) return null;
 
-  if (analysis.error && !analysis.analysis) {
+  if (analysisResult.error && !analysisResult.analysis) {
     return (
         <Card>
             <CardHeader>
@@ -167,21 +105,21 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             <CardContent>
                  <div className="flex items-center gap-2 text-destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <span>{analysis.error}</span>
+                    <span>{analysisResult.error}</span>
                 </div>
             </CardContent>
         </Card>
     );
   }
   
-  const momentumAnalysis = analysis.analysis;
-  const prediction = analysis.prediction;
+  const momentumAnalysis = analysisResult.analysis;
+  const prediction = analysisResult.prediction;
   
   if (!momentumAnalysis) return null; // Should not happen if error is handled, but for type safety
 
   const { icon, color } = getSignalInfo(momentumAnalysis.signal);
   const actionExplanation = actionGlossary[momentumAnalysis.tradeAction];
-  const isPredictionError = analysis.error && !prediction;
+  const isPredictionError = analysisResult.error && (!prediction || 'error' in prediction);
   const signalInfo = getSignalInfoForPrediction(momentumAnalysis.signal);
   const pivots = (prediction && 'pivots' in prediction && prediction.pivots) ? prediction.pivots : null;
   const fibonacci = (prediction && 'fibonacci' in prediction && prediction.fibonacci) ? prediction.fibonacci : null;
@@ -189,7 +127,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
 
   const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
     if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/></div>;
-    if (isPredictionError || !prediction) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Failed</div>;
+    if (isPredictionError || !prediction || 'error' in prediction) return <div className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="h-4 w-4" />Failed</div>;
     
     const targetData = prediction[targetType];
     const isNotApplicable = targetData.timeframe === "N/A";

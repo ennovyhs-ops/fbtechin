@@ -9,7 +9,9 @@ import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, Trend
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility } from '@/lib/technical-analysis';
+import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation } from '@/lib/technical-analysis';
+import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
+import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,6 +50,7 @@ const defaultPeriods: IndicatorPeriods = {
 
 export default function Home() {
   const [isPending, startTransition] = useTransition();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [marketData, setMarketData] = useState<MarketData[] | null>(null);
   const [error, setError] = useState<{message: string, url?: string} | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -140,6 +143,7 @@ export default function Home() {
     setRegion(null);
     setIndicatorPeriods(defaultPeriods);
     setUploadedFileName(null);
+    setIsAnalyzing(false);
   };
   
   const handleDataResult = (result: FetchResult, ticker: string) => {
@@ -250,6 +254,46 @@ export default function Home() {
     // Reset file input to allow re-uploading the same file
     event.target.value = '';
   };
+
+  const handleAnalysis = async () => {
+    if (!marketData || !submittedTicker) return;
+
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setMonteCarloResult(null);
+    
+    // Using a timeout to ensure the UI updates to the loading state before the heavy computation begins
+    setTimeout(async () => {
+        try {
+            // Momentum & Price Target Analysis
+            const momentumResult = await analyzeStockMomentum(submittedTicker, marketData);
+            let combinedResult: CombinedAnalysisResult = { analysis: null, prediction: null };
+
+            if (momentumResult && !momentumResult.error) {
+                const predictionResult = await predictPriceTarget(submittedTicker, marketData, momentumResult);
+                combinedResult = {
+                    analysis: momentumResult,
+                    prediction: predictionResult.error ? { error: predictionResult.error } : predictionResult,
+                };
+            } else {
+                combinedResult.error = momentumResult.error || 'An unknown analysis error occurred.';
+            }
+            setAnalysisResult(combinedResult);
+            
+            // Monte Carlo Simulation
+            const closePrices = marketData.map(d => parseFloat(d.close)).reverse();
+            if (closePrices.length > 30) {
+                 const simulationResult = runMonteCarloSimulation(closePrices, 30, 5000, 0.70);
+                 setMonteCarloResult(simulationResult);
+            }
+
+        } catch (e: any) {
+            setError({message: e.message || "An unexpected error occurred during analysis."});
+        } finally {
+            setIsAnalyzing(false);
+        }
+    }, 50);
+  };
   
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
@@ -304,6 +348,8 @@ export default function Home() {
   }, [marketData]);
 
   const showInitialSkeleton = isPending && !marketData;
+  const showAnalysisSkeleton = isAnalyzing && !analysisResult;
+  
   const thirtyDayVolatility = useMemo(() => {
     if (!marketData) return null;
     return calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30)
@@ -389,7 +435,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">1. Data Input</h3>
                         <p className="text-muted-foreground">
-                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV file. For best results with CSV uploads, name your file with the ticker (e.g., "SPY.csv"). The CSV file must have 'date' and 'close' columns; 'open', 'high', 'low', and 'volume' are optional but recommended for full analysis.
+                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV file. For best results with CSV uploads, name your file with the ticker (e.g., "SPY.csv"). The CSV file must have 'date', 'close', and 'volume' columns; 'open', 'high', and 'low' are optional but recommended for full analysis.
                         </p>
                       </div>
 
@@ -411,14 +457,14 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">3. Calculated & AI-Powered Analysis</h3>
                         <p className="text-muted-foreground">
-                            The application uses a mix of deterministic calculations and generative AI to provide insights.
+                            After loading data, click the "Run Full Analysis" button. The application uses a mix of deterministic calculations and generative AI to provide insights.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators, including the stock's position within its 52-week range.</li>
-                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility. This requires at least 252 days of data and may be unavailable on the free plan for stocks.</li>
-                          <li><span className="font-semibold text-foreground">52-Week Range:</span> The high and low for the last 52 weeks are calculated locally from historical data, using no extra API calls.</li>
+                          <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators.</li>
+                          <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility (ATR).</li>
+                          <li><span className="font-semibold text-foreground">Monte Carlo Forecast:</span> A probabilistic 30-day price forecast based on thousands of simulations.</li>
                           <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
-                          <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> Both AI-powered and rule-based engines suggest potential option strategies based on the momentum score.</li>
+                          <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> Both AI-powered and rule-based engines suggest potential option strategies.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When news is loaded, an AI analyzes the articles to provide a summary and predict its impact.</li>
                           <li><span className="font-semibold text-foreground">Suggested Exploration:</span> Get AI-powered suggestions for follow-up research questions.</li>
                         </ul>
@@ -556,10 +602,14 @@ export default function Home() {
                   </div>
                 </div>
              </CardContent>
-             <CardFooter>
+             <CardFooter className="flex flex-wrap gap-4">
                  <Button variant="outline" onClick={downloadCsv}>
                     <Download className="mr-2 h-4 w-4" />
                     Download as CSV
+                </Button>
+                <Button onClick={handleAnalysis} disabled={isAnalyzing}>
+                    {isAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
+                    {isAnalyzing ? 'Analyzing...' : 'Run Full Analysis'}
                 </Button>
              </CardFooter>
            </Card>
@@ -567,19 +617,22 @@ export default function Home() {
 
           {submittedTicker && marketData && (
             <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <StockAnalysis 
-                    ticker={submittedTicker} 
-                    marketData={marketData}
-                    onAnalysisComplete={setAnalysisResult}
-                    currency={currency}
-                />
-                <MonteCarloSimulation 
-                    marketData={marketData}
-                    currency={currency}
-                    onSimulationComplete={setMonteCarloResult}
-                />
-                </div>
+                {(isAnalyzing || analysisResult) &&
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <StockAnalysis 
+                            ticker={submittedTicker} 
+                            analysisResult={analysisResult}
+                            currency={currency}
+                            marketData={marketData}
+                            loading={showAnalysisSkeleton}
+                        />
+                        <MonteCarloSimulation 
+                            monteCarloResult={monteCarloResult}
+                            currency={currency}
+                            loading={showAnalysisSkeleton}
+                        />
+                    </div>
+                }
                 <HistoricalVolatility marketData={marketData} />
             </>
           )}
@@ -612,7 +665,7 @@ export default function Home() {
             />
           )}
 
-          {submittedTicker && !uploadedFileName && (
+          {submittedTicker && (
             <NewsAnalysis 
                 ticker={submittedTicker}
             />
@@ -752,7 +805,7 @@ export default function Home() {
                         </CardTitle>
                         <CardDescription>
                           AI-powered suggestions for your next query will appear here.
-                        </CardDescription>
+                        </Description>
                       </CardHeader>
                       <CardContent>
                          <div className="flex flex-wrap gap-2">
@@ -769,9 +822,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    
-
-    

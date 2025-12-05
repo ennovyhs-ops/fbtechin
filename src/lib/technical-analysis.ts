@@ -1,7 +1,4 @@
 
-
-
-
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
@@ -313,7 +310,11 @@ export const runMonteCarloSimulation = (
     daysToSimulate: number, 
     numSimulations: number,
     confidenceInterval: number
-) => {
+): { 
+    probableRange: { lower: number, upper: number };
+    averageTarget: number;
+    confidence: number;
+} | null => {
     if (prices.length < 2) return null;
 
     // 1. Calculate daily log returns
@@ -503,4 +504,14 @@ export const calculateFibonacciRetracement = (
     };
     
     return levels;
+};
+
+
+// Helper to calculate Standard Deviation
+export const calculateStdDev = (data: number[]): number => {
+    const n = data.length;
+    if (n === 0) return 0;
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+    const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n;
+    return Math.sqrt(variance);
 };

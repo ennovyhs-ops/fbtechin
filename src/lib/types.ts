@@ -1,7 +1,4 @@
 
-
-
-
 import type { AnalyzeStockMomentumOutput } from "@/ai/flows/analyze-stock-momentum";
 import type { PredictPriceTargetOutput as PredictPriceTargetOutputFlow } from "@/ai/flows/predict-price-target";
 import type { SynthesizeTradeIdeaOutput as SynthesizeTradeIdeaOutputFlow } from "@/ai/flows/synthesize-trade-idea";
@@ -105,7 +102,7 @@ export type MonteCarloResult = {
     probableRange: { lower: number, upper: number };
     averageTarget: number;
     confidence: number;
-}
+} | null
 
 export type PredictPriceTargetOutput = PredictPriceTargetOutputFlow;
 
@@ -116,5 +113,3 @@ export type CombinedAnalysisResult = {
 }
 
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
-
-    
