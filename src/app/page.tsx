@@ -352,7 +352,7 @@ export default function Home() {
   
   const thirtyDayVolatility = useMemo(() => {
     if (!marketData) return null;
-    return calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30)
+    return calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30);
   }, [marketData]);
 
   return (
@@ -805,7 +805,7 @@ export default function Home() {
                         </CardTitle>
                         <CardDescription>
                           AI-powered suggestions for your next query will appear here.
-                        </Description>
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                          <div className="flex flex-wrap gap-2">
