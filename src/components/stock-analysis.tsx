@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar, HelpCircle } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar, HelpCircle, ArrowRight } from 'lucide-react';
 import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 import type { CombinedAnalysisResult } from '@/lib/types';
@@ -49,6 +49,13 @@ const getSignalInfoForPrediction = (signal: string): { explanation: string } => 
     if (signal.includes('MILD')) return { explanation: "'Mild' signals suggest that technical indicators are not strongly aligned and the trend is weak or unclear. Interpret with caution." };
     return { explanation: "'Neutral' signals indicate no clear directional edge; the market may be choppy or range-bound." };
 }
+
+const PivotDisplay = ({ label, value, currency }: { label: string; value: number; currency: string | null }) => (
+    <div className="flex flex-col items-center">
+        <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+        <span className="font-bold text-sm text-foreground">{formatCurrency(value, currency)}</span>
+    </div>
+);
 
 export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency }: StockAnalysisProps) {
   const [loading, setLoading] = useState(true);
@@ -168,6 +175,8 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   const actionExplanation = actionGlossary[momentumAnalysis.tradeAction];
   const isPredictionError = analysis.error && !prediction;
   const signalInfo = getSignalInfoForPrediction(momentumAnalysis.signal);
+  const pivots = (prediction && 'pivots' in prediction && prediction.pivots) ? prediction.pivots : null;
+
 
   const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
     if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/></div>;
@@ -295,7 +304,8 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                             </h3>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                            <p>This is a deterministic calculation based on the momentum score and recent volatility, not an AI prediction.</p>
+                             <p><span className='font-bold'>Short-Term Target:</span> Based on Average True Range (ATR), a measure of recent market volatility.</p>
+                             <p><span className='font-bold'>Long-Term Target:</span> Based on historical Standard Deviation, a measure of longer-term volatility.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -306,6 +316,34 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                  </div>
             </div>
         </div>
+        
+        {pivots && (
+            <div className="space-y-4">
+                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
+                                Standard Daily Pivot Points
+                                <HelpCircle className="h-4 w-4" />
+                            </h3>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                            <p>Pivot points are calculated based on the prior day's high, low, and close. They are key levels watched by traders for potential support (S1, S2) and resistance (R1, R2). A price moving through a pivot level can signal a new trend.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <div className="flex flex-row justify-around items-center gap-4 p-3 rounded-lg bg-muted/50">
+                    <PivotDisplay label="S2" value={pivots.s2} currency={currency} />
+                    <PivotDisplay label="S1" value={pivots.s1} currency={currency} />
+                    <div className="flex flex-col items-center p-2 rounded-md bg-background border">
+                        <span className="text-xs font-bold text-primary">PIVOT</span>
+                        <span className="font-extrabold text-md text-foreground">{formatCurrency(pivots.pp, currency)}</span>
+                    </div>
+                    <PivotDisplay label="R1" value={pivots.r1} currency={currency} />
+                    <PivotDisplay label="R2" value={pivots.r2} currency={currency} />
+                </div>
+            </div>
+        )}
 
         <div className="space-y-2 text-center pt-2">
             <div className="flex items-center justify-center gap-2">

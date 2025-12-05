@@ -12,6 +12,7 @@ import type { MarketData } from '@/lib/types';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 import { z } from 'zod';
 import { isCryptoPair, isCurrencyPair } from '@/lib/utils';
+import { calculateATR, calculatePivotPoints } from '@/lib/technical-analysis';
 
 
 const PriceTargetObjectSchema = z.object({
@@ -22,7 +23,14 @@ const PriceTargetObjectSchema = z.object({
 
 const PredictPriceTargetOutputSchema = z.object({
     shortTerm: PriceTargetObjectSchema,
-    longTerm: PriceTargetObjectSchema
+    longTerm: PriceTargetObjectSchema,
+    pivots: z.object({
+      pp: z.number(),
+      s1: z.number(),
+      s2: z.number(),
+      r1: z.number(),
+      r2: z.number(),
+    }).optional().describe('Standard daily pivot points.'),
 });
 export type PredictPriceTargetOutput = z.infer<typeof PredictPriceTargetOutputSchema>;
 
@@ -37,16 +45,16 @@ const calculateStdDev = (data: number[]): number => {
 
 const getVariableTimeframe = (trendStrength: number): { timeframe: string, multiplier: number } => {
     if (trendStrength >= 0.7) { // Strong signal
-        return { timeframe: "in the next 1-3 weeks", multiplier: 2.5 };
+        return { timeframe: "in the next 1-3 weeks", multiplier: 2.0 }; // ATR multiplier
     }
     if (trendStrength >= 0.4) { // Moderate signal
-        return { timeframe: "in the next 3-5 weeks", multiplier: 3.0 };
+        return { timeframe: "in the next 3-5 weeks", multiplier: 1.5 };
     }
     if (trendStrength >= 0.1) { // Mild signal
-        return { timeframe: "in the next 4-8 weeks", multiplier: 3.5 };
+        return { timeframe: "in the next 4-8 weeks", multiplier: 1.0 };
     }
     // Neutral
-    return { timeframe: "is uncertain due to neutral momentum", multiplier: 1.0 };
+    return { timeframe: "is uncertain due to neutral momentum", multiplier: 0.5 };
 }
 
 export async function predictPriceTarget(
@@ -105,17 +113,40 @@ export async function predictPriceTarget(
     }
 
 
-    // --- Short-Term Calculation ---
-    const shortTermPrices = marketData.slice(0, 22).map(d => parseFloat(d.close));
-    const shortTermStdDev = calculateStdDev(shortTermPrices);
-    const shortTermAvgVolatility = (shortTermStdDev / currentPrice) * 100;
+    // --- ATR and Pivot Point Calculation ---
+    const dataChronological = [...marketData].reverse();
+    const atr = calculateATR(dataChronological.map(d => ({
+        high: parseFloat(d.high),
+        low: parseFloat(d.low),
+        close: parseFloat(d.close)
+    })), 14);
+    const latestAtr = atr.at(-1);
+
+    const pivots = calculatePivotPoints({
+      high: parseFloat(marketData[1].high), // Yesterday's data
+      low: parseFloat(marketData[1].low),
+      close: parseFloat(marketData[1].close)
+    });
+
+
+    // --- Short-Term Calculation using ATR ---
     const { timeframe: shortTermTimeframe, multiplier: shortTermMultiplier } = getVariableTimeframe(trendStrength);
-    const shortTermMovePercent = trendStrength * shortTermAvgVolatility * shortTermMultiplier;
-    const shortTermPriceTarget = currentPrice * (1 + (Math.sign(totalScore) * shortTermMovePercent) / 100);
+    let shortTermPriceTarget = currentPrice;
+
+    if (latestAtr !== undefined && !isNaN(latestAtr)) {
+      const atrMove = latestAtr * shortTermMultiplier;
+      shortTermPriceTarget = currentPrice + (atrMove * Math.sign(totalScore));
+    }
     
-    let shortTermInterpretation = `Based on the current ${direction} momentum and recent volatility, the price could move towards this target ${shortTermTimeframe}. This is a projection, not a guarantee.`;
+    let shortTermInterpretation = `Based on the current ${direction} momentum and recent volatility (ATR), the price could move towards this target ${shortTermTimeframe}. This is a projection, not a guarantee.`;
     if (totalScore < 0.1 && totalScore > -0.1) {
         shortTermInterpretation = "The current momentum is neutral, making a directional price prediction unreliable at this time."
+    } else if (pivots) {
+        if(totalScore > 0 && shortTermPriceTarget > pivots.r1) {
+            shortTermInterpretation = `The projection targets a move towards the R1 pivot point at ${pivots.r1.toFixed(2)}, a key short-term resistance level.`
+        } else if (totalScore < 0 && shortTermPriceTarget < pivots.s1) {
+            shortTermInterpretation = `The projection indicates a potential test of the S1 pivot support at ${pivots.s1.toFixed(2)}.`
+        }
     } else if (hasValid52WeekRange) {
         if (totalScore > 0 && shortTermPriceTarget > high52) {
             shortTermInterpretation = `This projection suggests a potential breakout above the 52-week high, driven by strong short-term momentum.`;
@@ -124,7 +155,7 @@ export async function predictPriceTarget(
         }
     }
     
-    // --- Long-Term Calculation (6-month outlook) ---
+    // --- Long-Term Calculation (6-month outlook using Standard Deviation) ---
     const longTermPrices = marketData.slice(0, 90).map(d => parseFloat(d.close));
     const longTermStdDev = calculateStdDev(longTermPrices);
     const longTermAvgVolatility = (longTermStdDev / currentPrice) * 100;
@@ -133,7 +164,7 @@ export async function predictPriceTarget(
     const longTermMovePercent = trendStrength * longTermAvgVolatility * longTermMultiplier;
     const longTermPriceTarget = currentPrice * (1 + (Math.sign(totalScore) * longTermMovePercent) / 100);
     
-    let longTermInterpretation = `This projection leverages the same momentum score but uses a longer volatility window to forecast a potential ${longTermTimeframe} price level.`;
+    let longTermInterpretation = `This projection leverages the same momentum score but uses a longer-term standard deviation to forecast a potential ${longTermTimeframe} price level.`;
      if (totalScore < 0.1 && totalScore > -0.1) {
         longTermInterpretation = "Neutral momentum makes a long-term directional forecast unreliable."
     } else if (hasValid52WeekRange) {
@@ -157,7 +188,8 @@ export async function predictPriceTarget(
             priceTarget: hasEnoughFor52Week ? parseFloat(longTermPriceTarget.toFixed(2)) : currentPrice,
             timeframe: hasEnoughFor52Week ? longTermTimeframe : 'N/A',
             interpretation: longTermInterpretation,
-        }
+        },
+        pivots
     };
 
   } catch (e: any) {

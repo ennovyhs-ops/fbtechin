@@ -1,7 +1,10 @@
 
 
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
+
+import type { MarketData } from "./types";
 
 // Simple Moving Average
 const sma = (data: number[], period: number): number[] => {
@@ -358,4 +361,87 @@ export const runMonteCarloSimulation = (
         averageTarget,
         confidence: confidenceInterval * 100,
     };
+};
+
+/**
+ * Calculates Average True Range (ATR).
+ * @param data - Array of {high, low, close} objects in chronological order.
+ * @param period - The period for the ATR calculation (usually 14).
+ * @returns An array of ATR values.
+ */
+export const calculateATR = (
+    data: { high: number, low: number, close: number }[],
+    period: number
+): number[] => {
+    if (data.length < period) return new Array(data.length).fill(NaN);
+
+    const trValues: number[] = [NaN]; // True Range values
+    for (let i = 1; i < data.length; i++) {
+        const high = data[i].high;
+        const low = data[i].low;
+        const prevClose = data[i - 1].close;
+
+        if (isNaN(high) || isNaN(low) || isNaN(prevClose)) {
+            trValues.push(NaN);
+            continue;
+        }
+
+        const tr = Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose));
+        trValues.push(tr);
+    }
+    
+    const atr: number[] = new Array(period).fill(NaN);
+
+    // Initial ATR is the simple average of the first 'period' TRs
+    let sumTr = 0;
+    for (let i = 1; i <= period; i++) {
+      if(isNaN(trValues[i])) { // If any value is NaN, we can't calculate initial sum
+          sumTr = NaN;
+          break;
+      }
+      sumTr += trValues[i];
+    }
+    
+    if (!isNaN(sumTr)) {
+        atr[period] = sumTr / period;
+    }
+
+
+    // Subsequent ATRs use Wilder's smoothing
+    for (let i = period + 1; i < data.length; i++) {
+        const prevAtr = atr[i - 1];
+        const currentTr = trValues[i];
+
+        if (isNaN(prevAtr) || isNaN(currentTr)) {
+             atr[i] = prevAtr; // Carry forward last valid ATR
+        } else {
+             atr[i] = (prevAtr * (period - 1) + currentTr) / period;
+        }
+    }
+    
+    // The ATR array is offset by 1 because TR starts at index 1.
+    // Let's align it with the original data length.
+    return atr;
+};
+
+/**
+ * Calculates Standard Pivot Points.
+ * @param data - An object with the high, low, and close of the PREVIOUS period.
+ * @returns An object with the pivot point and support/resistance levels.
+ */
+export const calculatePivotPoints = (
+    data: { high: number; low: number; close: number }
+): { pp: number; s1: number; s2: number; r1: number; r2: number } | null => {
+    const { high, low, close } = data;
+    if (isNaN(high) || isNaN(low) || isNaN(close)) {
+        return null;
+    }
+
+    const pp = (high + low + close) / 3;
+    const r1 = (2 * pp) - low;
+    const s1 = (2 * pp) - high;
+    const r2 = pp + (high - low);
+    const s2 = pp - (high - low);
+
+    return { pp, s1, s2, r1, r2 };
 };
