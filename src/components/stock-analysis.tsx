@@ -57,6 +57,14 @@ const PivotDisplay = ({ label, value, currency }: { label: string; value: number
     </div>
 );
 
+const FibonacciDisplay = ({ label, value, currency }: { label: string; value: number; currency: string | null }) => (
+    <div className="flex flex-col items-center">
+        <span className="text-xs font-semibold text-muted-foreground">{label}</span>
+        <span className="font-bold text-sm text-foreground">{formatCurrency(value, currency)}</span>
+    </div>
+);
+
+
 export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency }: StockAnalysisProps) {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<CombinedAnalysisResult | null>(null);
@@ -176,6 +184,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
   const isPredictionError = analysis.error && !prediction;
   const signalInfo = getSignalInfoForPrediction(momentumAnalysis.signal);
   const pivots = (prediction && 'pivots' in prediction && prediction.pivots) ? prediction.pivots : null;
+  const fibonacci = (prediction && 'fibonacci' in prediction && prediction.fibonacci) ? prediction.fibonacci : null;
 
 
   const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
@@ -273,7 +282,7 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
-                <p className="text-xl font-bold text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                <p className="font-bold text-xl text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -341,6 +350,32 @@ export function StockAnalysis({ ticker, marketData, onAnalysisComplete, currency
                     </div>
                     <PivotDisplay label="R1" value={pivots.r1} currency={currency} />
                     <PivotDisplay label="R2" value={pivots.r2} currency={currency} />
+                </div>
+            </div>
+        )}
+
+        {fibonacci && (
+            <div className="space-y-4">
+                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
+                                Fibonacci Retracement (90-Day)
+                                <HelpCircle className="h-4 w-4" />
+                            </h3>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                            <p>Fibonacci levels are horizontal lines that indicate where support and resistance are likely to occur. They are based on the 90-day high-low range. A price may reverse near these levels.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <div className="flex flex-row justify-around items-center gap-4 p-3 rounded-lg bg-muted/50">
+                    <FibonacciDisplay label="Low (0%)" value={fibonacci.rangeLow} currency={currency} />
+                    <FibonacciDisplay label="23.6%" value={fibonacci.level236} currency={currency} />
+                    <FibonacciDisplay label="38.2%" value={fibonacci.level382} currency={currency} />
+                    <FibonacciDisplay label="50.0%" value={fibonacci.level500} currency={currency} />
+                    <FibonacciDisplay label="61.8%" value={fibonacci.level618} currency={currency} />
+                    <FibonacciDisplay label="High (100%)" value={fibonacci.rangeHigh} currency={currency} />
                 </div>
             </div>
         )}

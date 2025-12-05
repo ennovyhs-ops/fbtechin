@@ -12,7 +12,7 @@ import type { MarketData } from '@/lib/types';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 import { z } from 'zod';
 import { isCryptoPair, isCurrencyPair } from '@/lib/utils';
-import { calculateATR, calculatePivotPoints } from '@/lib/technical-analysis';
+import { calculateATR, calculatePivotPoints, calculateFibonacciRetracement } from '@/lib/technical-analysis';
 
 
 const PriceTargetObjectSchema = z.object({
@@ -31,6 +31,14 @@ const PredictPriceTargetOutputSchema = z.object({
       r1: z.number(),
       r2: z.number(),
     }).optional().describe('Standard daily pivot points.'),
+    fibonacci: z.object({
+        level236: z.number(),
+        level382: z.number(),
+        level500: z.number(),
+        level618: z.number(),
+        rangeHigh: z.number(),
+        rangeLow: z.number(),
+    }).optional().describe('Fibonacci retracement levels based on the 90-day price swing.'),
 });
 export type PredictPriceTargetOutput = z.infer<typeof PredictPriceTargetOutputSchema>;
 
@@ -63,7 +71,7 @@ export async function predictPriceTarget(
   analysis: AnalyzeStockMomentumOutput,
 ): Promise<PredictPriceTargetOutput | { error: string }> {
   try {
-    const requiredDataPoints = 90; // For long-term volatility calculation
+    const requiredDataPoints = 90; // For long-term volatility and Fibonacci calculation
     if (!marketData || marketData.length < requiredDataPoints) {
       return { error: `Insufficient data for prediction. At least ${requiredDataPoints} days of data are required. Live data may be limited to 100 days on the free API plan.` };
     }
@@ -113,7 +121,7 @@ export async function predictPriceTarget(
     }
 
 
-    // --- ATR and Pivot Point Calculation ---
+    // --- ATR, Pivot Point, and Fibonacci Calculation ---
     const dataChronological = [...marketData].reverse();
     const atr = calculateATR(dataChronological.map(d => ({
         high: parseFloat(d.high),
@@ -127,6 +135,8 @@ export async function predictPriceTarget(
       low: parseFloat(marketData[1].low),
       close: parseFloat(marketData[1].close)
     });
+
+    const fibonacci = calculateFibonacciRetracement(marketData, 90);
 
 
     // --- Short-Term Calculation using ATR ---
@@ -189,7 +199,8 @@ export async function predictPriceTarget(
             timeframe: hasEnoughFor52Week ? longTermTimeframe : 'N/A',
             interpretation: longTermInterpretation,
         },
-        pivots
+        pivots,
+        fibonacci,
     };
 
   } catch (e: any) {

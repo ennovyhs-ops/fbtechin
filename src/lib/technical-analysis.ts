@@ -1,6 +1,7 @@
 
 
 
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
@@ -444,4 +445,62 @@ export const calculatePivotPoints = (
     const s2 = pp - (high - low);
 
     return { pp, s1, s2, r1, r2 };
+};
+
+
+/**
+ * Calculates Fibonacci Retracement levels based on a price swing.
+ * @param marketData - Array of market data objects, assumed to be in descending order by date (newest first).
+ * @param period - The number of days to look back to find the high/low swing.
+ * @returns An object with the Fibonacci levels, or null if not enough data.
+ */
+export const calculateFibonacciRetracement = (
+    marketData: MarketData[],
+    period: number
+): { 
+    level236: number; 
+    level382: number;
+    level500: number;
+    level618: number;
+    rangeHigh: number;
+    rangeLow: number;
+} | null => {
+    if (marketData.length < period) {
+        return null;
+    }
+
+    const dataSlice = marketData.slice(0, period);
+    const isSynthesizedData = dataSlice.every(d => d.open === d.close && d.high === d.close && d.low === d.close);
+
+    let high = -Infinity;
+    let low = Infinity;
+
+    dataSlice.forEach(d => {
+        const h = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high);
+        const l = isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low);
+        if (!isNaN(h) && h > high) high = h;
+        if (!isNaN(l) && l < low) low = l;
+    });
+
+    if (high === -Infinity || low === Infinity || high === low) {
+        return null;
+    }
+
+    const range = high - low;
+    
+    // In an uptrend, levels are subtracted from the high. In a downtrend, added to the low.
+    // For simplicity, we calculate both directions and the UI can decide what to show, 
+    // or we can determine trend direction here.
+    // Let's assume we are calculating retracement from a recent swing, so we calculate levels *within* the range.
+    
+    const levels = {
+        rangeHigh: high,
+        rangeLow: low,
+        level236: high - (range * 0.236),
+        level382: high - (range * 0.382),
+        level500: high - (range * 0.5),
+        level618: high - (range * 0.618),
+    };
+    
+    return levels;
 };
