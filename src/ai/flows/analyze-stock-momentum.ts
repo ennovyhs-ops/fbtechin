@@ -191,34 +191,62 @@ export async function analyzeStockMomentum(
     }
 
     // Step 5: RSI Strength & Divergence (Weight: 15%)
-    if (latestRsi > 60) totalScore += (weights.rsi * 0.66);
-    else if (latestRsi > 50) totalScore += (weights.rsi * 0.33);
-    else if (latestRsi < 40) totalScore -= (weights.rsi * 0.66);
-    else if (latestRsi < 50) totalScore -= (weights.rsi * 0.33);
+    const rsiScoreFactor = 0.6; // 60% of weight is for current RSI level
+    const divergenceScoreFactor = 1 - rsiScoreFactor; // 40% of weight for divergence
 
-    // Divergence (last 10 days)
-    if (dataChronological.length >= 11 && rsi.length >= dataChronological.length) {
-        const priceSlice = dataChronological.slice(-10);
-        const rsiSlice = rsi.slice(-10);
-        
-        const priceLow5 = isSynthesizedData ? priceSlice[5].close : priceSlice[5].low;
-        const priceLow0 = isSynthesizedData ? priceSlice[0].close : priceSlice[0].low;
-        const rsiLow5 = rsiSlice[5];
-        const rsiLow0 = rsiSlice[0];
+    if (latestRsi > 60) totalScore += (weights.rsi * rsiScoreFactor);
+    else if (latestRsi > 50) totalScore += (weights.rsi * rsiScoreFactor * 0.5);
+    else if (latestRsi < 40) totalScore -= (weights.rsi * rsiScoreFactor);
+    else if (latestRsi < 50) totalScore -= (weights.rsi * rsiScoreFactor * 0.5);
 
-        if (priceLow0 < parseFloat(priceLow5) && rsiLow0 > rsiLow5) {
-            totalScore += (weights.rsi * 0.34); // Bullish divergence
+    // --- Refined Divergence Detection (last 14 days) ---
+    if (dataChronological.length >= 15 && rsi.length >= dataChronological.length) {
+        const priceSlice = dataChronological.slice(-14);
+        const rsiSlice = rsi.slice(-14);
+
+        // Bullish Divergence: Lower low in price, but higher low in RSI
+        let priceLows = { index: -1, value: Infinity };
+        for (let i = 0; i < priceSlice.length; i++) {
+            const currentLow = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].low);
+            if (currentLow < priceLows.value) {
+                priceLows = { index: i, value: currentLow };
+            }
         }
         
-        const priceHigh5 = isSynthesizedData ? priceSlice[5].close : priceSlice[5].high;
-        const priceHigh0 = isSynthesizedData ? priceSlice[0].close : priceSlice[0].high;
-        const rsiHigh5 = rsiSlice[5];
-        const rsiHigh0 = rsiSlice[0];
+        if (priceLows.index > 0 && priceLows.index < priceSlice.length - 1) { // Low is not the first or last bar
+            const rsiAtPriceLow = rsiSlice[priceLows.index];
+            // Find a prior low within the window
+            for (let i = 0; i < priceLows.index; i++) {
+                const priorPriceLow = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].low);
+                if (priorPriceLow > priceLows.value && rsiSlice[i] < rsiAtPriceLow) {
+                    totalScore += (weights.rsi * divergenceScoreFactor); // Add bullish divergence score
+                    break; 
+                }
+            }
+        }
+        
+        // Bearish Divergence: Higher high in price, but lower high in RSI
+        let priceHighs = { index: -1, value: -Infinity };
+        for (let i = 0; i < priceSlice.length; i++) {
+            const currentHigh = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].high);
+            if (currentHigh > priceHighs.value) {
+                priceHighs = { index: i, value: currentHigh };
+            }
+        }
 
-        if (priceHigh0 > parseFloat(priceHigh5) && rsiHigh0 < rsiHigh5) {
-            totalScore -= (weights.rsi * 0.34); // Bearish divergence
+        if (priceHighs.index > 0 && priceHighs.index < priceSlice.length - 1) { // High is not the first or last bar
+            const rsiAtPriceHigh = rsiSlice[priceHighs.index];
+            // Find a prior high within the window
+            for (let i = 0; i < priceHighs.index; i++) {
+                const priorPriceHigh = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].high);
+                if (priorPriceHigh < priceHighs.value && rsiSlice[i] > rsiAtPriceHigh) {
+                    totalScore -= (weights.rsi * divergenceScoreFactor); // Add bearish divergence score
+                    break;
+                }
+            }
         }
     }
+
 
     // Step 6: MACD Trend Acceleration (Weight: 20%)
     if (latestMacd.MACD && latestMacd.signal && prevMacd.MACD && prevMacd.signal) {
