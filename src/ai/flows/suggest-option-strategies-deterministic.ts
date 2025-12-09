@@ -35,17 +35,17 @@ const generateRationale = (
     signal: AnalyzeStockMomentumOutput['signal'], 
     isLowVol: boolean,
 ): string => {
-    const volatilityContext = isLowVol ? "in the current low-volatility environment" : "to capitalize on the current high implied volatility";
+    const volatilityContext = isLowVol ? "in the current low-volatility environment where options are relatively cheap" : "to take advantage of the high implied volatility and generate income";
 
     const baseRationales: Record<string, string> = {
-        "Long Call": `The momentum signal is Bullish and options are cheaper ${volatilityContext}, making a straightforward directional bet on a price increase the optimal strategy.`,
-        "Bull Call Spread": `The momentum signal is Bullish and options are cheaper ${volatilityContext}. This risk-defined strategy is cheaper than a Long Call and provides a clear profit target.`,
-        "Put Credit Spread": `The momentum signal is Bullish and selling expensive options is favorable ${volatilityContext}. This high-probability strategy profits if the stock stays above a key level.`,
-        "Long Put": `The momentum signal is Bearish and options are cheaper ${volatilityContext}, making a straightforward directional bet on a price decrease the optimal strategy.`,
-        "Bear Put Spread": `The momentum signal is Bearish and options are cheaper ${volatilityContext}. This risk-defined strategy is cheaper than a Long Put and provides a clear profit target.`,
-        "Call Credit Spread": `The momentum signal is Bearish and selling expensive options is favorable ${volatilityContext}. This high-probability strategy profits if the stock stays below a key level.`,
-        "Iron Condor": `The signal is Neutral and the stock is expected to stay in a range ${volatilityContext}. This strategy profits from time decay if the stock price remains between two defined strike prices.`,
-        "Strangle": `The signal is Neutral but a big price move is expected ${volatilityContext}. This strategy profits from a large move in either direction, capitalizing on the expansion of volatility.`,
+        "Long Call": `The momentum signal is 'Strong Bullish', making a straightforward directional bet the most logical approach ${volatilityContext}.`,
+        "Bull Call Spread": `The momentum signal is 'Moderate Bullish'. This risk-defined strategy provides a clear profit target and is cheaper to enter than a simple Long Call, fitting the moderate conviction of the signal.`,
+        "Put Credit Spread": `The momentum signal is 'Mild Bullish'. This high-probability strategy profits if the stock stays above a key level, aligning with a mild upward drift and capitalizing on selling expensive options in a high-volatility environment.`,
+        "Long Put": `The momentum signal is 'Strong Bearish', making a straightforward directional bet on a price decrease the optimal strategy ${volatilityContext}.`,
+        "Bear Put Spread": `The momentum signal is 'Moderate Bearish'. This risk-defined strategy is cheaper than a Long Put, fitting the moderate conviction of the signal while providing a clear profit target.`,
+        "Call Credit Spread": `The momentum signal is 'Mild Bearish'. This high-probability strategy profits if the stock stays below a key level, aligning with a mild downward drift and capitalizing on selling expensive options in a high-volatility environment.`,
+        "Iron Condor": `The signal is 'Neutral' and volatility is low. This strategy profits from time decay if the stock price remains between two defined strike prices, which is ideal for a range-bound market.`,
+        "Strangle": `The signal is 'Neutral' but volatility is high, suggesting a large price move is expected. This strategy profits from a significant move in either direction, capitalizing on the expansion of volatility.`,
     };
 
     return baseRationales[strategyName] || "This strategy is selected based on the current momentum and volatility profile.";
@@ -79,8 +79,9 @@ export async function suggestOptionStrategiesDeterministic(
             if (bandWidths.length > 0) {
                 const currentBandwidth = bandWidths[bandWidths.length - 1] || 0;
                 const minBandwidth = Math.min(...bandWidths);
+                // A "squeeze" is when current bandwidth is near its recent minimum
                 if (currentBandwidth < minBandwidth * 1.15) { 
-                    isLowVolatility = true; // Bollinger Band Squeeze indicates low vol
+                    isLowVolatility = true; 
                 }
             }
         }
@@ -95,7 +96,7 @@ export async function suggestOptionStrategiesDeterministic(
             strategyName = signal.includes("STRONG") ? "Long Call" : "Bull Call Spread";
         } else {
             // Bullish + High Vol -> Sell Premium
-            strategyName = "Put Credit Spread";
+            strategyName = signal.includes("MILD") ? "Put Credit Spread" : "Bull Call Spread";
         }
     } else if (signal.includes("BEARISH")) {
         if (isLowVolatility) {
@@ -103,7 +104,7 @@ export async function suggestOptionStrategiesDeterministic(
             strategyName = signal.includes("STRONG") ? "Long Put" : "Bear Put Spread";
         } else {
             // Bearish + High Vol -> Sell Premium
-            strategyName = "Call Credit Spread";
+            strategyName = signal.includes("MILD") ? "Call Credit Spread" : "Bear Put Spread";
         }
     } else { // Neutral
         strategyName = isLowVolatility ? "Iron Condor" : "Strangle";

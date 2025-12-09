@@ -56,8 +56,8 @@ const PivotDisplay = ({ label, value, currency }: { label: string; value: number
     </div>
 );
 
-const FibonacciDisplay = ({ label, value, currency }: { label: string; value: number; currency: string | null }) => (
-    <div className="flex flex-col items-center">
+const FibonacciDisplay = ({ label, value, currency, highlight }: { label: string; value: number; currency: string | null, highlight?: boolean }) => (
+    <div className={`flex flex-col items-center p-1 rounded-md ${highlight ? 'bg-background' : ''}`}>
         <span className="text-xs font-semibold text-muted-foreground">{label}</span>
         <span className="font-bold text-sm text-foreground">{formatCurrency(value, currency)}</span>
     </div>
@@ -302,8 +302,9 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
+                        <TooltipContent className="max-w-xs space-y-2">
                             <p>Fibonacci levels are horizontal lines that indicate where support and resistance are likely to occur. They are based on the 90-day high-low range. A price may reverse near these levels.</p>
+                            <p><span className="font-semibold">The "Golden Zone":</span> The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -312,7 +313,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     <FibonacciDisplay label="23.6%" value={fibonacci.level236} currency={currency} />
                     <FibonacciDisplay label="38.2%" value={fibonacci.level382} currency={currency} />
                     <FibonacciDisplay label="50.0%" value={fibonacci.level500} currency={currency} />
-                    <FibonacciDisplay label="61.8%" value={fibonacci.level618} currency={currency} />
+                    <FibonacciDisplay label="61.8%" value={fibonacci.level618} currency={currency} highlight />
                     <FibonacciDisplay label="High (100%)" value={fibonacci.rangeHigh} currency={currency} />
                 </div>
             </div>

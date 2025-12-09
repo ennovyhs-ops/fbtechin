@@ -6,7 +6,7 @@
  *
  * - analyzeNewsImpact - A function that takes a stock ticker and news articles and returns an AI-driven analysis.
  * - AnalyzeNewsImpactInput - The input type for the analyzeNewsImpact function.
- * - AnalyzeNewsImpactOutput - The output type for the analyzeNewsImpact function.
+ * - AnalyzeNewsImpactOutput - The output type for the analyzeNewsimpact function.
  */
 
 import { ai } from '@/ai/index';
