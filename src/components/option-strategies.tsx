@@ -58,7 +58,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
 
         const fetchDeterministicSuggestions = suggestOptionStrategiesDeterministic({
             ticker,
-            totalScore: analysis.totalScore,
+            analysis,
             marketData,
             latestClose,
         }).then(response => {

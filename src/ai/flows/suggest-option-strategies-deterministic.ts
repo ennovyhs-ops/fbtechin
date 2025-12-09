@@ -7,12 +7,13 @@
 
 import { z } from 'zod';
 import type { MarketData } from '@/lib/types';
-import { calculateBollingerBands, calculateMACD, calculateStdDev } from '@/lib/technical-analysis';
+import { calculateBollingerBands, calculateStdDev } from '@/lib/technical-analysis';
+import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 
 const SuggestOptionStrategiesDeterministicInputSchema = z.object({
   ticker: z.string(),
-  totalScore: z.number(),
-  marketData: z.array(z.any()), // Using `any` for simplicity as it's internal
+  analysis: z.any(), // Using `any` for simplicity as it's internal
+  marketData: z.array(z.any()), 
   latestClose: z.string(),
 });
 export type SuggestOptionStrategiesDeterministicInput = z.infer<typeof SuggestOptionStrategiesDeterministicInputSchema>;
@@ -29,30 +30,33 @@ const SuggestOptionStrategiesDeterministicOutputSchema = z.object({
 export type SuggestOptionStrategiesDeterministicOutput = z.infer<typeof SuggestOptionStrategiesDeterministicOutputSchema>;
 
 const getStrikeSuggestion = (latestClose: number, strikeDistance: number, isBullish: boolean, strategyName: string) => {
-    if (strategyName.includes("Credit Spread") || strategyName.includes("Iron Condor")) {
+    // For credit spreads, suggest a strike that is closer to the money to collect a reasonable premium.
+    if (strategyName.includes("Credit Spread")) {
         const shortStrike = isBullish ? latestClose * 0.98 : latestClose * 1.02;
         return `Consider selling an option with a strike around $${shortStrike.toFixed(2)}`;
     }
-    const strike = isBullish ? latestClose * (1 + strikeDistance) : latestClose * (1- strikeDistance);
+     // For debit spreads or long options, suggest a strike further out to lower cost or define risk.
+    const strike = isBullish ? latestClose * (1 + strikeDistance) : latestClose * (1 - strikeDistance);
     return `Consider a strike price around $${strike.toFixed(2)}`;
-}
+};
 
-const generateRationale = (strategyName: string, isBullish: boolean, isLowVol: boolean, latestClose: number, strikeDistance: number): string => {
+const generateRationale = (strategyName: string, signal: AnalyzeStockMomentumOutput['signal'], isLowVol: boolean, latestClose: number, strikeDistance: number): string => {
+    const isBullish = signal.includes("BULLISH");
     const strikeContext = getStrikeSuggestion(latestClose, strikeDistance, isBullish, strategyName);
-    const volatilityContext = isLowVol ? "in the current low-volatility environment" : "to take advantage of high implied volatility";
+    const volatilityContext = isLowVol ? "in a low-volatility environment" : "to capitalize on high implied volatility";
 
-    const rationales: Record<string, string> = {
-        "Long Call": `A straightforward directional bet on a price increase. Best used ${volatilityContext} as premium is cheaper. ${strikeContext} with 30-60 days to expiration.`,
-        "Long Put": `A straightforward directional bet on a price decrease. Best used ${volatilityContext} as premium is cheaper. ${strikeContext} with 30-60 days to expiration.`,
-        "Bull Call Spread": `A risk-defined bullish strategy. Cheaper than a long call and benefits from a moderate upward move. Good for capitalizing on a directional bias ${volatilityContext}. ${strikeContext} for the lower strike, with 30-45 days to expiration.`,
-        "Bear Put Spread": `A risk-defined bearish strategy. Cheaper than a long put and benefits from a moderate downward move. Good for capitalizing on a directional bias ${volatilityContext}. ${strikeContext} for the higher strike, with 30-45 days to expiration.`,
-        "Put Credit Spread": `A bullish, high-probability strategy that profits if the stock stays above a certain price. It collects a premium, making it ideal ${volatilityContext}. ${strikeContext} for the short put, with 14-30 days to expiration.`,
-        "Call Credit Spread": `A bearish, high-probability strategy that profits if the stock stays below a certain price. It collects a premium, making it ideal ${volatilityContext}. ${strikeContext} for the short call, with 14-30 days to expiration.`,
-        "Iron Condor": `A neutral, range-bound strategy that profits if the stock stays between two price points. This is ideal when you expect low volatility and for the stock to not move much. ${strikeContext} for the short strikes, with 14-30 days to expiration.`,
-        "Strangle": `A strategy that profits from a large price move in either direction, typically used when high volatility is expected (like before earnings). It involves buying an out-of-the-money call and an out-of-the-money put. Consider strikes one standard deviation away from the current price, with 30-45 days to expiration.`,
+    const baseRationales: Record<string, string> = {
+        "Long Call": `A straightforward directional bet on a price increase. Chosen due to the strong bullish signal, making a direct bet on a price increase logical. This strategy is best used ${volatilityContext}. ${strikeContext}.`,
+        "Long Put": `A straightforward directional bet on a price decrease. Chosen due to the strong bearish signal. This strategy is best used ${volatilityContext}. ${strikeContext}.`,
+        "Bull Call Spread": `A risk-defined bullish strategy that's cheaper than a long call. Good for capitalizing on the moderate bullish signal without taking on unlimited risk. ${strikeContext} for the lower (long) strike.`,
+        "Bear Put Spread": `A risk-defined bearish strategy that's cheaper than a long put. Good for capitalizing on the moderate bearish signal without taking on unlimited risk. ${strikeContext} for the higher (long) strike.`,
+        "Put Credit Spread": `A high-probability bullish strategy that profits if the stock stays above a certain price. Ideal for a mild bullish signal where you expect a drift upwards or sideways movement. This strategy profits from time decay and is best used ${volatilityContext}. ${strikeContext} for the short put.`,
+        "Call Credit Spread": `A high-probability bearish strategy that profits if the stock stays below a certain price. Ideal for a mild bearish signal where you expect a drift downwards or sideways movement. This strategy profits from time decay and is best used ${volatilityContext}. ${strikeContext} for the short call.`,
+        "Iron Condor": `A neutral, range-bound strategy that profits if the stock stays between two price points. This is ideal for a neutral signal when you expect low volatility and for the stock to not move much. ${strikeContext} for the short strikes.`,
+        "Strangle": `A neutral strategy that profits from a large price move in either direction, typically used when high volatility is expected (like before earnings), but the direction is unknown. This aligns with a neutral signal in a high volatility environment.`,
     };
 
-    return rationales[strategyName] || "This strategy is selected based on the current momentum and volatility profile.";
+    return baseRationales[strategyName] || "This strategy is selected based on the current momentum and volatility profile.";
 };
 
 
@@ -60,23 +64,22 @@ export async function suggestOptionStrategiesDeterministic(
   input: SuggestOptionStrategiesDeterministicInput
 ): Promise<SuggestOptionStrategiesDeterministicOutput> {
 
-    const { totalScore, marketData, latestClose } = input;
+    const { analysis, marketData, latestClose } = input;
+    const { totalScore, signal } = analysis as AnalyzeStockMomentumOutput;
     const latestClosePrice = parseFloat(latestClose);
     const reversedData = [...marketData].reverse();
     const closePrices = reversedData.map(d => parseFloat(d.close));
 
-    if (closePrices.length < 26) { // Increased requirement for MACD
+    if (closePrices.length < 26) {
         return {
             strategies: [],
-            disclaimer: "Not enough historical data to generate rule-based option strategies. At least 26 days of data are required for MACD calculation."
+            disclaimer: "Not enough historical data to generate rule-based option strategies. At least 26 days of data are required."
         };
     }
     
-    // Calculate a reasonable strike distance based on recent volatility
     const recentPrices = closePrices.slice(-20);
     const stdDev = calculateStdDev(recentPrices);
-    const strikeDistance = stdDev / latestClosePrice; // As a percentage
-
+    const strikeDistance = stdDev / latestClosePrice;
 
     // 1. Determine Volatility State
     let isLowVolatility = false;
@@ -88,7 +91,6 @@ export async function suggestOptionStrategiesDeterministic(
             if (bandWidths.length > 0) {
                 const currentBandwidth = bandWidths[bandWidths.length - 1] || 0;
                 const minBandwidth = Math.min(...bandWidths);
-                // A "squeeze" happens when current bandwidth is near its recent minimum
                 if (currentBandwidth < minBandwidth * 1.15) { 
                     isLowVolatility = true;
                 }
@@ -96,35 +98,22 @@ export async function suggestOptionStrategiesDeterministic(
         }
     }
 
-
     // 2. Determine Primary Strategies based on Momentum Score and Volatility
     let strategyNames: string[] = [];
-    const isBullish = totalScore >= 0.1;
-    const isBearish = totalScore <= -0.1;
     
-    if (isBullish) {
-        if (isLowVolatility) {
-            strategyNames = ["Long Call", "Bull Call Spread"]; // Premium buying strategies
-        } else {
-            strategyNames = ["Put Credit Spread"]; // Premium selling strategy
-        }
-    } else if (isBearish) {
-        if (isLowVolatility) {
-            strategyNames = ["Long Put", "Bear Put Spread"]; // Premium buying strategies
-        } else {
-            strategyNames = ["Call Credit Spread"]; // Premium selling strategy
-        }
+    if (signal.includes("STRONG")) {
+        strategyNames = signal.includes("BULLISH") ? ["Long Call"] : ["Long Put"];
+    } else if (signal.includes("MODERATE")) {
+        strategyNames = signal.includes("BULLISH") ? ["Bull Call Spread"] : ["Bear Put Spread"];
+    } else if (signal.includes("MILD")) {
+        strategyNames = signal.includes("BULLISH") ? ["Put Credit Spread"] : ["Call Credit Spread"];
     } else { // Neutral
-        if (isLowVolatility) {
-             strategyNames = ["Iron Condor"]; // Expect range-bound
-        } else {
-             strategyNames = ["Strangle"]; // Expect a large move, but direction is unknown
-        }
+        strategyNames = isLowVolatility ? ["Iron Condor"] : ["Strangle"];
     }
 
     const strategies = strategyNames.map(name => ({
         name,
-        rationale: generateRationale(name, isBullish, isLowVolatility, latestClosePrice, strikeDistance)
+        rationale: generateRationale(name, signal, isLowVolatility, latestClosePrice, strikeDistance)
     }));
 
     return {
