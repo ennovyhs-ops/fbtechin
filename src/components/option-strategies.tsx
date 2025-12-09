@@ -32,7 +32,7 @@ type LoadingState = {
 
 export function OptionStrategies({ ticker, analysis, latestClose, marketData }: OptionStrategiesProps) {
   const [aiSuggestions, setAiSuggestions] = useState<SuggestOptionStrategiesOutput | null>(null);
-  const [deterministicSuggestions, setDeterministicSuggestions] = useState<SuggestOptionStrategiesDeterministicOutput | null>(null);
+  const [deterministicSuggestion, setDeterministicSuggestion] = useState<SuggestOptionStrategiesDeterministicOutput | null>(null);
   const [loading, setLoading] = useState<LoadingState>({ ai: true, deterministic: true });
   const [error, setError] = useState<LoadingState>({ ai: false, deterministic: false });
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
@@ -42,7 +42,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
         setLoading({ ai: true, deterministic: true });
         setError({ ai: false, deterministic: false });
         setAiSuggestions(null);
-        setDeterministicSuggestions(null);
+        setDeterministicSuggestion(null);
 
         const fetchAiSuggestions = suggestOptionStrategies({
             ticker,
@@ -62,7 +62,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
             marketData,
             latestClose,
         }).then(response => {
-            setDeterministicSuggestions(response);
+            setDeterministicSuggestion(response);
         }).catch((e) => {
             console.error("Error fetching deterministic suggestions:", e);
             setError(e => ({...e, deterministic: true}));
@@ -78,7 +78,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
   const isLoading = loading.ai || loading.deterministic;
   const anyError = error.ai || error.deterministic;
   const noSuggestions = (!aiSuggestions || (aiSuggestions.strategies.length === 0 && !aiSuggestions.aggressivePlay)) && 
-                        (!deterministicSuggestions || deterministicSuggestions.strategies.length === 0);
+                        (!deterministicSuggestion || !deterministicSuggestion.strategy);
 
   if (isLoading) {
     return (
@@ -126,7 +126,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
   
   if (noSuggestions) return null;
   
-  const disclaimerText = aiSuggestions?.disclaimer || deterministicSuggestions?.disclaimer;
+  const disclaimerText = aiSuggestions?.disclaimer || deterministicSuggestion?.disclaimer;
 
   return (
     <Card className="animate-in fade-in-50 duration-500 delay-500">
@@ -200,32 +200,26 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2 cursor-help">
                                 <BrainCircuit className="h-5 w-5 text-muted-foreground" />
-                                <h3 className="font-semibold text-md text-foreground">Rule-Based Suggestions</h3>
+                                <h3 className="font-semibold text-md text-foreground">Top Rule-Based Idea</h3>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs space-y-2">
                              <div>
-                                <p><span className="font-semibold text-foreground">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum, volatility, and timing to produce a ranked list of technically suitable strategies.</p>
-                             </div>
-                             <div>
-                                <p className="font-semibold text-foreground">Possible strategies include:</p>
-                                <p>Long Calls/Puts, Spreads (Vertical, Debit, Credit, Ratio, Calendar, Diagonal), Iron Condors, Strangles, Butterflies, and Defensive Rolls.</p>
+                                <p><span className="font-semibold text-foreground">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum and volatility to produce a single, optimal strategy for the current conditions.</p>
                              </div>
                             <Separator />
-                            <p>This is different from the <span className="font-semibold text-foreground">AI Synthesized Idea</span>, which combines multiple models to create a single, specific trade plan, rather than a list of options.</p>
+                            <p>This is different from the <span className="font-semibold text-foreground">AI Synthesized Idea</span>, which combines multiple models to create a specific trade plan, rather than a single strategy suggestion.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
                 
                 {loading.deterministic ? <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Loading...</div> :
                  error.deterministic ? <div className="text-sm text-destructive flex items-center gap-2"><AlertCircle className="h-4 w-4" />Failed to load.</div> :
-                 deterministicSuggestions && deterministicSuggestions.strategies.length > 0 ? (
-                    deterministicSuggestions.strategies.map((strategy, index) => (
-                        <div key={`det-${index}`} className="p-3 rounded-lg border bg-background/50 text-sm">
-                            <h4 className="font-semibold text-sm text-foreground">{strategy.name}</h4>
-                            <p className="text-xs text-muted-foreground mt-1">{strategy.rationale}</p>
-                        </div>
-                    ))
+                 deterministicSuggestion && deterministicSuggestion.strategy ? (
+                    <div className="p-3 rounded-lg border bg-background/50 text-sm">
+                        <h4 className="font-semibold text-sm text-foreground">{deterministicSuggestion.strategy.name}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">{deterministicSuggestion.strategy.rationale}</p>
+                    </div>
                  ) : <p className="text-sm text-muted-foreground">The rule-based engine did not find a suitable strategy.</p>}
             </div>
         </div>
