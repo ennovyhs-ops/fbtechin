@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -163,7 +162,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         <div className="flex items-center gap-3">
                             <Icon className={`h-5 w-5 text-muted-foreground`} />
                             <div className="flex flex-col items-center">
-                                <span className={`font-bold text-xl ${predColor}`}>{formatCurrency(targetData.priceTarget, currency)}</span>
+                                <span className={`font-bold text-base ${predColor}`}>{formatCurrency(targetData.priceTarget, currency)}</span>
                                 <span className="text-xs text-muted-foreground">{targetData.timeframe}</span>
                             </div>
                         </div>
@@ -220,7 +219,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
-                <p className="font-bold text-xl text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                <p className="font-bold text-base text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -305,7 +304,10 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 <div className="flex flex-row flex-wrap justify-around items-center gap-x-4 gap-y-2 p-3 rounded-lg bg-muted/50">
                     <PivotDisplay label="S2" value={pivots.s2} currency={currency} />
                     <PivotDisplay label="S1" value={pivots.s1} currency={currency} />
-                    <PivotDisplay label="PIVOT" value={pivots.pp} currency={currency} />
+                    <div className="flex flex-col items-center">
+                        <span className="text-xs font-semibold text-muted-foreground">PIVOT</span>
+                        <span className="font-bold text-sm text-foreground">{formatCurrency(pivots.pp, currency)}</span>
+                    </div>
                     <PivotDisplay label="R1" value={pivots.r1} currency={currency} />
                     <PivotDisplay label="R2" value={pivots.r2} currency={currency} />
                 </div>
@@ -367,5 +369,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
+
+    
 
     
