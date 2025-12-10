@@ -32,13 +32,13 @@ export type AnalyzeStockMomentumOutput = z.infer<typeof AnalyzeStockMomentumOutp
 
 
 const getSignalFromScore = (score: number): Pick<AnalyzeStockMomentumOutput, 'signal' | 'interpretation' | 'tradeAction'> => {
-  if (score >= 0.7) return { signal: "🚀 STRONG BULLISH", interpretation: "High conviction long", tradeAction: "Use pullbacks to enter" };
-  if (score >= 0.4) return { signal: "✅ MODERATE BULLISH", interpretation: "Consider long positions", tradeAction: "Manage risk with stop losses" };
-  if (score >= 0.1) return { signal: "⚠️ MILD BULLISH", interpretation: "Wait for confirmation", tradeAction: "Look for additional confirmation" };
-  if (score > -0.1) return { signal: "⚖️ NEUTRAL", interpretation: "Stay out or wait", tradeAction: "Market is choppy, avoid new trades" };
-  if (score > -0.4) return { signal: "⚠️ MILD BEARISH", interpretation: "Consider reducing exposure", tradeAction: "Caution is advised, consider hedging" };
-  if (score > -0.7) return { signal: "✅ MODERATE BEARISH", interpretation: "Consider short positions", tradeAction: "Manage risk with stop losses" };
-  return { signal: "🚨 STRONG BEARISH", interpretation: "High conviction short", tradeAction: "Use rallies to enter" };
+  if (score >= 0.7) return { signal: "🚀 STRONG BULLISH", interpretation: "Multiple indicators are aligned, signaling a strong upward trend.", tradeAction: "Use pullbacks to enter" };
+  if (score >= 0.4) return { signal: "✅ MODERATE BULLISH", interpretation: "Indicators are broadly positive, suggesting a potential uptrend.", tradeAction: "Manage risk with stop losses" };
+  if (score >= 0.1) return { signal: "⚠️ MILD BULLISH", interpretation: "Some bullish signs are present, but confirmation is needed.", tradeAction: "Look for additional confirmation" };
+  if (score > -0.1) return { signal: "⚖️ NEUTRAL", interpretation: "Indicators are mixed, with no clear directional advantage.", tradeAction: "Market is choppy, avoid new trades" };
+  if (score > -0.4) return { signal: "⚠️ MILD BEARISH", interpretation: "Some bearish signs are present, suggesting caution is warranted.", tradeAction: "Caution is advised, consider hedging" };
+  if (score > -0.7) return { signal: "✅ MODERATE BEARISH", interpretation: "Indicators are broadly negative, suggesting a potential downtrend.", tradeAction: "Manage risk with stop losses" };
+  return { signal: "🚨 STRONG BEARISH", interpretation: "Multiple indicators are aligned, signaling a strong downward trend.", tradeAction: "Use rallies to enter" };
 };
 
 
