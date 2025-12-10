@@ -3,13 +3,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle } from 'lucide-react';
+import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { synthesizeTradeIdea } from '@/ai/flows/synthesize-trade-idea';
 import type { CombinedAnalysisResult, MonteCarloResult, SynthesizeTradeIdeaOutput } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 
 interface SynthesizedTradeIdeaProps {
@@ -31,7 +32,7 @@ const getConvictionColor = (conviction: string) => {
 }
 
 export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
-  const [idea, setIdea] = useState<SynthesizeTradeIdeaOutput | null>(null);
+  const [ideas, setIdeas] = useState<SynthesizeTradeIdeaOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +47,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
 
     setLoading(true);
     setError(null);
-    setIdea(null);
+    setIdeas(null);
 
     synthesizeTradeIdea({
       ticker,
@@ -58,7 +59,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       monteCarloConfidence: monteCarlo.confidence
     })
       .then(result => {
-        setIdea(result);
+        setIdeas(result);
       })
       .catch(e => {
         console.error('Failed to get synthesized trade idea:', e);
@@ -78,11 +79,11 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Sparkles className="h-6 w-6 text-primary" />
-          <span>Synthesized Trade Idea (AI)</span>
+          <span>Synthesized Trade Ideas (AI)</span>
         </CardTitle>
         <div className="flex items-center gap-2">
             <CardDescription>
-                An actionable plan from the AI based on multiple models.
+                Actionable plans from the AI based on multiple models.
             </CardDescription>
             <TooltipProvider>
                 <Tooltip>
@@ -106,28 +107,40 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
         {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Generating idea...</span>
+                <span>Generating ideas...</span>
             </div>
         ) : error ? (
              <div className="flex items-center gap-2 text-destructive text-sm">
                 <AlertCircle className="h-4 w-4" />
                 <span>{error}</span>
             </div>
-        ) : idea ? (
-            <div className="p-3 rounded-lg border bg-background/50 text-sm space-y-3 animate-in fade-in-50 duration-500">
-                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-                    <h3 className="font-semibold text-base text-foreground">{idea.strategy}</h3>
-                    <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
-                        Conviction: {idea.conviction}
-                    </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
-                <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
+        ) : ideas && ideas.ideas.length > 0 ? (
+          <Collapsible defaultOpen>
+            <div className="space-y-4 animate-in fade-in-50 duration-500">
+                {ideas.ideas.map((idea, index) => (
+                   <div key={index} className="p-3 rounded-lg border bg-background/50 text-sm space-y-3">
+                       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+                          <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
+                            <span>{index + 1}.</span> {idea.strategy}
+                          </h3>
+                           <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
+                               Conviction: {idea.conviction}
+                           </Badge>
+                       </div>
+                       <CollapsibleTrigger className="w-full">
+                          <p className="text-xs text-left text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
+                       </CollapsibleTrigger>
+                       <CollapsibleContent>
+                          <p className="text-xs text-muted-foreground pt-2"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
+                       </CollapsibleContent>
+                   </div>
+                ))}
             </div>
+          </Collapsible>
         ) : (
             <Button onClick={handleSynthesizeIdea} disabled={loading}>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Generate Trade Idea
+                Generate Trade Ideas
             </Button>
         )}
       </CardContent>
