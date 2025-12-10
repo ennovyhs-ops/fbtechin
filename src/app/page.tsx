@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useTransition, useCallback, useRef, useMemo, useEffect } from 'react';
@@ -709,9 +710,7 @@ export default function Home() {
           )}
 
           {submittedTicker && (
-            <div className="animate-in fade-in-50 duration-500 delay-200">
-                <SuggestedQuestions ticker={submittedTicker} />
-            </div>
+            <SuggestedQuestions ticker={submittedTicker} />
           )}
 
 
