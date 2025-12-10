@@ -672,6 +672,8 @@ export default function Home() {
           {submittedTicker && (
             <NewsAnalysis 
                 ticker={submittedTicker}
+                analysisResult={analysisResult}
+                monteCarloResult={monteCarloResult}
             />
            )}
           
@@ -710,7 +712,9 @@ export default function Home() {
           )}
 
           {submittedTicker && (
-            <SuggestedQuestions ticker={submittedTicker} />
+             <SuggestedQuestions 
+                ticker={submittedTicker}
+            />
           )}
 
 
@@ -824,5 +828,7 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     

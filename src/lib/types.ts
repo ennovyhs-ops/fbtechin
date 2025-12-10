@@ -78,8 +78,9 @@ export type NewsSentimentData = {
 }
 
 export type NewsAnalysis = {
-    analysis: string;
     impact: "Bullish" | "Bearish" | "Neutral";
+    divergenceAnalysis: string;
+    newsSummary: string;
 }
 
 export type IndicatorPeriods = {
@@ -113,3 +114,5 @@ export type CombinedAnalysisResult = {
 }
 
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
+
+    

@@ -3,9 +3,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Newspaper, Loader2, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Newspaper, Loader2, AlertCircle, TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
 import { analyzeNewsImpact } from '@/ai/flows/analyze-news-impact';
-import type { NewsArticle, NewsAnalysis as NewsAnalysisType } from '@/lib/types';
+import type { NewsArticle, NewsAnalysis as NewsAnalysisType, CombinedAnalysisResult, MonteCarloResult } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from './ui/button';
 import { fetchNewsSentiment } from '@/app/actions';
@@ -14,6 +14,8 @@ import { Separator } from './ui/separator';
 
 interface NewsAnalysisProps {
   ticker: string;
+  analysisResult: CombinedAnalysisResult | null;
+  monteCarloResult: MonteCarloResult | null;
 }
 
 const getImpactInfo = (impact: string): { icon: React.ReactNode, color: string } => {
@@ -24,7 +26,7 @@ const getImpactInfo = (impact: string): { icon: React.ReactNode, color: string }
     }
 }
 
-export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
+export function NewsAnalysis({ ticker, analysisResult, monteCarloResult }: NewsAnalysisProps) {
   const [analysis, setAnalysis] = useState<NewsAnalysisType | null>(null);
   const [news, setNewsData] = useState<NewsArticle[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,14 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   const [hasBeenLoaded, setHasBeenLoaded] = useState(false);
 
   const handleLoadNews = async () => {
+    
+    const momentumAnalysis = analysisResult?.analysis;
+    if (!momentumAnalysis || !('signal' in momentumAnalysis) || !monteCarloResult) {
+        setError("Momentum analysis and Monte Carlo forecast must be available to run the news divergence analysis. Please ensure data is loaded and calculated first.");
+        setHasBeenLoaded(true);
+        return;
+    }
+
     setLoading(true);
     setHasBeenLoaded(true);
     setError(null);
@@ -60,6 +70,8 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
             const analysisResult = await analyzeNewsImpact({
                 ticker,
                 news: sortedNews.map(({ title, summary }) => ({ title, summary })),
+                momentumSignal: momentumAnalysis.signal,
+                monteCarloRange: monteCarloResult.probableRange,
             });
             setAnalysis(analysisResult);
         }
@@ -127,21 +139,29 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
             <span>News Analysis for {ticker} (AI)</span>
             </CardTitle>
             <CardDescription>
-                A summary of recent news and its potential impact on the stock.
+                An AI-powered analysis of news sentiment and its divergence from market momentum.
             </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
             {analysis ? (
                 <>
-                    <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/50">
-                        <p className="text-sm text-foreground">{analysis.analysis}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-sm">Predicted Impact:</h3>
-                        <div className={`flex items-center gap-1.5 font-semibold text-sm px-2 py-1 rounded-md ${color} bg-background`}>
-                            {icon}
-                            <span>{analysis.impact}</span>
+                    <div className="p-3 rounded-lg bg-muted/50 space-y-3">
+                         <div className="space-y-1">
+                             <h3 className="font-semibold text-sm text-primary flex items-center gap-2">
+                                <Sparkles className="h-4 w-4" />
+                                Divergence Analysis
+                            </h3>
+                            <p className="text-sm text-foreground">{analysis.divergenceAnalysis}</p>
                         </div>
+                        <Separator />
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-sm">News-Only Sentiment:</h3>
+                            <div className={`flex items-center gap-1.5 font-semibold text-sm px-2 py-1 rounded-md ${color} bg-background`}>
+                                {icon}
+                                <span>{analysis.impact}</span>
+                            </div>
+                        </div>
+                         <p className="text-xs text-muted-foreground pt-1">{analysis.newsSummary}</p>
                     </div>
                 </>
             ) : null}
@@ -181,7 +201,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
                 <span>News Analysis (AI)</span>
             </CardTitle>
             <CardDescription>
-                Load recent news and generate an AI-powered impact analysis. This will use one API request.
+                Load recent news and generate an AI-powered divergence analysis (vs. Momentum & Forecast). Uses one API request.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -194,3 +214,5 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
   );
 
 }
+
+    
