@@ -21,13 +21,13 @@ interface StockAnalysisProps {
 }
 
 const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string } => {
-    if (signal.includes('STRONG BULLISH')) return { icon: <Rocket className="h-6 w-6" />, color: 'text-green-400' };
-    if (signal.includes('MODERATE BULLISH')) return { icon: <TrendingUp className="h-6 w-6" />, color: 'text-green-400' };
-    if (signal.includes('MILD BULLISH')) return { icon: <AlertTriangle className="h-6 w-6" />, color: 'text-yellow-400' };
-    if (signal.includes('STRONG BEARISH')) return { icon: <TrendingDown className="h-6 w-6" />, color: 'text-red-400' };
-    if (signal.includes('MODERATE BEARISH')) return { icon: <ShieldAlert className="h-6 w-6" />, color: 'text-red-400' };
-    if (signal.includes('MILD BEARISH')) return { icon: <Hand className="h-6 w-6" />, color: 'text-orange-400' };
-    return { icon: <Scale className="h-6 w-6" />, color: 'text-muted-foreground' };
+    if (signal.includes('STRONG BULLISH')) return { icon: <Rocket className="h-5 w-5" />, color: 'text-green-400' };
+    if (signal.includes('MODERATE BULLISH')) return { icon: <TrendingUp className="h-5 w-5" />, color: 'text-green-400' };
+    if (signal.includes('MILD BULLISH')) return { icon: <AlertTriangle className="h-5 w-5" />, color: 'text-yellow-400' };
+    if (signal.includes('STRONG BEARISH')) return { icon: <TrendingDown className="h-5 w-5" />, color: 'text-red-400' };
+    if (signal.includes('MODERATE BEARISH')) return { icon: <ShieldAlert className="h-5 w-5" />, color: 'text-red-400' };
+    if (signal.includes('MILD BEARISH')) return { icon: <Hand className="h-5 w-5" />, color: 'text-orange-400' };
+    return { icon: <Scale className="h-5 w-5" />, color: 'text-muted-foreground' };
 }
 
 const actionGlossary: Record<string, { title: string; description: string; }> = {
