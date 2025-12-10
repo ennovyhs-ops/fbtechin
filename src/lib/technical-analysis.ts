@@ -428,15 +428,28 @@ export const calculateATR = (
 };
 
 /**
- * Calculates Standard Pivot Points.
- * @param data - An object with the high, low, and close of the PREVIOUS period.
- * @returns An object with the pivot point and support/resistance levels.
+ * Calculates Standard Pivot Points based on a 30-day range.
+ * @param marketData - An array of the last 30 days of market data, newest first.
+ * @returns An object with the pivot point and support/resistance levels, or null if data is insufficient.
  */
 export const calculatePivotPoints = (
-    data: { high: number; low: number; close: number }
-): { pp: number; s1: number; s2: number; s3: number; r1: number; r2: number; r3: number; } | null => {
-    const { high, low, close } = data;
-    if (isNaN(high) || isNaN(low) || isNaN(close)) {
+    marketData: MarketData[]
+): { pp: number; s1: number; s2: number; r1: number; r2: number; } | null => {
+    if (marketData.length === 0) return null;
+
+    let high = -Infinity;
+    let low = Infinity;
+
+    marketData.forEach(d => {
+        const h = parseFloat(d.high);
+        const l = parseFloat(d.low);
+        if (!isNaN(h) && h > high) high = h;
+        if (!isNaN(l) && l < low) low = l;
+    });
+
+    const close = parseFloat(marketData[0].close);
+    
+    if (high === -Infinity || low === Infinity || isNaN(close)) {
         return null;
     }
 
@@ -445,10 +458,8 @@ export const calculatePivotPoints = (
     const s1 = (2 * pp) - high;
     const r2 = pp + (high - low);
     const s2 = pp - (high - low);
-    const r3 = high + 2 * (pp - low);
-    const s3 = low - 2 * (high - pp);
 
-    return { pp, s1, s2, s3, r1, r2, r3 };
+    return { pp, s1, s2, r1, r2 };
 };
 
 

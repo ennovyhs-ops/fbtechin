@@ -28,10 +28,8 @@ const PredictPriceTargetOutputSchema = z.object({
       pp: z.number(),
       s1: z.number(),
       s2: z.number(),
-      s3: z.number(),
       r1: z.number(),
       r2: z.number(),
-      r3: z.number(),
     }).optional().describe('Standard daily pivot points.'),
     fibonacci: z.object({
         level236: z.number(),
@@ -132,12 +130,9 @@ export async function predictPriceTarget(
         close: parseFloat(d.close)
     })), 14);
     const latestAtr = atr.at(-1);
-
-    const pivots = calculatePivotPoints({
-      high: parseFloat(marketData[1].high), // Yesterday's data
-      low: parseFloat(marketData[1].low),
-      close: parseFloat(marketData[1].close)
-    });
+    
+    const thirtyDayData = marketData.slice(0, 30);
+    const pivots = calculatePivotPoints(thirtyDayData);
 
     const fibonacci = calculateFibonacciRetracement(marketData, 90);
 
