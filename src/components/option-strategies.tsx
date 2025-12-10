@@ -70,15 +70,40 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs space-y-2">
+                    <TooltipContent className="max-w-md p-4 space-y-3 text-xs leading-relaxed" side="top" align="start">
                         <div>
-                            <p className="font-bold text-foreground mb-1">How this is generated:</p>
-                            <p>This engine uses a deterministic decision tree. It analyzes both the momentum signal and the current volatility environment to suggest the most appropriate strategies.</p>
+                            <p className="font-bold text-sm text-foreground mb-1">How This Engine Works</p>
+                            <p>This engine uses a deterministic decision tree. It analyzes both the **momentum signal** and the **current volatility environment** to suggest the most appropriate strategies from its library.</p>
                         </div>
                         <Separator />
                         <div>
-                            <p><span className="font-semibold text-foreground">High Volatility:</span> The engine favors strategies that benefit from high option premiums (e.g., selling spreads).</p>
-                            <p><span className="font-semibold text-foreground">Low Volatility:</span> It favors strategies that benefit from buying cheaper options (e.g., debit spreads or long calls/puts).</p>
+                            <p className="font-semibold text-foreground">Volatility is Key:</p>
+                             <ul className="list-disc list-inside mt-1 space-y-1">
+                                <li><span className="font-semibold text-primary">High Volatility:</span> The engine favors strategies that benefit from high option premiums (e.g., selling spreads).</li>
+                                <li><span className="font-semibold text-primary">Low Volatility:</span> It favors strategies that benefit from buying cheaper options (e.g., debit spreads or long calls/puts).</li>
+                            </ul>
+                        </div>
+                        <Separator />
+                         <div>
+                            <p className="font-bold text-sm text-foreground mb-2">Strategy Library</p>
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="font-semibold text-foreground">Bullish Strategies</p>
+                                    <p className="text-muted-foreground">Long Call, Bull Call Spread, Put Credit Spread</p>
+                                </div>
+                                 <div>
+                                    <p className="font-semibold text-foreground">Bearish Strategies</p>
+                                    <p className="text-muted-foreground">Long Put, Bear Put Spread, Call Credit Spread</p>
+                                </div>
+                                 <div>
+                                    <p className="font-semibold text-foreground">Neutral / Volatility Plays</p>
+                                    <p className="text-muted-foreground">Iron Condor (for low volatility), Strangle (for high volatility)</p>
+                                </div>
+                                 <div>
+                                    <p className="font-semibold text-foreground">Aggressive "Lotto Tickets"</p>
+                                    <p className="text-muted-foreground">Weekly OTM Call/Put (only on STRONG signals)</p>
+                                </div>
+                            </div>
                         </div>
                     </TooltipContent>
                 </Tooltip>
