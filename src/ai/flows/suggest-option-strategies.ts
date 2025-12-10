@@ -2,7 +2,8 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow to suggest stock option strategies using an AI model.
+ * @fileOverview This file is now deprecated. The deterministic flow `suggest-option-strategies-deterministic.ts` should be used instead.
+ * This file defines a Genkit flow to suggest stock option strategies using an AI model.
  *
  * - suggestOptionStrategies - A function that returns potential AI-driven option strategies.
  * - SuggestOptionStrategiesInput - The input type for the suggestOptionStrategies function.
@@ -82,3 +83,4 @@ const suggestOptionStrategiesPrompt = ai.definePrompt({
   - rationale: "This is a high-risk 'lotto ticket' play. It will only be profitable if the stock makes a very large, very fast move upwards before expiration. Consider buying a call with a ~$165 strike expiring this Friday. The premium is low, but the probability of success is also very low."
 `,
 });
+
