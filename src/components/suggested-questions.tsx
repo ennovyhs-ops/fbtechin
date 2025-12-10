@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -53,7 +54,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <BrainCircuit className="h-6 w-6 text-accent" />
-          <span>Suggested Exploration</span>
+          <span>Suggested Exploration (AI)</span>
         </CardTitle>
         <CardDescription className="no-print">
           Click a question to instantly search for answers on Google.

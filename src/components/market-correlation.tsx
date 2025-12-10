@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useTransition, useRef } from 'react';
@@ -227,7 +228,7 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <BarChart className="h-6 w-6 text-accent" />
-          <span>Market Correlation Analysis</span>
+          <span>Market Correlation (Calculated)</span>
         </CardTitle>
         <CardDescription>
           Compare {baseTicker}'s 90-day performance against a market index or another stock.

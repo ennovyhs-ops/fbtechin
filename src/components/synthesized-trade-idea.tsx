@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -77,7 +78,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Sparkles className="h-6 w-6 text-primary" />
-          <span>AI Synthesized Trade Idea</span>
+          <span>Synthesized Trade Idea (AI)</span>
         </CardTitle>
         <div className="flex items-center gap-2">
             <CardDescription>

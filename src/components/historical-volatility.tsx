@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo } from 'react';
@@ -41,7 +42,7 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Percent className="h-6 w-6 text-accent" />
-                    <span>Historical Volatility</span>
+                    <span>Historical Volatility (Calculated)</span>
                 </CardTitle>
                 <CardDescription>
                     Not enough data for volatility analysis. At least 90 days of data are required.
@@ -56,7 +57,7 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Percent className="h-6 w-6 text-accent" />
-          <span>Historical Volatility</span>
+          <span>Historical Volatility (Calculated)</span>
         </CardTitle>
         <div className='flex items-center gap-2'>
             <CardDescription>

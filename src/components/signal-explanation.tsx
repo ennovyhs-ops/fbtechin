@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -125,7 +126,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
       <CardHeader>
         <CardTitle className="font-headline text-2xl flex items-center gap-2">
           <BrainCircuit className="h-5 w-5 text-accent" />
-          <span>Why is the signal "{analysis.signal}"?</span>
+          <span>Why is the signal "{analysis.signal}"? (AI)</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -78,7 +79,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                         <Newspaper className="h-6 w-6 text-destructive" />
-                        <span>News & AI Analysis</span>
+                        <span>News Analysis (AI)</span>
                     </CardTitle>
                     <CardDescription>
                         Could not retrieve news for {ticker}.
@@ -105,7 +106,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Newspaper className="h-6 w-6 text-accent" />
-                    <span>AI News Analysis for {ticker}</span>
+                    <span>News Analysis (AI)</span>
                 </CardTitle>
                 <CardDescription>
                     No recent news was found for this ticker.
@@ -123,7 +124,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
         <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline text-2xl">
             <Newspaper className="h-6 w-6 text-accent" />
-            <span>AI News Analysis for {ticker}</span>
+            <span>News Analysis for {ticker} (AI)</span>
             </CardTitle>
             <CardDescription>
                 A summary of recent news and its potential impact on the stock.
@@ -177,7 +178,7 @@ export function NewsAnalysis({ ticker }: NewsAnalysisProps) {
         <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                 <Newspaper className="h-6 w-6 text-accent" />
-                <span>News & AI Analysis</span>
+                <span>News Analysis (AI)</span>
             </CardTitle>
             <CardDescription>
                 Load recent news and generate an AI-powered impact analysis. This will use one API request.

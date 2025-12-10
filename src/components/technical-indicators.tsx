@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -61,7 +62,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                         <Activity className="h-6 w-6 text-muted-foreground" />
-                        <span>Technical Indicators</span>
+                        <span>Technical Indicators (Calculated)</span>
                     </CardTitle>
                     <CardDescription>
                         Standard technical indicator analysis is not applicable to currency or crypto pairs.
@@ -77,7 +78,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                         <Activity className="h-6 w-6 text-accent" />
-                        <span>Technical Indicators for {ticker}</span>
+                        <span>Technical Indicators for {ticker} (Calculated)</span>
                     </CardTitle>
                     <CardDescription>Loading technical analysis data...</CardDescription>
                 </CardHeader>
@@ -116,7 +117,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                         <Activity className="h-6 w-6 text-accent" />
-                        <span>Technical Indicators for {ticker}</span>
+                        <span>Technical Indicators for {ticker} (Calculated)</span>
                     </CardTitle>
                     <CardDescription>
                         Latest calculated values based on daily data. You can adjust the periods and update.

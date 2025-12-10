@@ -72,7 +72,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
-                    <span>Calculated Analysis for {ticker}</span>
+                    <span>Analysis for {ticker}</span>
                 </CardTitle>
                 <CardDescription>
                     Running a detailed scoring model and price projection...
@@ -96,7 +96,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-destructive" />
-                    <span>Momentum Analysis</span>
+                    <span>Momentum Analysis (Calculated)</span>
                 </CardTitle>
                 <CardDescription>
                     Could not complete the analysis for {ticker}.
@@ -184,7 +184,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
-                    <span>Analysis for {ticker}</span>
+                    <span>Analysis for {ticker} (Calculated)</span>
                 </CardTitle>
                 <CardDescription>
                     {momentumAnalysis.interpretation}
@@ -193,7 +193,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
              <CardContent className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
                     <div className="flex flex-col items-center gap-4 text-center">
-                         <h3 className="font-semibold text-sm text-muted-foreground">Calculated Price Target</h3>
+                         <h3 className="font-semibold text-sm text-muted-foreground">Price Target (Calculated)</h3>
                          <div className="flex flex-col sm:flex-row items-center gap-6">
                             <PriceTargetContent targetType="shortTerm" icon={Clock} />
                          </div>
@@ -209,7 +209,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Zap className="h-6 w-6 text-accent" />
-          <span>Calculated Analysis for {ticker}</span>
+          <span>Analysis for {ticker} (Calculated)</span>
         </CardTitle>
         <CardDescription>
           A proprietary momentum score and derived short- and long-term price targets.
@@ -246,7 +246,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
-                                Calculated Price Targets
+                                Price Targets (Calculated)
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
@@ -270,7 +270,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
-                                Standard Daily Pivot Points
+                                Standard Daily Pivot Points (Calculated)
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
@@ -298,7 +298,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
-                                Fibonacci Retracement (90-Day)
+                                Fibonacci Retracement (90-Day, Calculated)
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>

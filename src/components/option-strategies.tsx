@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -118,7 +119,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2 cursor-help">
                                 <Bot className="h-5 w-5 text-muted-foreground" />
-                                <h3 className="font-semibold text-md text-foreground">AI-Powered Ideas</h3>
+                                <h3 className="font-semibold text-md text-foreground">AI-Powered Ideas (AI)</h3>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
@@ -174,7 +175,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2 cursor-help">
                                 <BrainCircuit className="h-5 w-5 text-muted-foreground" />
-                                <h3 className="font-semibold text-md text-foreground">Top Rule-Based Idea</h3>
+                                <h3 className="font-semibold text-md text-foreground">Top Rule-Based Idea (Calculated)</h3>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs space-y-2">
