@@ -29,7 +29,7 @@ export type SynthesizeTradeIdeaInput = z.infer<typeof SynthesizeTradeIdeaInputSc
 const SynthesizeTradeIdeaOutputSchema = z.object({
   strategy: z.string().describe('The name of the suggested trading strategy (e.g., "Bull Call Spread").'),
   rationale: z.string().describe("A concise explanation for why this strategy was chosen, synthesizing the agreement or divergence between the momentum, Monte Carlo, and volatility models."),
-  action: z.string().describe("A specific, actionable implementation of the strategy, including suggested strike prices and expiration timeframes (e.g., 'Consider buying a call with a $175 strike and selling a call with a $180 strike, with 45-60 days to expiration.')."),
+  action: z.string().describe("A specific, actionable implementation of the strategy, including suggested strike prices (e.g., '~$175') and a specific expiration timeframe (e.g., '45-60 days to expiration')."),
   conviction: z.enum(["High", "Moderate", "Low", "Caution"]).describe("The conviction level based on model agreement.")
 });
 export type SynthesizeTradeIdeaOutput = z.infer<typeof SynthesizeTradeIdeaOutputSchema>;
@@ -71,7 +71,7 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
     *   **strategy:** The name of your chosen strategy.
     *   **conviction:** Your calculated conviction level.
     *   **rationale:** A 1-2 sentence explanation of *why* you chose this strategy, referencing the model agreement AND the volatility context.
-    *   **action:** A concrete, actionable trade structure. Suggest strike prices relative to the current price/targets and a suitable expiration (typically 30-60 days).
+    *   **action:** A concrete, actionable trade structure. You **MUST** suggest specific strike prices (e.g., '~$175') based on the current price/targets and a specific expiration timeframe (e.g., '30-60 days to expiration').
 
 **Example:**
 *Inputs:* Current Price: $150, Signal: "STRONG BULLISH", Target: $165, Range: $160-$175, Volatility: 45% (High).
@@ -79,7 +79,7 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
 - **strategy:** "Bull Put Spread"
 - **conviction:** "High"
 - **rationale:** "Both the momentum and Monte Carlo models show strong agreement on an upward move. With historical volatility being high, a Bull Put Spread is chosen to capitalize on the rich option premiums while maintaining a bullish stance."
-- **action:** "Consider selling a put with a strike near $145 and buying a put with a strike near $140, with 30-45 days to expiration to collect premium."
+- **action:** "Consider selling a put with a strike near ~$145 and buying a put with a strike near ~$140, with 30-45 days to expiration to collect premium."
 
 Now, analyze the inputs provided and generate your response.
 `,
