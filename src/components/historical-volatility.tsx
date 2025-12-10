@@ -6,8 +6,9 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { calculateVolatility } from '@/lib/technical-analysis';
 import type { MarketData } from '@/lib/types';
-import { Percent, Info } from 'lucide-react';
+import { Percent, Info, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Separator } from './ui/separator';
 
 interface HistoricalVolatilityProps {
   marketData: MarketData[];
@@ -66,10 +67,18 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
              <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Annualized historical volatility is calculated from the standard deviation of daily returns. Higher percentages indicate a more volatile, riskier stock, while lower percentages suggest more stability.</p>
+                    <TooltipContent className="max-w-xs space-y-2">
+                        <div>
+                            <p className="font-bold text-foreground">What is Historical Volatility?</p>
+                            <p>Annualized historical volatility measures how much a stock's price has fluctuated. It is calculated from the standard deviation of daily logarithmic returns, then scaled to a yearly figure.</p>
+                        </div>
+                        <Separator />
+                        <div>
+                            <p><span className="font-semibold text-foreground">Higher percentages</span> indicate a more volatile, riskier stock.</p>
+                            <p><span className="font-semibold text-foreground">Lower percentages</span> suggest more price stability.</p>
+                        </div>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>

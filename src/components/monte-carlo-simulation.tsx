@@ -9,6 +9,7 @@ import { Loader2, AlertCircle, HelpCircle } from 'lucide-react';
 import type { MonteCarloResult } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Separator } from './ui/separator';
 
 interface MonteCarloSimulationProps {
   monteCarloResult: MonteCarloResult | null;
@@ -82,8 +83,15 @@ export function MonteCarloSimulation({ monteCarloResult, currency, loading }: Mo
                     <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                        <p>This model simulates thousands of potential future price paths based on the stock's historical trend (drift) and volatility, providing a probable price range rather than a single target.</p>
+                    <TooltipContent className="max-w-xs space-y-2">
+                        <div>
+                            <p className="font-bold text-foreground">How is this calculated?</p>
+                            <p>This model simulates thousands of potential future price paths using the stock's historical trend (drift) and volatility. This provides a statistically probable price range, rather than a single price target.</p>
+                        </div>
+                        <Separator />
+                        <div>
+                            <p>The <span className="font-semibold text-foreground">Probable Range</span> shows the price range where the stock is statistically likely to land with {monteCarloResult.confidence}% confidence, according to the simulations.</p>
+                        </div>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
