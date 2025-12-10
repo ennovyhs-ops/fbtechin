@@ -250,9 +250,20 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                             <p><span className='font-bold'>Short-Term Target:</span> Based on Average True Range (ATR), a measure of recent market volatility.</p>
-                             <p><span className='font-bold'>Long-Term Target:</span> Based on historical Standard Deviation, a measure of longer-term volatility.</p>
+                        <TooltipContent className="max-w-xs space-y-2">
+                             <div>
+                                <p className="font-bold">Short-Term Target:</p>
+                                <p>This is calculated by adding a momentum-adjusted volatility measure to the current price. The formula is:</p>
+                                <p className="font-mono text-xs p-2 bg-background rounded-md mt-1">Current Price + (ATR * Momentum Multiplier)</p>
+                                <p>ATR (Average True Range) is a measure of recent market volatility. The multiplier increases with the strength of the momentum signal.</p>
+                            </div>
+                            <Separator/>
+                            <div>
+                                <p className="font-bold">Long-Term Target:</p>
+                                <p>This uses historical standard deviation to project a 6-month price. The formula is:</p>
+                                 <p className="font-mono text-xs p-2 bg-background rounded-md mt-1">Current Price * (1 + (Momentum * Volatility % * 5.0))</p>
+                                <p>This model assumes the current trend strength will influence the price over a longer period.</p>
+                            </div>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -304,7 +315,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs space-y-2">
                             <p>Fibonacci levels are horizontal lines that indicate where support and resistance are likely to occur. They are based on the 90-day high-low range. A price may reverse near these levels.</p>
-                            <p>The "Golden Zone": The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals.</p>
+                            <p className="font-bold">The "Golden Zone": The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -347,3 +358,4 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
+
