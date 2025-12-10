@@ -32,20 +32,56 @@ export type SuggestOptionStrategiesDeterministicOutput = z.infer<typeof SuggestO
 
 
 const strategyLibrary = {
-    'Long Call': 'A straightforward bullish bet with limited risk, ideal for strong upward momentum, especially when options are cheap.',
-    'Bull Call Spread': 'A risk-defined bullish strategy that profits from a moderate price increase. It is cheaper than a Long Call, making it suitable for moderate conviction or high-volatility environments.',
-    'Put Credit Spread': 'A high-probability bullish strategy that profits if the stock stays above a certain price. It is ideal for mild bullishness or range-bound conditions, especially in high volatility.',
-    'Long Put': 'A simple bearish bet with limited risk, best for strong downward momentum when options are relatively inexpensive.',
-    'Bear Put Spread': 'A risk-defined bearish strategy that profits from a moderate price decrease. Cheaper than a Long Put, it fits moderate bearish conviction.',
-    'Call Credit Spread': 'A high-probability bearish strategy that profits if the stock remains below a certain price. It is suitable for mild bearishness, especially when selling expensive options in high volatility.',
-    'Iron Condor': 'A neutral, range-bound strategy that profits from low volatility and time decay. It is ideal when the stock is expected to trade within a specific price range.',
-    'Strangle': 'A neutral strategy that profits from a large price move in either direction. It is used when a big move is expected but the direction is uncertain, capitalizing on an expansion of volatility.',
+    'Long Call': {
+        base: 'A straightforward bullish bet with limited risk. Best for strong upward momentum.',
+        strike: "Consider a strike price slightly out-of-the-money",
+        expiration: "with 30-60 days to expiration to give the thesis time to play out."
+    },
+    'Bull Call Spread': {
+        base: 'A risk-defined bullish strategy that profits from a moderate price increase while lowering cost.',
+        strike: "Consider buying an at-the-money call and selling an out-of-the-money call",
+        expiration: "with 30-45 days to expiration."
+    },
+    'Put Credit Spread': {
+        base: 'A high-probability bullish strategy that profits if the stock stays above a certain price. It benefits from high volatility and time decay.',
+        strike: "Consider selling an out-of-the-money put and buying a further OTM put for protection",
+        expiration: "with 30-45 days to expiration."
+    },
+    'Long Put': {
+        base: 'A simple bearish bet with limited risk. Best for strong downward momentum.',
+        strike: "Consider a strike price slightly out-of-the-money",
+        expiration: "with 30-60 days to expiration to allow the trend to develop."
+    },
+    'Bear Put Spread': {
+        base: 'A risk-defined bearish strategy that profits from a moderate price decrease while lowering cost.',
+        strike: "Consider buying an at-the-money put and selling an out-of-the-money put",
+        expiration: "with 30-45 days to expiration."
+    },
+    'Call Credit Spread': {
+        base: 'A high-probability bearish strategy that profits if the stock remains below a certain price. Benefits from high volatility.',
+        strike: "Consider selling an out-of-the-money call and buying a further OTM call for protection",
+        expiration: "with 30-45 days to expiration."
+    },
+    'Iron Condor': {
+        base: 'A neutral, range-bound strategy that profits from low volatility and time decay.',
+        strike: "Sell an OTM put spread and an OTM call spread around the expected trading range",
+        expiration: "with 30-60 days to expiration."
+    },
+    'Strangle': {
+        base: 'A neutral strategy that profits from a large price move in either direction, capitalizing on an expansion of volatility.',
+        strike: "Buy an out-of-the-money call and an out-of-the-money put",
+        expiration: "with 30-60 days to expiration, ideally ahead of an expected catalyst."
+    },
 };
 
 type StrategyName = keyof typeof strategyLibrary;
 
 const generateRationale = (strategyName: StrategyName): string => {
-    return strategyLibrary[strategyName] || "This strategy is selected based on the current momentum and volatility profile.";
+    const strategyInfo = strategyLibrary[strategyName];
+    if (!strategyInfo) {
+        return "This strategy is selected based on the current momentum and volatility profile.";
+    }
+    return `${strategyInfo.base} ${strategyInfo.strike}, typically ${strategyInfo.expiration}`;
 };
 
 const getTopTwoStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
@@ -73,6 +109,9 @@ const getTopTwoStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLow
     
     // Neutral Signal
     if (signal.includes("NEUTRAL")) {
+        // In low volatility, an Iron Condor is often preferred to collect premium while expecting a range. 
+        // A Strangle is better if you expect volatility to *increase* from a low base.
+        // In high volatility, a Strangle is less attractive due to high cost, but an Iron Condor benefits from selling rich premium. We will reverse the typical logic.
         return isLowVolatility ? ['Iron Condor', 'Strangle'] : ['Strangle', 'Iron Condor'];
     }
     
