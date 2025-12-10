@@ -34,54 +34,55 @@ export type SuggestOptionStrategiesDeterministicOutput = z.infer<typeof SuggestO
 const strategyLibrary = {
     'Long Call': {
         base: 'A straightforward bullish bet with limited risk. Best for strong upward momentum.',
-        strike: "Consider a strike price slightly out-of-the-money",
+        strike: (price: number) => `Consider a strike price slightly out-of-the-money (e.g., ~\$${(price * 1.05).toFixed(2)})`,
         expiration: "with 30-60 days to expiration to give the thesis time to play out."
     },
     'Bull Call Spread': {
         base: 'A risk-defined bullish strategy that profits from a moderate price increase while lowering cost.',
-        strike: "Consider buying an at-the-money call and selling an out-of-the-money call",
+        strike: (price: number) => `Consider buying an at-the-money call (e.g., ~\$${price.toFixed(2)}) and selling an out-of-the-money call (e.g., ~\$${(price * 1.075).toFixed(2)})`,
         expiration: "with 30-45 days to expiration."
     },
     'Put Credit Spread': {
         base: 'A high-probability bullish strategy that profits if the stock stays above a certain price. It benefits from high volatility and time decay.',
-        strike: "Consider selling an out-of-the-money put and buying a further OTM put for protection",
+        strike: (price: number) => `Consider selling an out-of-the-money put (e.g., ~\$${(price * 0.95).toFixed(2)}) and buying a further OTM put for protection (e.g., ~\$${(price * 0.90).toFixed(2)})`,
         expiration: "with 30-45 days to expiration."
     },
     'Long Put': {
         base: 'A simple bearish bet with limited risk. Best for strong downward momentum.',
-        strike: "Consider a strike price slightly out-of-the-money",
+        strike: (price: number) => `Consider a strike price slightly out-of-the-money (e.g., ~\$${(price * 0.95).toFixed(2)})`,
         expiration: "with 30-60 days to expiration to allow the trend to develop."
     },
     'Bear Put Spread': {
         base: 'A risk-defined bearish strategy that profits from a moderate price decrease while lowering cost.',
-        strike: "Consider buying an at-the-money put and selling an out-of-the-money put",
+        strike: (price: number) => `Consider buying an at-the-money put (e.g., ~\$${price.toFixed(2)}) and selling an out-of-the-money put (e.g., ~\$${(price * 0.925).toFixed(2)})`,
         expiration: "with 30-45 days to expiration."
     },
     'Call Credit Spread': {
         base: 'A high-probability bearish strategy that profits if the stock remains below a certain price. Benefits from high volatility.',
-        strike: "Consider selling an out-of-the-money call and buying a further OTM call for protection",
+        strike: (price: number) => `Consider selling an out-of-the-money call (e.g., ~\$${(price * 1.05).toFixed(2)}) and buying a further OTM call for protection (e.g., ~\$${(price * 1.10).toFixed(2)})`,
         expiration: "with 30-45 days to expiration."
     },
     'Iron Condor': {
         base: 'A neutral, range-bound strategy that profits from low volatility and time decay.',
-        strike: "Sell an OTM put spread and an OTM call spread around the expected trading range",
+        strike: (price: number) => `Sell an OTM put spread (e.g., selling \$${(price * 0.95).toFixed(2)} / buying \$${(price * 0.90).toFixed(2)}) and an OTM call spread (e.g., selling \$${(price * 1.05).toFixed(2)} / buying \$${(price * 1.10).toFixed(2)})`,
         expiration: "with 30-60 days to expiration."
     },
     'Strangle': {
         base: 'A neutral strategy that profits from a large price move in either direction, capitalizing on an expansion of volatility.',
-        strike: "Buy an out-of-the-money call and an out-of-the-money put",
+        strike: (price: number) => `Buy an out-of-the-money call (e.g., ~\$${(price * 1.07).toFixed(2)}) and an out-of-the-money put (e.g., ~\$${(price * 0.93).toFixed(2)})`,
         expiration: "with 30-60 days to expiration, ideally ahead of an expected catalyst."
     },
 };
 
 type StrategyName = keyof typeof strategyLibrary;
 
-const generateRationale = (strategyName: StrategyName): string => {
+const generateRationale = (strategyName: StrategyName, latestClose: number): string => {
     const strategyInfo = strategyLibrary[strategyName];
     if (!strategyInfo) {
         return "This strategy is selected based on the current momentum and volatility profile.";
     }
-    return `${strategyInfo.base} ${strategyInfo.strike}, typically ${strategyInfo.expiration}`;
+    const strikeText = strategyInfo.strike(latestClose);
+    return `${strategyInfo.base} ${strikeText}, typically ${strategyInfo.expiration}`;
 };
 
 const getTopTwoStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
@@ -123,17 +124,19 @@ export async function suggestOptionStrategiesDeterministic(
   input: SuggestOptionStrategiesDeterministicInput
 ): Promise<SuggestOptionStrategiesDeterministicOutput> {
 
-    const { analysis, marketData } = input;
+    const { analysis, marketData, latestClose } = input;
     const { signal } = analysis as AnalyzeStockMomentumOutput;
     const reversedData = [...marketData].reverse();
     const closePrices = reversedData.map(d => parseFloat(d.close));
+    const latestClosePrice = parseFloat(latestClose);
 
     const disclaimer = "This is not financial advice. The strategy presented is for educational purposes only, based on a deterministic technical model. Options trading involves significant risk and is not suitable for all investors. Consult a qualified financial advisor before making any trading decisions.";
 
-    if (closePrices.length < 26) {
+    if (closePrices.length < 26 || isNaN(latestClosePrice)) {
+        const reason = isNaN(latestClosePrice) ? "The latest closing price is not a valid number." : "At least 26 days of data are required.";
         return {
             strategies: [],
-            disclaimer: "Not enough historical data to generate a rule-based option strategy. At least 26 days of data are required."
+            disclaimer: `Not enough historical data to generate a rule-based option strategy. ${reason}`
         };
     }
 
@@ -164,7 +167,7 @@ export async function suggestOptionStrategiesDeterministic(
 
     const strategies = strategyNames.map(name => ({
         name,
-        rationale: generateRationale(name)
+        rationale: generateRationale(name, latestClosePrice)
     }));
 
 
