@@ -286,11 +286,12 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                             </h3>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                            <p>Pivot points are calculated based on the prior day's high, low, and close. They are key levels watched by traders for potential support (S1, S2) and resistance (R1, R2). A price moving through a pivot level can signal a new trend.</p>
+                            <p>Pivot points are calculated based on the prior day's high, low, and close. They are key levels watched by traders for potential support (S1, S2, S3) and resistance (R1, R2, R3). A price moving through a pivot level can signal a new trend.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <div className="flex flex-row justify-around items-center gap-4 p-3 rounded-lg bg-muted/50">
+                <div className="grid grid-cols-7 gap-1 text-center">
+                    <PivotDisplay label="S3" value={pivots.s3} currency={currency} />
                     <PivotDisplay label="S2" value={pivots.s2} currency={currency} />
                     <PivotDisplay label="S1" value={pivots.s1} currency={currency} />
                     <div className="flex flex-col items-center p-2 rounded-md bg-background border">
@@ -299,6 +300,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     </div>
                     <PivotDisplay label="R1" value={pivots.r1} currency={currency} />
                     <PivotDisplay label="R2" value={pivots.r2} currency={currency} />
+                    <PivotDisplay label="R3" value={pivots.r3} currency={currency} />
                 </div>
             </div>
         )}
@@ -358,4 +360,3 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
-

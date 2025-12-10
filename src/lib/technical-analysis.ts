@@ -434,7 +434,7 @@ export const calculateATR = (
  */
 export const calculatePivotPoints = (
     data: { high: number; low: number; close: number }
-): { pp: number; s1: number; s2: number; r1: number; r2: number } | null => {
+): { pp: number; s1: number; s2: number; s3: number; r1: number; r2: number; r3: number; } | null => {
     const { high, low, close } = data;
     if (isNaN(high) || isNaN(low) || isNaN(close)) {
         return null;
@@ -445,8 +445,10 @@ export const calculatePivotPoints = (
     const s1 = (2 * pp) - high;
     const r2 = pp + (high - low);
     const s2 = pp - (high - low);
+    const r3 = high + 2 * (pp - low);
+    const s3 = low - 2 * (high - pp);
 
-    return { pp, s1, s2, r1, r2 };
+    return { pp, s1, s2, s3, r1, r2, r3 };
 };
 
 

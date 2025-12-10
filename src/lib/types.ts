@@ -114,5 +114,3 @@ export type CombinedAnalysisResult = {
 }
 
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
-
-    

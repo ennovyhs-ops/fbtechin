@@ -11,7 +11,7 @@
 import type { MarketData } from '@/lib/types';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 import { z } from 'zod';
-import { isCryptoPair, isCurrencyPair } from '@/lib/utils';
+import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { calculateATR, calculatePivotPoints, calculateFibonacciRetracement } from '@/lib/technical-analysis';
 
 
@@ -28,8 +28,10 @@ const PredictPriceTargetOutputSchema = z.object({
       pp: z.number(),
       s1: z.number(),
       s2: z.number(),
+      s3: z.number(),
       r1: z.number(),
       r2: z.number(),
+      r3: z.number(),
     }).optional().describe('Standard daily pivot points.'),
     fibonacci: z.object({
         level236: z.number(),
