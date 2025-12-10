@@ -19,7 +19,7 @@ const VolatilityDisplay = ({ label, value }: { label: string, value: number | nu
     return (
         <div className="flex flex-col items-center text-center gap-1">
             <span className="font-semibold text-xs text-muted-foreground">{label}</span>
-            <span className="font-bold text-lg text-foreground">{displayValue}</span>
+            <span className="font-bold text-base text-foreground">{displayValue}</span>
         </div>
     )
 }
