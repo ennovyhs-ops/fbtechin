@@ -1,4 +1,5 @@
 
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
