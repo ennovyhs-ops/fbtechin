@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview This file defines a deterministic flow to suggest the top two optimal stock option strategies 
+ * @fileOverview This file defines a deterministic flow to suggest the top three optimal stock option strategies 
  * based on a clear decision tree driven by momentum and volatility analysis.
  */
 
@@ -22,6 +22,7 @@ export type SuggestOptionStrategiesDeterministicInput = z.infer<typeof SuggestOp
 const OptionStrategySchema = z.object({
   name: z.string(),
   rationale: z.string(),
+  isAggressive: z.boolean(),
 });
 
 const SuggestOptionStrategiesDeterministicOutputSchema = z.object({
@@ -35,43 +36,63 @@ const strategyLibrary = {
     'Long Call': {
         base: 'A straightforward bullish bet with limited risk. Best for strong upward momentum.',
         strike: (price: number) => `Consider a strike price slightly out-of-the-money (e.g., ~\$${(price * 1.05).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration to give the thesis time to play out."
+        expiration: "with 30-60 days to expiration to give the thesis time to play out.",
+        isAggressive: false,
     },
     'Bull Call Spread': {
         base: 'A risk-defined bullish strategy that profits from a moderate price increase while lowering cost.',
         strike: (price: number) => `Consider buying an at-the-money call (e.g., ~\$${price.toFixed(2)}) and selling an out-of-the-money call (e.g., ~\$${(price * 1.075).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration."
+        expiration: "with 30-45 days to expiration.",
+        isAggressive: false,
     },
     'Put Credit Spread': {
         base: 'A high-probability bullish strategy that profits if the stock stays above a certain price. It benefits from high volatility and time decay.',
         strike: (price: number) => `Consider selling an out-of-the-money put (e.g., ~\$${(price * 0.95).toFixed(2)}) and buying a further OTM put for protection (e.g., ~\$${(price * 0.90).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration."
+        expiration: "with 30-45 days to expiration.",
+        isAggressive: false,
     },
     'Long Put': {
         base: 'A simple bearish bet with limited risk. Best for strong downward momentum.',
         strike: (price: number) => `Consider a strike price slightly out-of-the-money (e.g., ~\$${(price * 0.95).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration to allow the trend to develop."
+        expiration: "with 30-60 days to expiration to allow the trend to develop.",
+        isAggressive: false,
     },
     'Bear Put Spread': {
         base: 'A risk-defined bearish strategy that profits from a moderate price decrease while lowering cost.',
         strike: (price: number) => `Consider buying an at-the-money put (e.g., ~\$${price.toFixed(2)}) and selling an out-of-the-money put (e.g., ~\$${(price * 0.925).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration."
+        expiration: "with 30-45 days to expiration.",
+        isAggressive: false,
     },
     'Call Credit Spread': {
         base: 'A high-probability bearish strategy that profits if the stock remains below a certain price. Benefits from high volatility.',
         strike: (price: number) => `Consider selling an out-of-the-money call (e.g., ~\$${(price * 1.05).toFixed(2)}) and buying a further OTM call for protection (e.g., ~\$${(price * 1.10).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration."
+        expiration: "with 30-45 days to expiration.",
+        isAggressive: false,
     },
     'Iron Condor': {
         base: 'A neutral, range-bound strategy that profits from low volatility and time decay.',
         strike: (price: number) => `Sell an OTM put spread (e.g., selling \$${(price * 0.95).toFixed(2)} / buying \$${(price * 0.90).toFixed(2)}) and an OTM call spread (e.g., selling \$${(price * 1.05).toFixed(2)} / buying \$${(price * 1.10).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration."
+        expiration: "with 30-60 days to expiration.",
+        isAggressive: false,
     },
     'Strangle': {
         base: 'A neutral strategy that profits from a large price move in either direction, capitalizing on an expansion of volatility.',
         strike: (price: number) => `Buy an out-of-the-money call (e.g., ~\$${(price * 1.07).toFixed(2)}) and an out-of-the-money put (e.g., ~\$${(price * 0.93).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration, ideally ahead of an expected catalyst."
+        expiration: "with 30-60 days to expiration, ideally ahead of an expected catalyst.",
+        isAggressive: false,
     },
+    'Weekly OTM Call': {
+        base: "This is a high-risk 'lotto ticket' play. It profits only if the stock makes a very large, very fast move upwards before expiration. The probability of success is low.",
+        strike: (price: number) => `Consider buying a call with a far out-of-the-money strike, like ~\$${(price * 1.10).toFixed(2)}`,
+        expiration: "expiring in the next 1-2 weeks.",
+        isAggressive: true,
+    },
+    'Weekly OTM Put': {
+        base: "This is a high-risk 'lotto ticket' play. It profits only if the stock makes a very large, very fast move downwards before expiration. The probability of success is low.",
+        strike: (price: number) => `Consider buying a put with a far out-of-the-money strike, like ~\$${(price * 0.90).toFixed(2)}`,
+        expiration: "expiring in the next 1-2 weeks.",
+        isAggressive: true,
+    }
 };
 
 type StrategyName = keyof typeof strategyLibrary;
@@ -85,35 +106,46 @@ const generateRationale = (strategyName: StrategyName, latestClose: number): str
     return `${strategyInfo.base} ${strikeText}, typically ${strategyInfo.expiration}`;
 };
 
-const getTopTwoStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
+const getTopStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
     // Bullish Signals
     if (signal.includes("STRONG BULLISH")) {
-        return isLowVolatility ? ['Long Call', 'Bull Call Spread'] : ['Bull Call Spread', 'Put Credit Spread'];
+        return isLowVolatility 
+            ? ['Long Call', 'Bull Call Spread', 'Weekly OTM Call'] 
+            : ['Bull Call Spread', 'Put Credit Spread', 'Weekly OTM Call'];
     }
     if (signal.includes("MODERATE BULLISH")) {
-        return isLowVolatility ? ['Bull Call Spread', 'Long Call'] : ['Put Credit Spread', 'Bull Call Spread'];
+        return isLowVolatility 
+            ? ['Bull Call Spread', 'Long Call', 'Put Credit Spread'] 
+            : ['Put Credit Spread', 'Bull Call Spread', 'Long Call'];
     }
     if (signal.includes("MILD BULLISH")) {
-        return isLowVolatility ? ['Bull Call Spread', 'Put Credit Spread'] : ['Put Credit Spread', 'Iron Condor'];
+        return isLowVolatility 
+            ? ['Bull Call Spread', 'Put Credit Spread', 'Iron Condor'] 
+            : ['Put Credit Spread', 'Bull Call Spread', 'Iron Condor'];
     }
 
     // Bearish Signals
     if (signal.includes("STRONG BEARISH")) {
-        return isLowVolatility ? ['Long Put', 'Bear Put Spread'] : ['Bear Put Spread', 'Call Credit Spread'];
+        return isLowVolatility 
+            ? ['Long Put', 'Bear Put Spread', 'Weekly OTM Put'] 
+            : ['Bear Put Spread', 'Call Credit Spread', 'Weekly OTM Put'];
     }
     if (signal.includes("MODERATE BEARISH")) {
-        return isLowVolatility ? ['Bear Put Spread', 'Long Put'] : ['Call Credit Spread', 'Bear Put Spread'];
+        return isLowVolatility 
+            ? ['Bear Put Spread', 'Long Put', 'Call Credit Spread'] 
+            : ['Call Credit Spread', 'Bear Put Spread', 'Long Put'];
     }
     if (signal.includes("MILD BEARISH")) {
-        return isLowVolatility ? ['Bear Put Spread', 'Call Credit Spread'] : ['Call Credit Spread', 'Iron Condor'];
+        return isLowVolatility 
+            ? ['Bear Put Spread', 'Call Credit Spread', 'Iron Condor'] 
+            : ['Call Credit Spread', 'Bear Put Spread', 'Iron Condor'];
     }
     
     // Neutral Signal
     if (signal.includes("NEUTRAL")) {
-        // In low volatility, an Iron Condor is often preferred to collect premium while expecting a range. 
-        // A Strangle is better if you expect volatility to *increase* from a low base.
-        // In high volatility, a Strangle is less attractive due to high cost, but an Iron Condor benefits from selling rich premium. We will reverse the typical logic.
-        return isLowVolatility ? ['Iron Condor', 'Strangle'] : ['Strangle', 'Iron Condor'];
+        return isLowVolatility 
+            ? ['Iron Condor', 'Strangle'] 
+            : ['Strangle', 'Iron Condor'];
     }
     
     return [];
@@ -158,8 +190,8 @@ export async function suggestOptionStrategiesDeterministic(
         }
     }
 
-    // 2. Follow the Decision Tree to get top 2 strategies
-    const strategyNames = getTopTwoStrategies(signal, isLowVolatility);
+    // 2. Follow the Decision Tree to get top strategies
+    const strategyNames = getTopStrategies(signal, isLowVolatility);
 
     if (strategyNames.length === 0) {
         return { strategies: [], disclaimer };
@@ -167,7 +199,8 @@ export async function suggestOptionStrategiesDeterministic(
 
     const strategies = strategyNames.map(name => ({
         name,
-        rationale: generateRationale(name, latestClosePrice)
+        rationale: generateRationale(name, latestClosePrice),
+        isAggressive: strategyLibrary[name]?.isAggressive || false,
     }));
 
 

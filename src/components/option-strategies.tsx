@@ -3,13 +3,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Lightbulb, Loader2, AlertCircle, BrainCircuit } from 'lucide-react';
+import { Lightbulb, Loader2, AlertCircle, BrainCircuit, AlertTriangle, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { suggestOptionStrategiesDeterministic } from '@/ai/flows/suggest-option-strategies-deterministic';
 import type { SuggestOptionStrategiesDeterministicOutput } from '@/ai/flows/suggest-option-strategies-deterministic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import type { MarketData } from '@/lib/types';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from './ui/collapsible';
+import { Separator } from './ui/separator';
+import { Button } from './ui/button';
 
 
 interface OptionStrategiesProps {
@@ -24,6 +28,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
   const [suggestions, setSuggestions] = useState<SuggestOptionStrategiesDeterministicOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   useEffect(() => {
     if (ticker && analysis?.signal && marketData.length > 0) {
@@ -56,9 +61,29 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
           <Lightbulb className="h-6 w-6 text-accent" />
           <span>Rule-Based Option Strategy Ideas</span>
         </CardTitle>
-        <CardDescription>
-          Top two strategies selected by a deterministic engine based on the "{analysis.signal}" signal and the current volatility environment. This is not AI.
-        </CardDescription>
+        <div className="flex items-center gap-2">
+            <CardDescription>
+                Top strategies selected by a deterministic engine based on momentum and volatility.
+            </CardDescription>
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs space-y-2">
+                        <div>
+                            <p className="font-bold text-foreground mb-1">How this is generated:</p>
+                            <p>This engine uses a deterministic decision tree. It analyzes both the momentum signal and the current volatility environment to suggest the most appropriate strategies.</p>
+                        </div>
+                        <Separator />
+                        <div>
+                            <p><span className="font-semibold text-foreground">High Volatility:</span> The engine favors strategies that benefit from high option premiums (e.g., selling spreads).</p>
+                            <p><span className="font-semibold text-foreground">Low Volatility:</span> It favors strategies that benefit from buying cheaper options (e.g., debit spreads or long calls/puts).</p>
+                        </div>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {loading ? (
@@ -73,15 +98,19 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                 <AlertDescription>Could not generate the rule-based strategy idea.</AlertDescription>
             </Alert>
         ) : suggestions && suggestions.strategies.length > 0 ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div className="space-y-4">
                 {suggestions.strategies.map((strategy, index) => (
-                    <div key={`det-${index}`} className="p-3 rounded-lg border bg-background/50 text-sm">
-                        <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                             <BrainCircuit className="h-4 w-4" />
-                            {index === 0 ? 'Primary Strategy:' : 'Alternative Strategy:'}
-                        </h4>
-                        <p className="font-bold text-base mt-2">{strategy.name}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{strategy.rationale}</p>
+                    <div key={`det-${index}`} className={`p-4 rounded-lg border text-sm ${strategy.isAggressive ? 'bg-orange-500/10 border-orange-500/20' : 'bg-muted/30'}`}>
+                        <div className="flex items-center gap-2">
+                             <span className="font-bold text-sm text-foreground">{index + 1}. {strategy.name}</span>
+                             {strategy.isAggressive && (
+                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs bg-orange-500/20 px-2 py-0.5 rounded-md border border-orange-500/30">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Aggressive
+                                </div>
+                             )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">{strategy.rationale}</p>
                     </div>
                 ))}
             </div>
@@ -90,13 +119,27 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
         )}
 
         {disclaimerText && (
-            <Alert variant="default" className="mt-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Disclaimer</AlertTitle>
-                <AlertDescription>
-                    {disclaimerText}
-                </AlertDescription>
-            </Alert>
+            <Collapsible open={isDisclaimerOpen} onOpenChange={setIsDisclaimerOpen} className="mt-4">
+                <Alert variant="default" className="flex flex-col">
+                    <div className="flex items-center justify-between">
+                         <div className='flex items-center gap-4'>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Disclaimer</AlertTitle>
+                         </div>
+                        <CollapsibleTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-6 w-6">
+                                {isDisclaimerOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                <span className="sr-only">Toggle disclaimer</span>
+                            </Button>
+                        </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent>
+                        <AlertDescription className="pt-2 text-xs">
+                            {disclaimerText}
+                        </AlertDescription>
+                    </CollapsibleContent>
+                </Alert>
+            </Collapsible>
         )}
       </CardContent>
     </Card>
