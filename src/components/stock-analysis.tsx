@@ -43,7 +43,7 @@ const actionGlossary: Record<string, { title: string; description: string; }> = 
 }
 
 const getSignalInfoForPrediction = (signal: string): { explanation: string } => {
-    if (signal.includes('STRONG')) return { explanation: "'Strong' signals mean that multiple key technical indicators are aligned, pointing to a high-conviction trend." };
+    if (signal.includes('STRONG')) return { explanation: "'Strong' signals mean that multiple key indicators are aligned, pointing to a high-conviction trend." };
     if (signal.includes('MODERATE')) return { explanation: "'Moderate' signals suggest a good level of indicator alignment, but some conflicting data may exist." };
     if (signal.includes('MILD')) return { explanation: "'Mild' signals suggest that technical indicators are not strongly aligned and the trend is weak or unclear. Interpret with caution." };
     return { explanation: "'Neutral' signals indicate no clear directional edge; the market may be choppy or range-bound." };
@@ -285,8 +285,20 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                            <p>Pivot points are calculated based on the 30-day high, low, and the latest close. They are key levels watched by traders for potential support (S1, S2) and resistance (R1, R2). A price moving through a pivot level can signal a new trend.</p>
+                        <TooltipContent className="max-w-xs space-y-2">
+                          <div>
+                            <p className="font-bold text-foreground mb-1">What are Swing Pivots?</p>
+                            <p>These are key support and resistance levels calculated from the 30-day high, low, and close. They are watched by traders to identify potential market turning points.</p>
+                          </div>
+                          <Separator/>
+                           <div>
+                            <p className="font-bold text-foreground mb-1">How to Use Them:</p>
+                            <ul className="list-disc list-inside space-y-1">
+                                <li><span className="font-semibold">The Pivot (PP):</span> The central point. Trading above it is generally bullish; below is bearish.</li>
+                                <li><span className="font-semibold">Support (S1, S2):</span> Price levels where a downtrend might pause or reverse.</li>
+                                <li><span className="font-semibold">Resistance (R1, R2):</span> Price levels where an uptrend might pause or reverse. A strong break above R1 can signal a new bullish leg.</li>
+                            </ul>
+                          </div>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
