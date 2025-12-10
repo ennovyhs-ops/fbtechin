@@ -100,14 +100,14 @@ export function MonteCarloSimulation({ monteCarloResult, currency, loading }: Mo
       <CardContent>
           <div className="flex flex-col sm:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50 text-center">
             <div className="flex flex-col items-center gap-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">{monteCarloResult.confidence}% Probable Range</h3>
-                <p className="font-bold text-sm text-foreground">
+                <h3 className="font-semibold text-xs text-muted-foreground">{monteCarloResult.confidence}% Probable Range</h3>
+                <p className="font-bold text-base text-foreground">
                     {formatCurrency(monteCarloResult.probableRange.lower, currency)} - {formatCurrency(monteCarloResult.probableRange.upper, currency)}
                 </p>
             </div>
              <div className="flex flex-col items-center gap-2">
-                 <h3 className="font-semibold text-sm text-muted-foreground">Avg. Simulated Target</h3>
-                 <p className="font-bold text-lg text-foreground">
+                 <h3 className="font-semibold text-xs text-muted-foreground">Avg. Simulated Target</h3>
+                 <p className="font-bold text-base text-foreground">
                     {formatCurrency(monteCarloResult.averageTarget, currency)}
                 </p>
             </div>
