@@ -560,26 +560,26 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
                       <p className="text-3xl font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div className="flex items-center gap-2">
                         <Minus className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-muted-foreground">Open</p>
-                            <p className="font-semibold">{formatCurrency(latestData.open, currency)}</p>
+                            <p className="text-xs text-muted-foreground">Open</p>
+                            <p className="font-semibold text-sm">{formatCurrency(latestData.open, currency)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingUp className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-muted-foreground">High</p>
-                            <p className="font-semibold">{formatCurrency(latestData.high, currency)}</p>
+                            <p className="text-xs text-muted-foreground">High</p>
+                            <p className="font-semibold text-sm">{formatCurrency(latestData.high, currency)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingDown className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-muted-foreground">Low</p>
-                            <p className="font-semibold">{formatCurrency(latestData.low, currency)}</p>
+                            <p className="text-xs text-muted-foreground">Low</p>
+                            <p className="font-semibold text-sm">{formatCurrency(latestData.low, currency)}</p>
                         </div>
                     </div>
                     {fiftyTwoWeek && (
@@ -587,15 +587,15 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                             <Crown className="text-muted-foreground h-5 w-5" />
                             <div>
-                                <p className="text-muted-foreground">52-Wk High</p>
-                                <p className="font-semibold">{formatCurrency(fiftyTwoWeek.high, currency)}</p>
+                                <p className="text-xs text-muted-foreground">52-Wk High</p>
+                                <p className="font-semibold text-sm">{formatCurrency(fiftyTwoWeek.high, currency)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Mountain className="text-muted-foreground h-5 w-5" />
                             <div>
-                                <p className="text-muted-foreground">52-Wk Low</p>
-                                <p className="font-semibold">{formatCurrency(fiftyTwoWeek.low, currency)}</p>
+                                <p className="text-xs text-muted-foreground">52-Wk Low</p>
+                                <p className="font-semibold text-sm">{formatCurrency(fiftyTwoWeek.low, currency)}</p>
                             </div>
                         </div>
                       </>
@@ -603,8 +603,8 @@ export default function Home() {
                     <div className="flex items-center gap-2">
                         <Scale className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-muted-foreground">Volume</p>
-                            <p className="font-semibold">{Number(latestData.volume).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">Volume</p>
+                            <p className="font-semibold text-sm">{Number(latestData.volume).toLocaleString()}</p>
                         </div>
                     </div>
                   </div>
@@ -828,6 +828,8 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     
 
