@@ -124,7 +124,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     <div className="flex items-center justify-between">
                          <div className='flex items-center gap-4'>
                             <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Disclaimer</AlertTitle>
+                            <AlertTitle className="text-xs">Disclaimer</AlertTitle>
                          </div>
                         <CollapsibleTrigger asChild>
                              <Button variant="ghost" size="icon" className="h-6 w-6">
