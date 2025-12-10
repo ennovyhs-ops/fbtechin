@@ -463,6 +463,7 @@ export const calculateFibonacciRetracement = (
     level382: number;
     level500: number;
     level618: number;
+    level786: number;
     rangeHigh: number;
     rangeLow: number;
 } | null => {
@@ -501,6 +502,7 @@ export const calculateFibonacciRetracement = (
         level382: high - (range * 0.382),
         level500: high - (range * 0.5),
         level618: high - (range * 0.618),
+        level786: high - (range * 0.786),
     };
     
     return levels;

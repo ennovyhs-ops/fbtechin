@@ -304,16 +304,17 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs space-y-2">
                             <p>Fibonacci levels are horizontal lines that indicate where support and resistance are likely to occur. They are based on the 90-day high-low range. A price may reverse near these levels.</p>
-                            <p><span className="font-semibold">The "Golden Zone":</span> The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals</p>
+                            <p>The "Golden Zone": The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <div className="flex flex-row justify-around items-center gap-4 p-3 rounded-lg bg-muted/50">
+                <div className="flex flex-row justify-around items-center gap-2 p-3 rounded-lg bg-muted/50">
                     <FibonacciDisplay label="Low (0%)" value={fibonacci.rangeLow} currency={currency} />
                     <FibonacciDisplay label="23.6%" value={fibonacci.level236} currency={currency} />
                     <FibonacciDisplay label="38.2%" value={fibonacci.level382} currency={currency} />
                     <FibonacciDisplay label="50.0%" value={fibonacci.level500} currency={currency} />
                     <FibonacciDisplay label="61.8%" value={fibonacci.level618} currency={currency} highlight />
+                    <FibonacciDisplay label="78.6%" value={fibonacci.level786} currency={currency} />
                     <FibonacciDisplay label="High (100%)" value={fibonacci.rangeHigh} currency={currency} />
                 </div>
             </div>

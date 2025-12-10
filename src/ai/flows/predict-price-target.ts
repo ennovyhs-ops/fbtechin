@@ -36,6 +36,7 @@ const PredictPriceTargetOutputSchema = z.object({
         level382: z.number(),
         level500: z.number(),
         level618: z.number(),
+        level786: z.number(),
         rangeHigh: z.number(),
         rangeLow: z.number(),
     }).optional().describe('Fibonacci retracement levels based on the 90-day price swing.'),
