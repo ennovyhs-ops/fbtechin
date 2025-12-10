@@ -331,7 +331,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <div className="flex flex-row justify-around items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <div className="flex flex-row flex-wrap justify-around items-center gap-x-4 gap-y-2 p-3 rounded-lg bg-muted/50">
                     <FibonacciDisplay label="Low (0%)" value={fibonacci.rangeLow} currency={currency} />
                     <FibonacciDisplay label="23.6%" value={fibonacci.level236} currency={currency} />
                     <FibonacciDisplay label="38.2%" value={fibonacci.level382} currency={currency} />
