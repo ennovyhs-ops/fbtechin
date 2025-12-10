@@ -305,9 +305,9 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 <div className="grid grid-cols-5 gap-1 text-center">
                     <PivotDisplay label="S2" value={pivots.s2} currency={currency} />
                     <PivotDisplay label="S1" value={pivots.s1} currency={currency} />
-                    <div className="flex flex-col items-center p-2 rounded-md bg-background border">
-                        <span className="text-xs font-bold text-primary">PIVOT</span>
-                        <span className="font-extrabold text-md text-foreground">{formatCurrency(pivots.pp, currency)}</span>
+                    <div className="flex flex-col items-center">
+                        <span className="text-xs font-semibold text-muted-foreground">PIVOT</span>
+                        <span className="font-bold text-sm text-primary">{formatCurrency(pivots.pp, currency)}</span>
                     </div>
                     <PivotDisplay label="R1" value={pivots.r1} currency={currency} />
                     <PivotDisplay label="R2" value={pivots.r2} currency={currency} />
