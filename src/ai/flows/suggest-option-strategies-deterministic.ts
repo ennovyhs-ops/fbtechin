@@ -2,13 +2,13 @@
 'use server';
 
 /**
- * @fileOverview This file defines a deterministic flow to suggest a single, optimal stock option strategy 
+ * @fileOverview This file defines a deterministic flow to suggest the top two optimal stock option strategies 
  * based on a clear decision tree driven by momentum and volatility analysis.
  */
 
 import { z } from 'zod';
 import type { MarketData } from '@/lib/types';
-import { calculateBollingerBands, calculateStdDev } from '@/lib/technical-analysis';
+import { calculateBollingerBands } from '@/lib/technical-analysis';
 import type { AnalyzeStockMomentumOutput } from './analyze-stock-momentum';
 
 const SuggestOptionStrategiesDeterministicInputSchema = z.object({
@@ -25,31 +25,59 @@ const OptionStrategySchema = z.object({
 });
 
 const SuggestOptionStrategiesDeterministicOutputSchema = z.object({
-  strategy: OptionStrategySchema.optional(),
+  strategies: z.array(OptionStrategySchema),
   disclaimer: z.string(),
 });
 export type SuggestOptionStrategiesDeterministicOutput = z.infer<typeof SuggestOptionStrategiesDeterministicOutputSchema>;
 
-const generateRationale = (
-    strategyName: string, 
-    signal: AnalyzeStockMomentumOutput['signal'], 
-    isLowVol: boolean,
-): string => {
-    const volatilityContext = isLowVol ? "in the current low-volatility environment where options are relatively cheap" : "to take advantage of the high implied volatility and generate income";
 
-    const baseRationales: Record<string, string> = {
-        "Long Call": `The momentum signal is 'Strong Bullish', making a straightforward directional bet the most logical approach ${volatilityContext}.`,
-        "Bull Call Spread": `The momentum signal is 'Moderate Bullish'. This risk-defined strategy provides a clear profit target and is cheaper to enter than a simple Long Call, fitting the moderate conviction of the signal.`,
-        "Put Credit Spread": `The momentum signal is 'Mild Bullish'. This high-probability strategy profits if the stock stays above a key level, aligning with a mild upward drift and capitalizing on selling expensive options in a high-volatility environment.`,
-        "Long Put": `The momentum signal is 'Strong Bearish', making a straightforward directional bet on a price decrease the optimal strategy ${volatilityContext}.`,
-        "Bear Put Spread": `The momentum signal is 'Moderate Bearish'. This risk-defined strategy is cheaper than a Long Put, fitting the moderate conviction of the signal while providing a clear profit target.`,
-        "Call Credit Spread": `The momentum signal is 'Mild Bearish'. This high-probability strategy profits if the stock stays below a key level, aligning with a mild downward drift and capitalizing on selling expensive options in a high-volatility environment.`,
-        "Iron Condor": `The signal is 'Neutral' and volatility is low. This strategy profits from time decay if the stock price remains between two defined strike prices, which is ideal for a range-bound market.`,
-        "Strangle": `The signal is 'Neutral' but volatility is high, suggesting a large price move is expected. This strategy profits from a significant move in either direction, capitalizing on the expansion of volatility.`,
-    };
-
-    return baseRationales[strategyName] || "This strategy is selected based on the current momentum and volatility profile.";
+const strategyLibrary = {
+    'Long Call': 'A straightforward bullish bet with limited risk, ideal for strong upward momentum, especially when options are cheap.',
+    'Bull Call Spread': 'A risk-defined bullish strategy that profits from a moderate price increase. It is cheaper than a Long Call, making it suitable for moderate conviction or high-volatility environments.',
+    'Put Credit Spread': 'A high-probability bullish strategy that profits if the stock stays above a certain price. It is ideal for mild bullishness or range-bound conditions, especially in high volatility.',
+    'Long Put': 'A simple bearish bet with limited risk, best for strong downward momentum when options are relatively inexpensive.',
+    'Bear Put Spread': 'A risk-defined bearish strategy that profits from a moderate price decrease. Cheaper than a Long Put, it fits moderate bearish conviction.',
+    'Call Credit Spread': 'A high-probability bearish strategy that profits if the stock remains below a certain price. It is suitable for mild bearishness, especially when selling expensive options in high volatility.',
+    'Iron Condor': 'A neutral, range-bound strategy that profits from low volatility and time decay. It is ideal when the stock is expected to trade within a specific price range.',
+    'Strangle': 'A neutral strategy that profits from a large price move in either direction. It is used when a big move is expected but the direction is uncertain, capitalizing on an expansion of volatility.',
 };
+
+type StrategyName = keyof typeof strategyLibrary;
+
+const generateRationale = (strategyName: StrategyName): string => {
+    return strategyLibrary[strategyName] || "This strategy is selected based on the current momentum and volatility profile.";
+};
+
+const getTopTwoStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
+    // Bullish Signals
+    if (signal.includes("STRONG BULLISH")) {
+        return isLowVolatility ? ['Long Call', 'Bull Call Spread'] : ['Bull Call Spread', 'Put Credit Spread'];
+    }
+    if (signal.includes("MODERATE BULLISH")) {
+        return isLowVolatility ? ['Bull Call Spread', 'Long Call'] : ['Put Credit Spread', 'Bull Call Spread'];
+    }
+    if (signal.includes("MILD BULLISH")) {
+        return isLowVolatility ? ['Bull Call Spread', 'Put Credit Spread'] : ['Put Credit Spread', 'Iron Condor'];
+    }
+
+    // Bearish Signals
+    if (signal.includes("STRONG BEARISH")) {
+        return isLowVolatility ? ['Long Put', 'Bear Put Spread'] : ['Bear Put Spread', 'Call Credit Spread'];
+    }
+    if (signal.includes("MODERATE BEARISH")) {
+        return isLowVolatility ? ['Bear Put Spread', 'Long Put'] : ['Call Credit Spread', 'Bear Put Spread'];
+    }
+    if (signal.includes("MILD BEARISH")) {
+        return isLowVolatility ? ['Bear Put Spread', 'Call Credit Spread'] : ['Call Credit Spread', 'Iron Condor'];
+    }
+    
+    // Neutral Signal
+    if (signal.includes("NEUTRAL")) {
+        return isLowVolatility ? ['Iron Condor', 'Strangle'] : ['Strangle', 'Iron Condor'];
+    }
+    
+    return [];
+}
 
 
 export async function suggestOptionStrategiesDeterministic(
@@ -65,6 +93,7 @@ export async function suggestOptionStrategiesDeterministic(
 
     if (closePrices.length < 26) {
         return {
+            strategies: [],
             disclaimer: "Not enough historical data to generate a rule-based option strategy. At least 26 days of data are required."
         };
     }
@@ -87,41 +116,21 @@ export async function suggestOptionStrategiesDeterministic(
         }
     }
 
-    // 2. Follow the Decision Tree
-    let strategyName: string | null = null;
-    
-    if (signal.includes("BULLISH")) {
-        if (isLowVolatility) {
-            // Bullish + Low Vol -> Buy Premium
-            strategyName = signal.includes("STRONG") ? "Long Call" : "Bull Call Spread";
-        } else {
-            // Bullish + High Vol -> Sell Premium
-            strategyName = signal.includes("MILD") ? "Put Credit Spread" : "Bull Call Spread";
-        }
-    } else if (signal.includes("BEARISH")) {
-        if (isLowVolatility) {
-            // Bearish + Low Vol -> Buy Premium
-            strategyName = signal.includes("STRONG") ? "Long Put" : "Bear Put Spread";
-        } else {
-            // Bearish + High Vol -> Sell Premium
-            strategyName = signal.includes("MILD") ? "Call Credit Spread" : "Bear Put Spread";
-        }
-    } else { // Neutral
-        strategyName = isLowVolatility ? "Iron Condor" : "Strangle";
+    // 2. Follow the Decision Tree to get top 2 strategies
+    const strategyNames = getTopTwoStrategies(signal, isLowVolatility);
+
+    if (strategyNames.length === 0) {
+        return { strategies: [], disclaimer };
     }
 
+    const strategies = strategyNames.map(name => ({
+        name,
+        rationale: generateRationale(name)
+    }));
 
-    if (!strategyName) {
-        return { disclaimer };
-    }
-
-    const strategy = {
-        name: strategyName,
-        rationale: generateRationale(strategyName, signal, isLowVolatility)
-    };
 
     return {
-        strategy,
+        strategies,
         disclaimer
     };
 }

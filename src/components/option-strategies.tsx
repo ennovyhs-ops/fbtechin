@@ -175,26 +175,31 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         <TooltipTrigger asChild>
                             <div className="flex items-center gap-2 cursor-help">
                                 <BrainCircuit className="h-5 w-5 text-muted-foreground" />
-                                <h3 className="font-semibold text-md text-foreground">Top Rule-Based Idea (Calculated)</h3>
+                                <h3 className="font-semibold text-md text-foreground">Top Rule-Based Ideas (Calculated)</h3>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs space-y-2">
                              <div>
-                                <p><span className="font-semibold text-foreground">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum and volatility to produce a single, optimal strategy for the current conditions.</p>
+                                <p><span className="font-semibold text-foreground">This is a deterministic analyst.</span> It follows a strict decision tree based on momentum and volatility to produce the top two optimal strategies for the current conditions.</p>
                              </div>
                             <Separator />
-                            <p>This is different from the <span className="font-semibold text-foreground">AI Synthesized Idea</span>, which combines multiple models to create a specific trade plan, rather than a single strategy suggestion.</p>
+                            <p>This is different from the <span className="font-semibold text-foreground">AI Synthesized Idea</span>, which combines multiple models to create a specific trade plan, rather than just suggesting strategies.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
                 
                 {loading.deterministic ? <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Loading...</div> :
                  error.deterministic ? <div className="text-sm text-destructive flex items-center gap-2"><AlertCircle className="h-4 w-4" />Failed to load.</div> :
-                 deterministicSuggestion && deterministicSuggestion.strategy ? (
-                    <div className="p-3 rounded-lg border bg-background/50 text-sm">
-                        <h4 className="font-semibold text-sm text-foreground">{deterministicSuggestion.strategy.name}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">{deterministicSuggestion.strategy.rationale}</p>
-                    </div>
+                 deterministicSuggestion && deterministicSuggestion.strategies.length > 0 ? (
+                    deterministicSuggestion.strategies.map((strategy, index) => (
+                        <div key={`det-${index}`} className="p-3 rounded-lg border bg-background/50 text-sm">
+                            <h4 className="font-semibold text-sm text-foreground">
+                                {index === 0 ? 'Primary: ' : 'Alternative: '} 
+                                {strategy.name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground mt-1">{strategy.rationale}</p>
+                        </div>
+                    ))
                  ) : <p className="text-sm text-muted-foreground">The rule-based engine did not find a suitable strategy.</p>}
             </div>
         </div>
