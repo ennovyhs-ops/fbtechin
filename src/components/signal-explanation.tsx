@@ -4,6 +4,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { explainMomentumSignal } from '@/ai/flows/explain-momentum-signal';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import type { MarketData, RsiData, MacdData, BbandsData } from '@/lib/types';
@@ -22,7 +23,7 @@ interface SignalExplanationProps {
 
 export function SignalExplanation({ ticker, analysis, marketData, indicatorData }: SignalExplanationProps) {
   const [explanation, setExplanation] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const derivedSignalInfo = useMemo(() => {
@@ -90,7 +91,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
     };
   }, [marketData, indicatorData]);
 
-  useEffect(() => {
+  const handleExplainSignal = () => {
     if (!analysis || !derivedSignalInfo) return;
 
     setLoading(true);
@@ -113,36 +114,14 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
       .finally(() => {
         setLoading(false);
       });
-  }, [ticker, analysis, derivedSignalInfo]);
+  };
 
   if (!analysis || analysis.signal === 'N/A' || !derivedSignalInfo) {
     return null;
   }
   
-  if (loading && !explanation) {
-    return (
-       <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl flex items-center gap-2">
-                    <BrainCircuit className="h-6 w-6 text-accent" />
-                    <span>AI Signal Explanation</span>
-                </CardTitle>
-                <CardDescription>
-                    The AI is analyzing the technical indicators to explain the signal.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Generating explanation...</span>
-                </div>
-            </CardContent>
-        </Card>
-    )
-  }
-
   return (
-    <Card className="bg-background border-dashed animate-in fade-in-50 duration-500">
+    <Card className="bg-background border-dashed">
       <CardHeader>
         <CardTitle className="font-headline text-2xl flex items-center gap-2">
           <BrainCircuit className="h-5 w-5 text-accent" />
@@ -150,6 +129,12 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {loading && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Generating explanation...</span>
+            </div>
+        )}
         {error && 
             <div className="flex items-center gap-2 text-destructive text-sm">
                 <AlertCircle className="h-4 w-4" />
@@ -157,6 +142,13 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
             </div>
         }
         {explanation && <p className="text-sm text-muted-foreground">{explanation}</p>}
+        
+        {!explanation && !loading && !error && (
+            <Button onClick={handleExplainSignal} disabled={loading}>
+                <BrainCircuit className="mr-2 h-4 w-4" />
+                Generate AI Explanation
+            </Button>
+        )}
       </CardContent>
     </Card>
   );

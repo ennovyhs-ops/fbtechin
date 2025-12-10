@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { synthesizeTradeIdea } from '@/ai/flows/synthesize-trade-idea';
 import type { CombinedAnalysisResult, MonteCarloResult, SynthesizeTradeIdeaOutput } from '@/lib/types';
 import { Badge } from './ui/badge';
@@ -30,15 +31,15 @@ const getConvictionColor = (conviction: string) => {
 
 export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPrice, volatility }: SynthesizedTradeIdeaProps) {
   const [idea, setIdea] = useState<SynthesizeTradeIdeaOutput | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const handleSynthesizeIdea = () => {
     const momentumAnalysis = analysis?.analysis;
     const prediction = analysis?.prediction;
 
     if (!ticker || !momentumAnalysis || !prediction || !('totalScore' in momentumAnalysis) || !('shortTerm' in prediction) || !monteCarlo || !currentPrice || volatility === null) {
-      setLoading(false);
+      setError("Not all required data is available to generate a trade idea.");
       return;
     };
 
@@ -65,53 +66,14 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       .finally(() => {
         setLoading(false);
       });
-  }, [ticker, analysis, monteCarlo, currentPrice, volatility]);
+  };
   
-  if (loading && !idea) {
-    return (
-       <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-                    <Sparkles className="h-6 w-6 text-accent" />
-                    <span>AI Synthesized Trade Idea</span>
-                </CardTitle>
-                <CardDescription>
-                    The AI strategist is synthesizing the models to form a trade plan...
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Generating idea...</span>
-                </div>
-            </CardContent>
-        </Card>
-    )
+  if (!analysis || !monteCarlo || !currentPrice || volatility === null) {
+    return null;
   }
-
-  if (error) {
-    return (
-        <Card>
-            <CardHeader>
-                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-                    <Sparkles className="h-6 w-6 text-destructive" />
-                    <span>AI Synthesized Trade Idea</span>
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-2 text-destructive text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{error}</span>
-                </div>
-            </CardContent>
-        </Card>
-    )
-  }
-
-  if (!idea) return null;
 
   return (
-    <Card className="animate-in fade-in-50 duration-500">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Sparkles className="h-6 w-6 text-primary" />
@@ -140,16 +102,33 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
         </div>
       </CardHeader>
       <CardContent>
-        <div className="p-3 rounded-lg border bg-background/50 text-sm space-y-3">
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-              <h3 className="font-semibold text-base text-foreground">{idea.strategy}</h3>
-              <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
-                  Conviction: {idea.conviction}
-              </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
-          <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
-        </div>
+        {loading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Generating idea...</span>
+            </div>
+        ) : error ? (
+             <div className="flex items-center gap-2 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4" />
+                <span>{error}</span>
+            </div>
+        ) : idea ? (
+            <div className="p-3 rounded-lg border bg-background/50 text-sm space-y-3 animate-in fade-in-50 duration-500">
+                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+                    <h3 className="font-semibold text-base text-foreground">{idea.strategy}</h3>
+                    <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
+                        Conviction: {idea.conviction}
+                    </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
+                <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
+            </div>
+        ) : (
+            <Button onClick={handleSynthesizeIdea} disabled={loading}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Trade Idea
+            </Button>
+        )}
       </CardContent>
     </Card>
   );

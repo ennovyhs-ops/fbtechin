@@ -33,28 +33,15 @@ type LoadingState = {
 export function OptionStrategies({ ticker, analysis, latestClose, marketData }: OptionStrategiesProps) {
   const [aiSuggestions, setAiSuggestions] = useState<SuggestOptionStrategiesOutput | null>(null);
   const [deterministicSuggestion, setDeterministicSuggestion] = useState<SuggestOptionStrategiesDeterministicOutput | null>(null);
-  const [loading, setLoading] = useState<LoadingState>({ ai: true, deterministic: true });
+  const [loading, setLoading] = useState<LoadingState>({ ai: false, deterministic: true });
   const [error, setError] = useState<LoadingState>({ ai: false, deterministic: false });
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   useEffect(() => {
-    if (ticker && analysis?.signal && latestClose) {
-        setLoading({ ai: true, deterministic: true });
+    if (ticker && analysis?.signal && marketData) {
+        setLoading({ ai: false, deterministic: true });
         setError({ ai: false, deterministic: false });
-        setAiSuggestions(null);
         setDeterministicSuggestion(null);
-
-        const fetchAiSuggestions = suggestOptionStrategies({
-            ticker,
-            latestClose,
-            signal: analysis.signal,
-        }).then(response => {
-            setAiSuggestions(response);
-        }).catch(() => {
-            setError(e => ({ ...e, ai: true }));
-        }).finally(() => {
-            setLoading(l => ({ ...l, ai: false }));
-        });
 
         const fetchDeterministicSuggestions = suggestOptionStrategiesDeterministic({
             ticker,
@@ -70,61 +57,31 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
             setLoading(l => ({...l, deterministic: false}));
         });
         
-        Promise.all([fetchAiSuggestions, fetchDeterministicSuggestions]);
-
     }
-  }, [ticker, analysis, latestClose, marketData]);
-
-  const isLoading = loading.ai || loading.deterministic;
-  const anyError = error.ai || error.deterministic;
-  const noSuggestions = (!aiSuggestions || (aiSuggestions.strategies.length === 0 && !aiSuggestions.aggressivePlay)) && 
-                        (!deterministicSuggestion || !deterministicSuggestion.strategy);
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-            <Lightbulb className="h-6 w-6 text-accent" />
-            <span>Generating Option Strategy Ideas...</span>
-          </CardTitle>
-          <CardDescription>
-            AI and rule-based engines are analyzing the momentum score for {ticker}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Thinking...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (anyError && noSuggestions) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline text-2xl">
-            <Lightbulb className="h-6 w-6 text-destructive" />
-            <span>Option Strategy Ideas</span>
-          </CardTitle>
-          <CardDescription>
-            Could not generate suggestions for {ticker}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-4 w-4" />
-            <span>An error occurred while fetching one or more strategy sets.</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  }, [ticker, analysis, marketData, latestClose]);
   
-  if (noSuggestions) return null;
+  const handleGenerateAiIdeas = () => {
+    if (!ticker || !analysis?.signal || !latestClose) return;
+    
+    setLoading(l => ({...l, ai: true}));
+    setError(e => ({...e, ai: false}));
+    setAiSuggestions(null);
+
+    suggestOptionStrategies({
+        ticker,
+        latestClose,
+        signal: analysis.signal,
+    }).then(response => {
+        setAiSuggestions(response);
+    }).catch(() => {
+        setError(e => ({ ...e, ai: true }));
+    }).finally(() => {
+        setLoading(l => ({ ...l, ai: false }));
+    });
+  }
+
+  const isLoading = loading.deterministic;
+  const anyError = error.deterministic;
   
   const disclaimerText = aiSuggestions?.disclaimer || deterministicSuggestion?.disclaimer;
 
@@ -140,6 +97,18 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {isLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading rule-based ideas...</span>
+            </div>
+        ) : anyError ? (
+             <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>Could not generate the rule-based strategy idea.</AlertDescription>
+            </Alert>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* AI-Powered Ideas */}
@@ -158,9 +127,9 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     </Tooltip>
                 </TooltipProvider>
 
-                {loading.ai ? <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Loading...</div> :
+                {loading.ai ? <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Generating...</div> :
                  error.ai ? <div className="text-sm text-destructive flex items-center gap-2"><AlertCircle className="h-4 w-4" />Failed to load.</div> :
-                 aiSuggestions && (aiSuggestions.strategies.length > 0 || aiSuggestions.aggressivePlay) ? (
+                 aiSuggestions ? (
                     <>
                         {aiSuggestions.strategies.map((strategy, index) => (
                             <div key={`ai-${index}`} className="p-3 rounded-lg border bg-background/50 text-sm">
@@ -190,7 +159,12 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                             </div>
                         )}
                     </>
-                 ) : <p className="text-sm text-muted-foreground">No AI suggestions were generated.</p>}
+                 ) : (
+                    <Button variant="outline" size="sm" onClick={handleGenerateAiIdeas} disabled={loading.ai}>
+                        <Bot className="mr-2 h-4 w-4" />
+                        Generate AI Ideas
+                    </Button>
+                 )}
             </div>
 
             {/* Rule-Based Suggestions */}
@@ -223,6 +197,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                  ) : <p className="text-sm text-muted-foreground">The rule-based engine did not find a suitable strategy.</p>}
             </div>
         </div>
+        )}
 
         {disclaimerText && (
             <Collapsible open={isDisclaimerOpen} onOpenChange={setIsDisclaimerOpen} className="w-full pt-4">
