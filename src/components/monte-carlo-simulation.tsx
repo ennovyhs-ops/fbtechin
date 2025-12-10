@@ -107,7 +107,7 @@ export function MonteCarloSimulation({ monteCarloResult, currency, loading }: Mo
             </div>
              <div className="flex flex-col items-center gap-2">
                  <h3 className="font-semibold text-sm text-muted-foreground">Avg. Simulated Target</h3>
-                 <p className="font-bold text-sm text-foreground">
+                 <p className="font-bold text-lg text-foreground">
                     {formatCurrency(monteCarloResult.averageTarget, currency)}
                 </p>
             </div>
