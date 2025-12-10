@@ -94,15 +94,15 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                                  <div>
                                     <p className="font-semibold text-foreground">Bearish Strategies</p>
                                     <p className="text-muted-foreground">Long Put, Bear Put Spread, Call Credit Spread</p>
-                                </div>
+                                 </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Neutral / Volatility Plays</p>
                                     <p className="text-muted-foreground">Iron Condor (for low volatility), Strangle (for high volatility)</p>
-                                </div>
+                                 </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Aggressive "Lotto Tickets"</p>
                                     <p className="text-muted-foreground">Weekly OTM Call/Put (only on STRONG signals)</p>
-                                </div>
+                                 </div>
                             </div>
                         </div>
                     </TooltipContent>

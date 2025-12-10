@@ -103,7 +103,7 @@ const generateRationale = (strategyName: StrategyName, latestClose: number): str
         return "This strategy is selected based on the current momentum and volatility profile.";
     }
     const strikeText = strategyInfo.strike(latestClose);
-    return `${strategyInfo.base} ${strikeText}, typically ${strategyInfo.expiration}`;
+    return `${strategyInfo.base} For example, ${strikeText}, typically ${strategyInfo.expiration}`;
 };
 
 const getTopStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
