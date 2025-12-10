@@ -223,7 +223,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className={`flex items-center gap-1.5 font-semibold text-md ${color} cursor-help`}>
+                            <div className={`flex items-center gap-1.5 font-semibold text-base ${color} cursor-help`}>
                                 {icon}
                                 <span>{momentumAnalysis.signal}</span>
                             </div>
@@ -324,7 +324,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs space-y-2">
+                        <TooltipContent className="max-w-xs">
                             <p>Fibonacci levels are horizontal lines that indicate where support and resistance are likely to occur. They are based on the 90-day high-low range. A price may reverse near these levels.</p>
                             <p className="font-bold">The "Golden Zone": The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals.</p>
                         </TooltipContent>
@@ -369,6 +369,8 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
+
+    
 
     
 
