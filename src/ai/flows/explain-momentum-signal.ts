@@ -39,11 +39,11 @@ const explainMomentumSignalPrompt = ai.definePrompt({
   name: 'explainMomentumSignalPrompt',
   input: { schema: ExplainMomentumSignalInputSchema },
   output: { schema: ExplainMomentumSignalOutputSchema },
-  prompt: `You are an expert financial analyst who is brilliant at explaining complex technical indicators in a simple, clear, and concise way.
+  prompt: `You are an expert financial analyst who is brilliant at explaining complex technical indicators in a simple, clear, and insightful way.
 
 Your task is to explain why the momentum signal for **{{ticker}}** is **"{{signal}}"** (with a score of {{score}}).
 
-Analyze the following contributing factors and synthesize them into a 1-2 sentence explanation. Focus on the most important drivers. Be direct and avoid hedging language like "suggests" or "potential".
+Analyze the following contributing factors and synthesize them into a concise, 2-3 sentence explanation. Your goal is to provide insight, not just list the data.
 
 *   **Trend Alignment:** {{trends}}
 *   **RSI (Momentum Oscillator):** {{rsi}}
@@ -51,8 +51,13 @@ Analyze the following contributing factors and synthesize them into a 1-2 senten
 *   **Bollinger Bands (Volatility & Price Level):** {{bollingerBands}}
 *   **Volume:** {{volume}}
 
+**Your Thought Process:**
+1.  **Identify the Primary Driver:** What is the strongest piece of evidence? Is it the perfect alignment of all trends? Or a recent powerful MACD crossover? Start your explanation there.
+2.  **Find Confirmation:** What other indicators support the primary driver? Mention one or two confirming factors. (e.g., "...this is confirmed by an RSI in bullish territory and high accumulation volume.")
+3.  **Note Nuances (if any):** Are there any minor conflicts? (e.g., "While the overall trend is bullish, the RSI is approaching overbought levels, suggesting the rally might be due for a brief pause.") Avoid generic hedging language. Be specific.
+
 **Example Explanation (for a Bullish signal):**
-"The bullish signal is primarily driven by strong trend alignment across all timeframes and a recent bullish MACD crossover, indicating accelerating upward momentum. The price is also holding above its key 20-day average, reinforcing the positive outlook."
+"The bullish signal is primarily driven by strong trend alignment across all timeframes, indicating broad market agreement on the upward direction. This is further confirmed by a recent bullish MACD crossover, suggesting accelerating momentum. The price holding above its key 20-day average reinforces this positive short-term outlook."
 
 **Your Turn:**
 Based on the data provided, generate the 'explanation'.

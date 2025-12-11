@@ -122,12 +122,15 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
   }
   
   return (
-    <Card className="bg-background border-dashed">
+    <Card className="bg-background/50 border-dashed">
       <CardHeader>
         <CardTitle className="font-headline text-2xl flex items-center gap-2">
           <BrainCircuit className="h-5 w-5 text-accent" />
           <span>Why is the signal "{analysis.signal}"? (AI)</span>
         </CardTitle>
+        <CardDescription>
+            An AI-generated synthesis of the key technical drivers behind the momentum score.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {loading && (
@@ -142,7 +145,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
                 <span>{error}</span>
             </div>
         }
-        {explanation && <p className="text-sm text-muted-foreground">{explanation}</p>}
+        {explanation && <p className="text-sm text-foreground leading-relaxed">{explanation}</p>}
         
         {!explanation && !loading && !error && (
             <Button onClick={handleExplainSignal} disabled={loading}>
