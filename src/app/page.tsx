@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useTransition, useCallback, useRef, useMemo, useEffect } from 'react';
@@ -693,22 +692,6 @@ export default function Home() {
                   baseMarketData={marketData}
                 />
             </div>
-          )}
-
-          {submittedTicker && marketData && marketData.length > 0 && (
-            <Collapsible onOpenChange={setIsHistoryExpanded} open={isHistoryExpanded}>
-              <CollapsibleTrigger asChild>
-                <div className="flex justify-center">
-                  <Button variant="outline">
-                    {isHistoryExpanded ? 'Hide' : 'Show'} Full Data History
-                    {isHistoryExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                  </Button>
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-4 animate-in fade-in-50 duration-500">
-                <MarketDataTable data={marketData} ticker={submittedTicker} currency={currency} />
-              </CollapsibleContent>
-            </Collapsible>
           )}
 
           {submittedTicker && (
