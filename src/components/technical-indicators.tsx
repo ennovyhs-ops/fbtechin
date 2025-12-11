@@ -149,7 +149,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* ROC */}
                          <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex justify-between items-center">
+                             <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
@@ -174,7 +174,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* RSI */}
                          <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
@@ -198,7 +198,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* Volume */}
                          <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
@@ -226,18 +226,22 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* Bollinger Bands */}
                         <div className="p-3 border rounded-lg space-y-2 col-span-1 md:col-span-2">
-                            <div className="flex flex-wrap justify-between items-center gap-2">
+                            <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-xs"><p>A volatility indicator. When bands are wide, volatility is high. When they are narrow (a 'squeeze'), it signals low volatility and a potential for a large price move.</p></TooltipContent>
                                 </Tooltip>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-16 h-7 text-sm" />
-                                    <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev:</label>
-                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-16 h-7 text-sm" />
+                                <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                                    <div className="flex items-center gap-1">
+                                        <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">P:</label>
+                                        <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-16 h-7 text-sm" />
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev:</label>
+                                        <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-16 h-7 text-sm" />
+                                    </div>
                                 </div>
                             </div>
                              <div className="flex items-center justify-between pt-1">
@@ -257,7 +261,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* VWMA */}
                         <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex justify-between items-center">
+                             <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
@@ -282,20 +286,26 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* MACD */}
                          <div className="p-3 border rounded-lg space-y-2 col-span-1 md:col-span-3">
-                             <div className="flex flex-wrap justify-between items-center gap-2">
+                             <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
                                      </TooltipTrigger>
                                      <TooltipContent className="max-w-xs"><p>A trend-following momentum indicator that shows the relationship between two moving averages of a security's price. A crossover of the MACD line and signal line can indicate a change in trend.</p></TooltipContent>
                                  </Tooltip>
-                                 <div className="flex items-center gap-2 shrink-0">
-                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F:</label>
-                                     <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-16 h-7 text-sm" />
-                                     <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">S:</label>
-                                     <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-16 h-7 text-sm" />
-                                     <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Sig:</label>
-                                     <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-16 h-7 text-sm" />
+                                 <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                                    <div className="flex items-center gap-1">
+                                         <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F:</label>
+                                         <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-16 h-7 text-sm" />
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                         <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">S:</label>
+                                         <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-16 h-7 text-sm" />
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                         <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Sig:</label>
+                                         <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-16 h-7 text-sm" />
+                                     </div>
                                  </div>
                              </div>
                               <div className="flex items-center justify-between pt-1">
@@ -331,6 +341,5 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
-
 
     
