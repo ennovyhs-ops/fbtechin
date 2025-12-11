@@ -73,7 +73,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     <TooltipContent className="max-w-md p-4 space-y-3 text-xs leading-relaxed" side="top" align="start">
                         <div>
                             <p className="font-bold text-sm text-foreground mb-1">How This Engine Works</p>
-                            <p>This engine acts as a quantitative analyst, following a strict decision tree based on Momentum and Volatility. Its suggestions are prioritized, with the first being the most technically suitable strategy.</p>
+                            <p>This engine acts as a quantitative analyst, following a strict decision tree to select the top three most suitable strategies from its library. The suggestions are prioritized based on the momentum signal and current market volatility, with the first being the most technically suitable choice.</p>
                         </div>
                         <Separator />
                         <div>
