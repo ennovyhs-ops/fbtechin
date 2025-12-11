@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Activity, Zap } from 'lucide-react';
+import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown } from 'lucide-react';
 import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
@@ -26,9 +26,10 @@ interface TechnicalIndicatorsProps {
     currency: string | null;
     periods: IndicatorPeriods;
     onPeriodsChange: (periods: IndicatorPeriods) => void;
+    latestClose: number | null;
 }
 
-export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange }: TechnicalIndicatorsProps) {
+export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange, latestClose }: TechnicalIndicatorsProps) {
     const [localPeriods, setLocalPeriods] = useState(periods);
 
     const handlePeriodChange = (indicator: keyof Omit<IndicatorPeriods, 'macd' | 'bbands'>, value: string) => {
@@ -110,6 +111,19 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     
     const isVolumeSpike = latestMaVol?.volume && latestMaVol?.MAVol ? parseFloat(latestMaVol.volume) > parseFloat(latestMaVol.MAVol) * 1.5 : false;
 
+    const bbandsContext = {
+        middle: latestBbands?.['Real Middle Band'] ? parseFloat(latestBbands['Real Middle Band']) : null,
+    };
+    const bbandsPosition = latestClose && bbandsContext.middle
+        ? latestClose > bbandsContext.middle ? 'Bullish' : 'Bearish'
+        : null;
+
+    const vwmaContext = latestVwma?.VWMA ? parseFloat(latestVwma.VWMA) : null;
+    const vwmaPosition = latestClose && vwmaContext
+        ? latestClose > vwmaContext ? 'Bullish' : 'Bearish'
+        : null;
+
+
     return (
         <TooltipProvider>
             <Card className="animate-in fade-in-50 duration-500 delay-100">
@@ -158,10 +172,18 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-2">
-                                <div><p className="text-xs text-muted-foreground">Upper</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Upper Band'], currency)}</p></div>
-                                <div><p className="text-xs text-muted-foreground">Middle</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p></div>
-                                <div><p className="text-xs text-muted-foreground">Lower</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p></div>
+                            <div className="flex items-start justify-between">
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div><p className="text-xs text-muted-foreground">Upper</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Upper Band'], currency)}</p></div>
+                                    <div><p className="text-xs text-muted-foreground">Middle</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p></div>
+                                    <div><p className="text-xs text-muted-foreground">Lower</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p></div>
+                                </div>
+                                {bbandsPosition && (
+                                    <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${bbandsPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                        {bbandsPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                        Above Mid
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -256,7 +278,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-20 h-8 text-sm" />
                                  </div>
                             </div>
-                            <p className="font-semibold text-sm">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
+                             <div className="flex items-center gap-2">
+                                <p className="font-semibold text-sm">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
+                                {vwmaPosition && (
+                                     <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                        {vwmaPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                        Price Above
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex justify-end pt-2">
@@ -277,5 +307,3 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
-
-    

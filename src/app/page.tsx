@@ -676,7 +676,7 @@ export default function Home() {
             />
            )}
           
-          {submittedTicker && marketData && (
+          {submittedTicker && marketData && latestData && (
             <div className="space-y-8">
                 <TechnicalIndicators 
                     ticker={submittedTicker}
@@ -686,6 +686,7 @@ export default function Home() {
                     currency={currency}
                     periods={indicatorPeriods}
                     onPeriodsChange={onPeriodsChange}
+                    latestClose={parseFloat(latestData.close)}
                 />
                 <MarketCorrelation 
                   baseTicker={submittedTicker}
@@ -811,9 +812,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    
-
-    
