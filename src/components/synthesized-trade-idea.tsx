@@ -44,6 +44,10 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       setError("Not all required data is available to generate a trade idea.");
       return;
     };
+    
+    const pivots = (prediction && 'pivots' in prediction) ? prediction.pivots : undefined;
+    const fibonacci = (prediction && 'fibonacci' in prediction) ? prediction.fibonacci : undefined;
+
 
     setLoading(true);
     setError(null);
@@ -56,7 +60,9 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
       momentumTarget: prediction.shortTerm.priceTarget,
       volatility: volatility,
       monteCarloRange: monteCarlo.probableRange,
-      monteCarloConfidence: monteCarlo.confidence
+      monteCarloConfidence: monteCarlo.confidence,
+      pivots,
+      fibonacci,
     })
       .then(result => {
         setIdeas(result);

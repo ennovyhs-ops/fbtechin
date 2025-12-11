@@ -23,6 +23,22 @@ const SynthesizeTradeIdeaInputSchema = z.object({
   }).describe('The probable price range calculated by the Monte Carlo simulation.'),
   monteCarloConfidence: z.number().describe('The confidence level of the Monte Carlo range (e.g., 70 for 70%).'),
   volatility: z.number().describe('The 30-day annualized historical volatility percentage.'),
+  pivots: z.object({
+      pp: z.number(),
+      s1: z.number(),
+      s2: z.number(),
+      r1: z.number(),
+      r2: z.number(),
+    }).optional().describe('Standard daily pivot points (Support S1, S2; Resistance R1, R2).'),
+    fibonacci: z.object({
+        level236: z.number(),
+        level382: z.number(),
+        level500: z.number(),
+        level618: z.number(),
+        level786: z.number(),
+        rangeHigh: z.number(),
+        rangeLow: z.number(),
+    }).optional().describe('Fibonacci retracement levels based on the 90-day price swing.'),
 });
 export type SynthesizeTradeIdeaInput = z.infer<typeof SynthesizeTradeIdeaInputSchema>;
 
@@ -48,7 +64,7 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
   name: 'synthesizeTradeIdeaPrompt',
   input: { schema: SynthesizeTradeIdeaInputSchema },
   output: { schema: SynthesizeTradeIdeaOutputSchema },
-  prompt: `You are an expert quantitative trading strategist. Your task is to synthesize the outputs of three different financial models—a deterministic momentum model, a probabilistic Monte Carlo simulation, and a historical volatility reading—into the **top two most suitable, distinct trade ideas** for {{ticker}}.
+  prompt: `You are an expert quantitative trading strategist. Your task is to synthesize the outputs of multiple financial models into the **top two most suitable, distinct trade ideas** for {{ticker}}.
 
 **Model Inputs:**
 *   **Current Price:** {{currentPrice}}
@@ -56,32 +72,31 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
 *   **Momentum Model Target:** {{momentumTarget}}
 *   **Monte Carlo Forecast:** {{monteCarloConfidence}}% probability of price being between {{monteCarloRange.lower}} and {{monteCarloRange.upper}} in 30 days.
 *   **Volatility Model:** 30-day historical volatility is {{volatility}}%. (Consider >40% as high, <20% as low, and 20-40% as moderate).
+*   **Support/Resistance Levels:**
+    *   **Pivot Points:** {{#if pivots}}S2:{{pivots.s2}}, S1:{{pivots.s1}}, PP:{{pivots.pp}}, R1:{{pivots.r1}}, R2:{{pivots.r2}}{{else}}Not available.{{/if}}
+    *   **Fibonacci Retracement:** {{#if fibonacci}}Key levels are {{fibonacci.level382}} (38.2%), {{fibonacci.level618}} (61.8%).{{else}}Not available.{{/if}}
 
 **Your Task:**
 
 1.  **Analyze Model Agreement & Conviction:**
-    *   Do the Momentum Target and the Monte Carlo range point in the same direction relative to the current price?
-    *   Strong agreement (e.g., bullish signal, target within a higher range) implies **High Conviction**.
-    *   Moderate agreement (e.g., bullish signal, but target is near the edge of the range) implies **Moderate Conviction**.
-    *   Disagreement (e.g., bullish signal, but target is outside the range) implies **Low Conviction** or **Caution**.
+    *   Do the Momentum Target and the Monte Carlo range point in the same direction? Strong agreement implies **High Conviction**. Disagreement implies **Low Conviction** or **Caution**.
 
-2.  **Select Volatility-Aware Strategies:** Based on the conviction level AND the volatility, choose the **two most appropriate, distinct** strategies. The first idea should be the primary, most suitable one. The second should be a good alternative (e.g., slightly more or less aggressive, or using a different structure).
-    *   **High Volatility + Directional Conviction:** Suggest premium-selling strategies that match the direction (e.g., Bull Put Spread, Bear Call Spread). These benefit from high premiums.
-    *   **Low Volatility + Directional Conviction:** Suggest premium-buying strategies (e.g., Call/Put Debit Spreads, Long Calls/Puts). These are cheaper to enter in low-vol environments.
-    *   **High Volatility + Low/Neutral Conviction:** Suggest strategies that profit from volatility itself (e.g., Strangles) or range-bound premium selling (Iron Condors).
-    *   **Low Volatility + Low/Neutral Conviction:** Suggest strategies that profit from time decay (e.g., Calendar Spreads) or advise staying out.
+2.  **Select Volatility-Aware Strategies:** Based on conviction AND volatility, choose the **two most appropriate, distinct** strategies. The first should be the primary, most suitable one.
+    *   **High Volatility + Directional Conviction:** Favor premium-selling strategies (e.g., Bull Put Spread, Bear Call Spread).
+    *   **Low Volatility + Directional Conviction:** Favor premium-buying strategies (e.g., Debit Spreads, Long Calls/Puts).
+    *   **High Volatility + Low/Neutral Conviction:** Favor volatility-profiting strategies (e.g., Strangles, Iron Condors).
 
 3.  **Formulate the Output:**
     *   You must generate an array called 'ideas' containing exactly two distinct trade ideas.
-    *   For each idea object in the array, provide:
-        *   **strategy:** The name of your chosen strategy.
-        *   **conviction:** Your calculated conviction level for that specific idea.
-        *   **rationale:** A 1-2 sentence explanation of *why* you chose this strategy, referencing the model agreement AND the volatility context.
-        *   **action:** A concrete, actionable trade structure. You **MUST** suggest specific strike prices (e.g., '~$175') based on the current price/targets and a specific expiration timeframe (e.g., '30-60 days to expiration').
+    *   For each idea, provide:
+        *   **strategy:** Name of the strategy.
+        *   **conviction:** Your calculated conviction level.
+        *   **rationale:** A 1-2 sentence explanation referencing model agreement AND volatility.
+        *   **action:** A concrete trade structure. You **MUST** use the Pivot Points and Fibonacci levels to inform your choice of strike prices. For example, for a bullish spread, you might sell a put at a strike near a support level (like S1 or a Fibonacci level). State the strike prices clearly (e.g., '~$175') and suggest a specific expiration (e.g., '30-60 days').
 
-**Example for a "STRONG BULLISH" signal, price $150, target $165, range $160-$175, volatility 45% (High):**
-- Idea 1: { strategy: "Bull Put Spread", conviction: "High", rationale: "Models agree on the upward move. High volatility makes selling premium attractive.", action: "Sell a put at ~$145, buy a put at ~$140, with 30-45 days to expiration." }
-- Idea 2: { strategy: "Bull Call Spread", conviction: "High", rationale: "A risk-defined way to participate in the upside while offsetting some cost by selling a further out-of-the-money call, which is beneficial in high volatility.", action: "Buy a call at ~$150, sell a call at ~$165, with 45-60 days to expiration." }
+**Example for a "STRONG BULLISH" signal, price $150, target $165, range $160-$175, volatility 45% (High), pivots {R1: 158, S1: 145}, fibonacci {level382: 142}:**
+- Idea 1: { strategy: "Bull Put Spread", conviction: "High", rationale: "Models agree on the upward move and high volatility makes selling premium attractive.", action: "Sell a put at the ~$145 strike, aligning with the S1 pivot support, and buy a put at ~$140 for protection, with 30-45 days to expiration." }
+- Idea 2: { strategy: "Bull Call Spread", conviction: "High", rationale: "A risk-defined way to participate in the upside, with the short strike providing a buffer against high volatility.", action: "Buy a call at ~$150 and sell a call at ~$165, near the momentum target, with 45-60 days to expiration." }
 
 Now, analyze the inputs provided and generate your response.
 `,
