@@ -427,7 +427,7 @@ export default function Home() {
                   <DialogTrigger asChild>
                      <Button type="button" variant="outline">
                       Application Guide
-                      <HelpCircle className="ml-2" />
+                      <HelpCircle className="ml-2 h-4 w-4" />
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-h-[90vh] flex flex-col">
