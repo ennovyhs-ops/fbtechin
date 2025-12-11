@@ -149,7 +149,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* ROC */}
                          <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-wrap justify-between items-center gap-2">
+                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
@@ -161,7 +161,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-16 h-7 text-sm" />
                                  </div>
                              </div>
-                             <div className="flex items-center gap-2 pt-1">
+                             <div className="flex items-center flex-wrap gap-2 pt-1">
                                  <p className="font-semibold text-sm">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
                                  {rocPosition && (
                                       <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -174,7 +174,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* RSI */}
                          <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex flex-wrap justify-between items-center gap-2">
+                            <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
@@ -186,7 +186,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-16 h-7 text-sm" />
                                  </div>
                              </div>
-                             <div className="flex items-center gap-2 pt-1">
+                             <div className="flex items-center flex-wrap gap-2 pt-1">
                                  <p className="font-semibold text-sm">{latestRsi?.RSI ?? 'N/A'}</p>
                                  <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
                                      rsiStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
@@ -198,7 +198,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* Volume */}
                          <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex flex-wrap justify-between items-center gap-2">
+                            <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
@@ -211,7 +211,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap pt-1">
-                                <div className="flex items-baseline gap-2">
+                                <div className="flex items-baseline gap-2 flex-wrap">
                                      <p className="font-semibold text-sm">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
                                      <p className="text-xs text-muted-foreground">/ avg: {latestMaVol?.MAVol ? Number(latestMaVol.MAVol).toLocaleString() : 'N/A'}</p>
                                 </div>
@@ -226,7 +226,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* Bollinger Bands */}
                         <div className="p-3 border rounded-lg space-y-2 col-span-1 md:col-span-2">
-                            <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
+                            <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
@@ -244,7 +244,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     </div>
                                 </div>
                             </div>
-                             <div className="flex items-center justify-between pt-1">
+                             <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                                 <div className="grid grid-cols-3 gap-x-4">
                                      <div><p className="text-xs text-muted-foreground">Lower</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p></div>
                                      <div><p className="text-xs text-muted-foreground">Middle</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p></div>
@@ -261,7 +261,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* VWMA */}
                         <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-wrap justify-between items-center gap-2">
+                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
@@ -273,7 +273,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-16 h-7 text-sm" />
                                   </div>
                              </div>
-                              <div className="flex items-center gap-2 pt-1">
+                              <div className="flex items-center flex-wrap gap-2 pt-1">
                                  <p className="font-semibold text-sm">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
                                  {vwmaPosition && (
                                       <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -286,7 +286,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* MACD */}
                          <div className="p-3 border rounded-lg space-y-2 col-span-1 md:col-span-3">
-                             <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
+                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
@@ -308,7 +308,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      </div>
                                  </div>
                              </div>
-                              <div className="flex items-center justify-between pt-1">
+                              <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                                  <div className="grid grid-cols-3 gap-x-4">
                                      <div><p className="text-xs text-muted-foreground">MACD</p><p className="font-semibold text-sm">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p></div>
                                      <div><p className="text-xs text-muted-foreground">Signal</p><p className="font-semibold text-sm">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p></div>
