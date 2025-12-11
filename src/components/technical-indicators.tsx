@@ -139,7 +139,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-20 h-8 text-sm" />
                                 </div>
                             </div>
-                            <p className="font-semibold text-base">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
+                            <p className="font-semibold text-sm">{latestRoc?.ROC ? `${latestRoc.ROC}%` : 'N/A'}</p>
                         </div>
                         
                         {/* Bollinger Bands */}
@@ -159,9 +159,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
-                                <div><p className="text-xs text-muted-foreground">Upper</p><p className="font-semibold text-base">{formatCurrency(latestBbands?.['Real Upper Band'], currency)}</p></div>
-                                <div><p className="text-xs text-muted-foreground">Middle</p><p className="font-semibold text-base">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p></div>
-                                <div><p className="text-xs text-muted-foreground">Lower</p><p className="font-semibold text-base">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Upper</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Upper Band'], currency)}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Middle</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Lower</p><p className="font-semibold text-sm">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p></div>
                             </div>
                         </div>
 
@@ -180,7 +180,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <p className="font-semibold text-base">{latestRsi?.RSI ?? 'N/A'}</p>
+                                <p className="font-semibold text-sm">{latestRsi?.RSI ?? 'N/A'}</p>
                                 <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
                                     rsiStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
                                     rsiStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
@@ -205,7 +205,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <div className="flex items-baseline gap-2">
-                                     <p className="font-semibold text-base">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
+                                     <p className="font-semibold text-sm">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
                                      <p className="text-xs text-muted-foreground">/ Avg: {latestMaVol?.MAVol ? Number(latestMaVol.MAVol).toLocaleString() : 'N/A'}</p>
                                 </div>
                                 {isVolumeSpike && (
@@ -236,9 +236,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
-                                <div><p className="text-xs text-muted-foreground">MACD</p><p className="font-semibold text-base">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p></div>
-                                <div><p className="text-xs text-muted-foreground">Signal</p><p className="font-semibold text-base">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p></div>
-                                <div><p className="text-xs text-muted-foreground">Hist</p><p className="font-semibold text-base">{latestMacd?.MACD_Hist ? parseFloat(latestMacd.MACD_Hist).toFixed(3) : 'N/A'}</p></div>
+                                <div><p className="text-xs text-muted-foreground">MACD</p><p className="font-semibold text-sm">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Signal</p><p className="font-semibold text-sm">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Hist</p><p className="font-semibold text-sm">{latestMacd?.MACD_Hist ? parseFloat(latestMacd.MACD_Hist).toFixed(3) : 'N/A'}</p></div>
                             </div>
                         </div>
 
@@ -256,7 +256,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-20 h-8 text-sm" />
                                  </div>
                             </div>
-                            <p className="font-semibold text-base">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
+                            <p className="font-semibold text-sm">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
                         </div>
                     </div>
                     <div className="flex justify-end pt-2">
