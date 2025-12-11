@@ -21,7 +21,8 @@ export type SuggestOptionStrategiesDeterministicInput = z.infer<typeof SuggestOp
 
 const OptionStrategySchema = z.object({
   name: z.string(),
-  rationale: z.string(),
+  rationale: z.string().describe("A brief explanation of why this strategy is suitable for the given signal and volatility environment."),
+  action: z.string().describe("A specific, actionable implementation of the strategy, including example strike prices and an expiration timeframe."),
   isAggressive: z.boolean(),
 });
 
@@ -34,77 +35,59 @@ export type SuggestOptionStrategiesDeterministicOutput = z.infer<typeof SuggestO
 
 const strategyLibrary = {
     'Long Call': {
-        base: 'This is a straightforward bullish bet with limited risk. Employ this when you have a strong directional view that the stock will rise significantly, as it offers unlimited profit potential with a known maximum loss (the premium paid).',
-        strike: (price: number) => `Consider a strike price slightly out-of-the-money (e.g., ~\$${(price * 1.05).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration to give the thesis time to play out.",
+        rationale: 'A straightforward bullish bet with limited risk. It offers high profit potential for a strong directional move.',
+        action: (price: number) => `Buy a call with a strike slightly out-of-the-money (e.g., ~$${(price * 1.05).toFixed(2)}) with 30-60 days to expiration.`,
         isAggressive: false,
     },
     'Bull Call Spread': {
-        base: 'A risk-defined bullish strategy that profits from a moderate price increase. Employ this to reduce the cost of a bullish position; you cap your potential profit, but you also significantly lower the premium paid compared to a Long Call.',
-        strike: (price: number) => `Consider buying an at-the-money call (e.g., ~\$${price.toFixed(2)}) and selling an out-of-the-money call (e.g., ~\$${(price * 1.075).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration.",
+        rationale: 'A risk-defined bullish strategy that profits from a moderate price increase. It reduces the cost of entry compared to a Long Call, but caps profit.',
+        action: (price: number) => `Buy an at-the-money call (e.g., ~$${price.toFixed(2)}) and sell an out-of-the-money call (e.g., ~$${(price * 1.075).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
     'Put Credit Spread': {
-        base: 'A high-probability bullish strategy that profits if the stock stays above a certain price. Employ this when you are neutral to moderately bullish, as you collect a premium (income) and benefit from time decay, as long as the stock doesn\'t drop significantly.',
-        strike: (price: number) => `Consider selling an out-of-the-money put (e.g., ~\$${(price * 0.95).toFixed(2)}) and buying a further OTM put for protection (e.g., ~\$${(price * 0.90).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration.",
+        rationale: 'A high-probability bullish strategy that profits if the stock stays above a certain price. It collects a premium and benefits from time decay.',
+        action: (price: number) => `Sell an out-of-the-money put (e.g., ~$${(price * 0.95).toFixed(2)}) and buy a further OTM put for protection (e.g., ~$${(price * 0.90).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
     'Long Put': {
-        base: 'A simple bearish bet with limited risk. Employ this when you have a strong directional conviction that the stock will fall significantly, as it offers substantial profit potential on a downward move with a known maximum loss (the premium paid).',
-        strike: (price: number) => `Consider a strike price slightly out-of-the-money (e.g., ~\$${(price * 0.95).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration to allow the trend to develop.",
+        rationale: 'A simple bearish bet with limited risk. It offers substantial profit potential on a significant downward move.',
+        action: (price: number) => `Buy a put with a strike slightly out-of-the-money (e.g., ~$${(price * 0.95).toFixed(2)}) with 30-60 days to expiration.`,
         isAggressive: false,
     },
     'Bear Put Spread': {
-        base: 'A risk-defined bearish strategy that profits from a moderate price decrease. Employ this to express a bearish view with a defined maximum loss, making it less risky and cheaper than buying a simple Long Put.',
-        strike: (price: number) => `Consider buying an at-the-money put (e.g., ~\$${price.toFixed(2)}) and selling an out-of-the-money put (e.g., ~\$${(price * 0.925).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration.",
+        rationale: 'A risk-defined bearish strategy that profits from a moderate price decrease. It is cheaper and less risky than a simple Long Put.',
+        action: (price: number) => `Buy an at-the-money put (e.g., ~$${price.toFixed(2)}) and sell an out-of-the-money put (e.g., ~$${(price * 0.925).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
     'Call Credit Spread': {
-        base: 'A high-probability bearish strategy that profits if the stock remains below a certain price. Employ this when you are neutral to moderately bearish, as it allows you to collect premium and benefit from time decay, provided the stock does not rally significantly.',
-        strike: (price: number) => `Consider selling an out-of-the-money call (e.g., ~\$${(price * 1.05).toFixed(2)}) and buying a further OTM call for protection (e.g., ~\$${(price * 1.10).toFixed(2)})`,
-        expiration: "with 30-45 days to expiration.",
+        rationale: 'A high-probability bearish strategy that profits if the stock remains below a certain price. It collects premium and benefits from time decay.',
+        action: (price: number) => `Sell an out-of-the-money call (e.g., ~$${(price * 1.05).toFixed(2)}) and buy a further OTM call for protection (e.g., ~$${(price * 1.10).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
     'Iron Condor': {
-        base: 'A neutral, range-bound strategy that profits from low volatility and time decay. Employ this when you expect the stock to trade within a well-defined price range, as you are essentially betting that the price will not make a large move in either direction.',
-        strike: (price: number) => `Sell an OTM put spread (e.g., selling \$${(price * 0.95).toFixed(2)} / buying \$${(price * 0.90).toFixed(2)}) and an OTM call spread (e.g., selling \$${(price * 1.05).toFixed(2)} / buying \$${(price * 1.10).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration.",
+        rationale: 'A neutral, range-bound strategy that profits from low volatility and time decay, betting the price will not make a large move in either direction.',
+        action: (price: number) => `Sell an OTM put spread (e.g., selling $${(price * 0.95).toFixed(2)} / buying $${(price * 0.90).toFixed(2)}) and an OTM call spread (e.g., selling $${(price * 1.05).toFixed(2)} / buying $${(price * 1.10).toFixed(2)}) with 30-60 days to expiration.`,
         isAggressive: false,
     },
     'Strangle': {
-        base: 'A neutral strategy that profits from a large price move in either direction. Employ this when you expect a significant increase in volatility (a big price swing) but are unsure of the direction, such as before an earnings announcement or other major catalyst.',
-        strike: (price: number) => `Buy an out-of-the-money call (e.g., ~\$${(price * 1.07).toFixed(2)}) and an out-of-the-money put (e.g., ~\$${(price * 0.93).toFixed(2)})`,
-        expiration: "with 30-60 days to expiration, ideally ahead of an expected catalyst.",
+        rationale: 'A neutral strategy that profits from a large price move in either direction. Best used when expecting a significant increase in volatility (a big price swing).',
+        action: (price: number) => `Buy an out-of-the-money call (e.g., ~$${(price * 1.07).toFixed(2)}) and an out-of-the-money put (e.g., ~$${(price * 0.93).toFixed(2)}) with 30-60 days to expiration.`,
         isAggressive: false,
     },
     'Weekly OTM Call': {
-        base: "This is a high-risk 'lotto ticket' play. It profits only if the stock makes a very large, very fast move upwards before expiration. Employ this for a purely speculative bet on a massive short-term rally; the probability of success is low, but the potential reward is high.",
-        strike: (price: number) => `Consider buying a call with a far out-of-the-money strike, like ~\$${(price * 1.10).toFixed(2)}`,
-        expiration: "expiring in the next 1-2 weeks.",
+        rationale: "This is a high-risk 'lotto ticket' play for a massive short-term rally. The probability of success is low, but the potential reward is high.",
+        action: (price: number) => `Buy a far out-of-the-money call (e.g., strike at ~$${(price * 1.10).toFixed(2)}) expiring in the next 1-2 weeks.`,
         isAggressive: true,
     },
     'Weekly OTM Put': {
-        base: "This is a high-risk 'lotto ticket' play. It profits only if the stock makes a very large, very fast move downwards before expiration. Employ this for a purely speculative bet on a massive short-term drop; the probability of success is low, but the potential reward is high.",
-        strike: (price: number) => `Consider buying a put with a far out-of-the-money strike, like ~\$${(price * 0.90).toFixed(2)}`,
-        expiration: "expiring in the next 1-2 weeks.",
+        rationale: "This is a high-risk 'lotto ticket' play for a massive short-term drop. The probability of success is low, but the potential reward is high.",
+        action: (price: number) => `Buy a far out-of-the-money put (e.g., strike at ~$${(price * 0.90).toFixed(2)}) expiring in the next 1-2 weeks.`,
         isAggressive: true,
     }
 };
 
 type StrategyName = keyof typeof strategyLibrary;
 
-const generateRationale = (strategyName: StrategyName, latestClose: number): string => {
-    const strategyInfo = strategyLibrary[strategyName];
-    if (!strategyInfo) {
-        return "This strategy is selected based on the current momentum and volatility profile.";
-    }
-    const strikeText = strategyInfo.strike(latestClose);
-    return `${strategyInfo.base} For example, ${strikeText}, typically ${strategyInfo.expiration}`;
-};
 
 const getTopStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVolatility: boolean): StrategyName[] => {
     // Bullish Signals
@@ -197,11 +180,15 @@ export async function suggestOptionStrategiesDeterministic(
         return { strategies: [], disclaimer };
     }
 
-    const strategies = strategyNames.map(name => ({
-        name,
-        rationale: generateRationale(name, latestClosePrice),
-        isAggressive: strategyLibrary[name]?.isAggressive || false,
-    }));
+    const strategies = strategyNames.map(name => {
+        const strategyInfo = strategyLibrary[name];
+        return {
+            name,
+            rationale: strategyInfo.rationale,
+            action: strategyInfo.action(latestClosePrice),
+            isAggressive: strategyInfo.isAggressive,
+        }
+    });
 
 
     return {

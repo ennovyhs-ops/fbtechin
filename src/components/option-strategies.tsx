@@ -73,7 +73,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     <TooltipContent className="max-w-md p-4 space-y-3 text-xs leading-relaxed" side="top" align="start">
                         <div>
                             <p className="font-bold text-sm text-foreground mb-1">How This Engine Works</p>
-                            <p>This engine acts as a quantitative analyst, following a strict decision tree to select the top three most suitable strategies from its library. The suggestions are prioritized based on the momentum signal and current market volatility, with the first being the most technically suitable choice.</p>
+                            <p>This engine acts as a quantitative analyst, following a strict decision tree to select up to three of the most suitable strategies from its library. The suggestions are prioritized, with the first being the most technically suitable choice.</p>
                         </div>
                         <Separator />
                         <div>
@@ -126,16 +126,17 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
            <div className="space-y-4">
                 {suggestions.strategies.map((strategy, index) => (
                     <div key={`det-${index}`} className={`p-4 rounded-lg border text-sm ${strategy.isAggressive ? 'bg-orange-500/10 border-orange-500/20' : 'bg-muted/30'}`}>
-                        <div className="flex items-center gap-2">
-                             <span className="font-bold text-sm text-foreground">{index + 1}. {strategy.name}</span>
+                        <div className="flex items-start justify-between gap-2">
+                             <h3 className="font-semibold text-base text-foreground">{index + 1}. {strategy.name}</h3>
                              {strategy.isAggressive && (
-                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs bg-orange-500/20 px-2 py-0.5 rounded-md border border-orange-500/30">
+                                <div className="flex-shrink-0 flex items-center gap-1 text-orange-400 font-semibold text-xs bg-orange-500/20 px-2 py-0.5 rounded-md border border-orange-500/30">
                                     <AlertTriangle className="h-3 w-3" />
                                     Aggressive
                                 </div>
                              )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2">{strategy.rationale}</p>
+                        <p className="text-xs text-muted-foreground mt-2"><span className="font-semibold text-primary">RATIONALE:</span> {strategy.rationale}</p>
+                        <p className="text-xs text-muted-foreground mt-1"><span className="font-semibold text-primary">ACTION:</span> {strategy.action}</p>
                     </div>
                 ))}
             </div>
