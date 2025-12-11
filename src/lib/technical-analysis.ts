@@ -531,3 +531,110 @@ export const calculateStdDev = (data: number[]): number => {
     const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n;
     return Math.sqrt(variance);
 };
+
+/**
+ * Calculates On-Balance Volume (OBV).
+ * @param closes - Array of chronological closing prices.
+ * @param volumes - Array of chronological volumes.
+ * @returns An array of OBV values.
+ */
+export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
+    if (closes.length !== volumes.length || closes.length === 0) {
+        return new Array(closes.length).fill(NaN);
+    }
+    const obv: number[] = [0];
+    for (let i = 1; i < closes.length; i++) {
+        if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i])) {
+            obv.push(obv[i - 1]); // Carry over last value if data is invalid
+            continue;
+        }
+        if (closes[i] > closes[i - 1]) {
+            obv.push(obv[i - 1] + volumes[i]);
+        } else if (closes[i] < closes[i - 1]) {
+            obv.push(obv[i - 1] - volumes[i]);
+        } else {
+            obv.push(obv[i - 1]);
+        }
+    }
+    return obv;
+};
+
+/**
+ * Calculates the Stochastic Oscillator.
+ * @param data - Array of chronological data points {high, low, close}.
+ * @param kPeriod - The lookback period for the %K line (usually 14).
+ * @param dPeriod - The smoothing period for the %D line (usually 3).
+ * @returns An array of objects containing the %K and %D values.
+ */
+export const calculateStochastic = (
+    data: { high: number, low: number, close: number }[],
+    kPeriod: number,
+    dPeriod: number
+): { k: number, d: number }[] => {
+    const results: { k: number, d: number }[] = [];
+    if (data.length < kPeriod) {
+        return new Array(data.length).fill({ k: NaN, d: NaN });
+    }
+
+    const kValues: number[] = new Array(kPeriod - 1).fill(NaN);
+
+    for (let i = kPeriod - 1; i < data.length; i++) {
+        const slice = data.slice(i - kPeriod + 1, i + 1);
+        const lowestLow = Math.min(...slice.map(d => d.low));
+        const highestHigh = Math.max(...slice.map(d => d.high));
+        const currentClose = data[i].close;
+
+        if (highestHigh === lowestLow) {
+            kValues.push(NaN); // Avoid division by zero
+        } else {
+            const k = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
+            kValues.push(k);
+        }
+    }
+
+    const dValues = sma(kValues, dPeriod);
+
+    for (let i = 0; i < data.length; i++) {
+        results.push({ k: kValues[i], d: dValues[i] });
+    }
+
+    return results;
+};
+
+/**
+ * Calculates Chaikin Money Flow (CMF).
+ * @param data - Array of chronological data points {high, low, close, volume}.
+ * @param period - The lookback period (usually 20 or 21).
+ * @returns An array of CMF values.
+ */
+export const calculateCMF = (
+    data: { high: number, low: number, close: number, volume: number }[],
+    period: number
+): number[] => {
+    if (data.length < period) return new Array(data.length).fill(NaN);
+
+    const moneyFlowVolumes: number[] = [];
+    for(let i = 0; i < data.length; i++) {
+        const { high, low, close, volume } = data[i];
+        if (high === low) {
+            moneyFlowVolumes.push(0);
+            continue;
+        }
+        const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
+        moneyFlowVolumes.push(moneyFlowMultiplier * volume);
+    }
+    
+    const result: number[] = new Array(period - 1).fill(NaN);
+    
+    for (let i = period - 1; i < data.length; i++) {
+        const mfSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
+        const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
+
+        const sumMf = mfSlice.reduce((a, b) => a + b, 0);
+        const sumVolume = volumeSlice.reduce((a, b) => a + b, 0);
+
+        result.push(sumVolume === 0 ? 0 : sumMf / sumVolume);
+    }
+
+    return result;
+};
