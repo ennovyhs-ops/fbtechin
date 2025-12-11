@@ -218,7 +218,20 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
         <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
-                <h3 className="font-semibold text-sm text-muted-foreground">Momentum Score (-1 to 1)</h3>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
+                                Momentum Score (-1 to 1)
+                                <HelpCircle className="h-4 w-4" />
+                            </h3>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                             <p>This score is calculated from multiple technical indicators (RSI, MACD, Volume, Trend, etc.). A score closer to +1.0 is strongly bullish, while a score closer to -1.0 is strongly bearish.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
                 <p className="font-bold text-base text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 <TooltipProvider>
                     <Tooltip>
@@ -371,8 +384,3 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
 }
 
     
-
-    
-
-    
-

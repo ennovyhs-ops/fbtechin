@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo } from 'react';
@@ -19,7 +18,7 @@ const VolatilityDisplay = ({ label, value }: { label: string, value: number | nu
     return (
         <div className="flex flex-col items-center text-center gap-1">
             <span className="font-semibold text-xs text-muted-foreground">{label}</span>
-            <span className="font-bold text-sm text-foreground">{displayValue}</span>
+            <span className="font-semibold text-sm text-foreground">{displayValue}</span>
         </div>
     )
 }
@@ -94,3 +93,5 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
     </Card>
   );
 }
+
+    

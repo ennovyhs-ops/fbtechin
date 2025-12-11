@@ -67,7 +67,7 @@ export async function analyzeStockMomentum(
         fiftyTwoWeek: 0.10,
     };
 
-    // If data is synthesized or it's a forex pair, Volume-Price Confirmation is not possible. Redistribute its weight.
+    // If data is synthesized or it's a currency pair, Volume-Price Confirmation is not possible. Redistribute its weight.
     if (isSynthesizedData || isCurrencyPair(ticker)) {
         const redistributedWeight = weights.volume / 4;
         weights = {
@@ -200,49 +200,30 @@ export async function analyzeStockMomentum(
     else if (latestRsi < 50) totalScore -= (weights.rsi * rsiScoreFactor * 0.5);
 
     // --- Refined Divergence Detection (last 14 days) ---
-    if (dataChronological.length >= 15 && rsi.length >= dataChronological.length) {
-        const priceSlice = dataChronological.slice(-14);
+    if (dataChronological.length >= 15 && rsi.length >= 15) {
+        const priceSlice = dataChronological.slice(-14).map(d => ({
+            low: isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low),
+            high: isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high),
+        }));
         const rsiSlice = rsi.slice(-14);
 
+        const lastPriceLow = priceSlice.at(-1)!.low;
+        const lastRsiLow = rsiSlice.at(-1)!;
         // Bullish Divergence: Lower low in price, but higher low in RSI
-        let priceLows = { index: -1, value: Infinity };
-        for (let i = 0; i < priceSlice.length; i++) {
-            const currentLow = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].low);
-            if (currentLow < priceLows.value) {
-                priceLows = { index: i, value: currentLow };
-            }
-        }
-        
-        if (priceLows.index > 0 && priceLows.index < priceSlice.length - 1) { // Low is not the first or last bar
-            const rsiAtPriceLow = rsiSlice[priceLows.index];
-            // Find a prior low within the window
-            for (let i = 0; i < priceLows.index; i++) {
-                const priorPriceLow = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].low);
-                if (priorPriceLow > priceLows.value && rsiSlice[i] < rsiAtPriceLow) {
-                    totalScore += (weights.rsi * divergenceScoreFactor); // Add bullish divergence score
-                    break; 
-                }
-            }
-        }
-        
-        // Bearish Divergence: Higher high in price, but lower high in RSI
-        let priceHighs = { index: -1, value: -Infinity };
-        for (let i = 0; i < priceSlice.length; i++) {
-            const currentHigh = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].high);
-            if (currentHigh > priceHighs.value) {
-                priceHighs = { index: i, value: currentHigh };
+        for (let i = 0; i < priceSlice.length - 2; i++) {
+             if (priceSlice[i].low < lastPriceLow && rsiSlice[i] > lastRsiLow) {
+                totalScore += (weights.rsi * divergenceScoreFactor); // Add bullish divergence score
+                break;
             }
         }
 
-        if (priceHighs.index > 0 && priceHighs.index < priceSlice.length - 1) { // High is not the first or last bar
-            const rsiAtPriceHigh = rsiSlice[priceHighs.index];
-            // Find a prior high within the window
-            for (let i = 0; i < priceHighs.index; i++) {
-                const priorPriceHigh = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].high);
-                if (priorPriceHigh < priceHighs.value && rsiSlice[i] > rsiAtPriceHigh) {
-                    totalScore -= (weights.rsi * divergenceScoreFactor); // Add bearish divergence score
-                    break;
-                }
+        const lastPriceHigh = priceSlice.at(-1)!.high;
+        const lastRsiHigh = rsiSlice.at(-1)!;
+        // Bearish Divergence: Higher high in price, but lower high in RSI
+        for (let i = 0; i < priceSlice.length - 2; i++) {
+            if (priceSlice[i].high > lastPriceHigh && rsiSlice[i] < lastRsiHigh) {
+                 totalScore -= (weights.rsi * divergenceScoreFactor); // Add bearish divergence score
+                 break;
             }
         }
     }
@@ -317,3 +298,5 @@ export async function analyzeStockMomentum(
     return { error: e.message || 'An unexpected error occurred during analysis.' };
   }
 }
+
+    

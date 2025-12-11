@@ -149,21 +149,21 @@ export async function predictPriceTarget(
     let shortTermInterpretation = `Based on current ${direction} momentum and recent volatility, the price could move towards this target ${shortTermTimeframe}. This is a projection, not a guarantee.`;
     if (totalScore < 0.1 && totalScore > -0.1) {
         shortTermInterpretation = "The current momentum is neutral, making a directional price prediction unreliable."
+    } else if (pivots && totalScore > 0 && shortTermPriceTarget > pivots.r1) { // Bullish scenario with pivots
+        shortTermInterpretation = `The projection targets a move towards the R1 pivot point at ${pivots.r1.toFixed(2)}, a key short-term resistance level.`;
     } else if (fibonacci && totalScore > 0) { // Bullish scenarios with Fibonacci
         if (shortTermPriceTarget > fibonacci.level618 && currentPrice < fibonacci.level618) {
             shortTermInterpretation = `The projection targets a key test of the 61.8% Fibonacci resistance level (${formatCurrency(fibonacci.level618, null)}), a critical area for a potential bullish continuation.`;
         } else if (shortTermPriceTarget > fibonacci.rangeHigh) {
             shortTermInterpretation = `With strong momentum, the projection aims for a breakout above the 90-day high of ${formatCurrency(fibonacci.rangeHigh, null)}, suggesting a powerful trend continuation.`;
-        } else if (pivots && shortTermPriceTarget > pivots.r1) {
-             shortTermInterpretation = `The projection targets a move towards the R1 pivot point at ${pivots.r1.toFixed(2)}, a key short-term resistance level.`;
         }
+    } else if (pivots && totalScore < 0 && shortTermPriceTarget < pivots.s1) { // Bearish scenario with pivots
+        shortTermInterpretation = `The projection indicates a potential test of the S1 pivot support at ${pivots.s1.toFixed(2)}. A break below could accelerate downside.`;
     } else if (fibonacci && totalScore < 0) { // Bearish scenarios with Fibonacci
          if (shortTermPriceTarget < fibonacci.level382 && currentPrice > fibonacci.level382) {
             shortTermInterpretation = `The bearish outlook suggests a potential test of the 38.2% Fibonacci support level (${formatCurrency(fibonacci.level382, null)}). A break below this could signal further downside.`;
         } else if (shortTermPriceTarget < fibonacci.rangeLow) {
             shortTermInterpretation = `The projection indicates a potential breakdown below the 90-day low of ${formatCurrency(fibonacci.rangeLow, null)}, driven by significant selling pressure.`;
-        } else if (pivots && shortTermPriceTarget < pivots.s1) {
-            shortTermInterpretation = `The projection indicates a potential test of the S1 pivot support at ${pivots.s1.toFixed(2)}.`;
         }
     } else if (hasValid52WeekRange) { // Fallback to 52-week range if other conditions don't meet
         if (totalScore > 0 && shortTermPriceTarget > high52) {
@@ -216,3 +216,5 @@ export async function predictPriceTarget(
     return { error: e.message || 'An unexpected error occurred during price target calculation.' };
   }
 }
+
+    
