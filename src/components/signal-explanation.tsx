@@ -145,7 +145,11 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
                 <span>{error}</span>
             </div>
         }
-        {explanation && <p className="text-sm text-foreground leading-relaxed">{explanation}</p>}
+        {explanation && (
+          <div className="p-3 rounded-lg bg-muted/50">
+            <p className="text-sm text-foreground leading-relaxed">{explanation}</p>
+          </div>
+        )}
         
         {!explanation && !loading && !error && (
             <Button onClick={handleExplainSignal} disabled={loading}>
