@@ -198,33 +198,43 @@ export async function analyzeStockMomentum(
     else if (latestRsi > 50) totalScore += (weights.rsi * rsiScoreFactor * 0.5);
     else if (latestRsi < 40) totalScore -= (weights.rsi * rsiScoreFactor);
     else if (latestRsi < 50) totalScore -= (weights.rsi * rsiScoreFactor * 0.5);
+    
+    // --- CLASSIC DIVERGENCE DETECTION (last 20 days) ---
+    const divergenceLookback = 20;
+    if (dataChronological.length > divergenceLookback && rsi.length > divergenceLookback) {
+        const priceSlice = dataChronological.slice(-divergenceLookback);
+        const rsiSlice = rsi.slice(-divergenceLookback);
+        
+        const currentPriceLow = isSynthesizedData ? latestClose : parseFloat(dataChronological.at(-1)!.low);
+        const currentPriceHigh = isSynthesizedData ? latestClose : parseFloat(dataChronological.at(-1)!.high);
+        const currentRsi = rsi.at(-1)!;
 
-    // --- Refined Divergence Detection (last 14 days) ---
-    if (dataChronological.length >= 15 && rsi.length >= 15) {
-        const priceSlice = dataChronological.slice(-14).map(d => ({
-            low: isSynthesizedData ? parseFloat(d.close) : parseFloat(d.low),
-            high: isSynthesizedData ? parseFloat(d.close) : parseFloat(d.high),
-        }));
-        const rsiSlice = rsi.slice(-14);
-
-        const lastPriceLow = priceSlice.at(-1)!.low;
-        const lastRsiLow = rsiSlice.at(-1)!;
-        // Bullish Divergence: Lower low in price, but higher low in RSI
-        for (let i = 0; i < priceSlice.length - 2; i++) {
-             if (priceSlice[i].low < lastPriceLow && rsiSlice[i] > lastRsiLow) {
-                totalScore += (weights.rsi * divergenceScoreFactor); // Add bullish divergence score
-                break;
+        // Find the lowest price and highest price (and their RSIs) in the lookback period *excluding the last bar*
+        let lookbackLow = Infinity, lookbackLowRsi = Infinity;
+        let lookbackHigh = -Infinity, lookbackHighRsi = -Infinity;
+        
+        for (let i = 0; i < priceSlice.length - 1; i++) {
+            const low = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].low);
+            if (low < lookbackLow) {
+                lookbackLow = low;
+                lookbackLowRsi = rsiSlice[i];
+            }
+            
+            const high = isSynthesizedData ? parseFloat(priceSlice[i].close) : parseFloat(priceSlice[i].high);
+            if (high > lookbackHigh) {
+                lookbackHigh = high;
+                lookbackHighRsi = rsiSlice[i];
             }
         }
 
-        const lastPriceHigh = priceSlice.at(-1)!.high;
-        const lastRsiHigh = rsiSlice.at(-1)!;
-        // Bearish Divergence: Higher high in price, but lower high in RSI
-        for (let i = 0; i < priceSlice.length - 2; i++) {
-            if (priceSlice[i].high > lastPriceHigh && rsiSlice[i] < lastRsiHigh) {
-                 totalScore -= (weights.rsi * divergenceScoreFactor); // Add bearish divergence score
-                 break;
-            }
+        // Classic Bullish Divergence: Price makes a lower low, but RSI makes a higher low.
+        if (currentPriceLow < lookbackLow && currentRsi > lookbackLowRsi) {
+            totalScore += (weights.rsi * divergenceScoreFactor);
+        }
+        
+        // Classic Bearish Divergence: Price makes a higher high, but RSI makes a lower high.
+        if (currentPriceHigh > lookbackHigh && currentRsi < lookbackHighRsi) {
+            totalScore -= (weights.rsi * divergenceScore-score);
         }
     }
 
@@ -298,5 +308,7 @@ export async function analyzeStockMomentum(
     return { error: e.message || 'An unexpected error occurred during analysis.' };
   }
 }
+
+    
 
     
