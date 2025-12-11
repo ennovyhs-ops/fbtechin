@@ -73,19 +73,19 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                     <TooltipContent className="max-w-md p-4 space-y-3 text-xs leading-relaxed" side="top" align="start">
                         <div>
                             <p className="font-bold text-sm text-foreground mb-1">How This Engine Works</p>
-                            <p>This engine acts as a quantitative analyst, following a strict decision tree based on Momentum, Volatility, and Timing. Its suggestions are prioritized, with the first being the most technically suitable strategy.</p>
+                            <p>This engine acts as a quantitative analyst, following a strict decision tree based on Momentum and Volatility. Its suggestions are prioritized, with the first being the most technically suitable strategy.</p>
                         </div>
                         <Separator />
                         <div>
                             <p className="font-semibold text-foreground">Volatility is Key:</p>
                              <ul className="list-disc list-inside mt-1 space-y-1">
-                                <li><span className="font-semibold text-primary">High Volatility:</span> The engine favors strategies that benefit from high option premiums (e.g., selling credit spreads).</li>
-                                <li><span className="font-semibold text-primary">Low Volatility:</span> It favors strategies that benefit from buying cheaper options (e.g., debit spreads or long calls/puts).</li>
+                                <li><span className="font-semibold text-primary">High Volatility (Bands Wide):</span> The engine favors strategies that benefit from high option premiums (e.g., selling credit spreads).</li>
+                                <li><span className="font-semibold text-primary">Low Volatility (Bands Squeezing):</span> It favors strategies that benefit from buying cheaper options (e.g., debit spreads or long calls/puts).</li>
                             </ul>
                         </div>
                         <Separator />
                          <div>
-                            <p className="font-bold text-sm text-foreground mb-2">Possible Strategies In Its Library:</p>
+                            <p className="font-bold text-sm text-foreground mb-2">This Engine's Strategy Library:</p>
                             <div className="space-y-2">
                                 <div>
                                     <p className="font-semibold text-foreground">Bullish Strategies</p>
