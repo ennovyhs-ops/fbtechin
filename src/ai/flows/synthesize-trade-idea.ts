@@ -81,17 +81,22 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
 1.  **Analyze Model Agreement & Conviction:**
     *   Do the Momentum Target and the Monte Carlo range point in the same direction? Strong agreement implies **High Conviction**. Disagreement implies **Low Conviction** or **Caution**.
 
-2.  **Select Volatility-Aware Strategies:** Based on conviction AND volatility, choose the **two most appropriate, distinct** strategies. The first should be the primary, most suitable one.
-    *   **High Volatility + Directional Conviction:** Favor premium-selling strategies (e.g., Bull Put Spread, Bear Call Spread).
-    *   **Low Volatility + Directional Conviction:** Favor premium-buying strategies (e.g., Debit Spreads, Long Calls/Puts).
-    *   **High Volatility + Low/Neutral Conviction:** Favor volatility-profiting strategies (e.g., Strangles, Iron Condors).
+2.  **Select Volatility-Aware & Creative Strategies:** Based on conviction AND volatility, choose the **two most appropriate, distinct** strategies. Your toolkit is broad.
+    *   **Standard Plays:**
+        *   High Vol + Directional Conviction: Favor premium-selling (e.g., Bull Put Spread, Bear Call Spread).
+        *   Low Vol + Directional Conviction: Favor premium-buying (e.g., Debit Spreads, Long Calls/Puts).
+        *   High Vol + Low/Neutral Conviction: Favor volatility-profiting (e.g., Strangles, Straddles).
+    *   **Creative/Advanced Plays:**
+        *   Consider **Calendar or Diagonal Spreads** if you expect range-bound action in the short-term followed by a directional move, or if you want to capitalize on time decay.
+        *   Consider **Ratio Spreads** if you have a directional bias but also want to profit from high volatility, creating a position with a wider profit range or even a credit.
+        *   Think about combining strategies or using creative strike placements.
 
 3.  **Formulate the Output:**
-    *   You must generate an array called 'ideas' containing exactly two distinct trade ideas.
+    *   You must generate an array called 'ideas' containing exactly two distinct trade ideas. The first should be the primary, most suitable one.
     *   For each idea, provide:
         *   **strategy:** Name of the strategy.
         *   **conviction:** Your calculated conviction level.
-        *   **rationale:** A 1-2 sentence explanation referencing model agreement AND volatility.
+        *   **rationale:** A 1-2 sentence explanation referencing model agreement, volatility, and why this specific strategy (standard or creative) is a good fit.
         *   **action:** A concrete trade structure. You **MUST** use the Pivot Points and Fibonacci levels to inform your choice of strike prices. For example, for a bullish spread, you might sell a put at a strike near a support level (like S1 or a Fibonacci level). State the strike prices clearly (e.g., '~$175') and suggest a specific expiration (e.g., '30-60 days').
 
 **Example for a "STRONG BULLISH" signal, price $150, target $165, range $160-$175, volatility 45% (High), pivots {R1: 158, S1: 145}, fibonacci {level382: 142}:**
