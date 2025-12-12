@@ -93,18 +93,18 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
 3.  **Formulate the Output:**
     *   You must generate an array called 'ideas' containing 2 or 3 distinct trade ideas, ordered by suitability.
     *   **Idea 1: The Primary Idea.** This should be the most suitable, well-reasoned trade based on all inputs.
-    *   **Idea 2: The Alternative Idea.** This could be a more creative play, perhaps using a different assumption (e.g., a time-based play like a Calendar Spread if chop is expected before a move).
-    *   **Idea 3 (Optional): The "Lotto Ticket".** If and only if the momentum signal is "STRONG BULLISH" or "STRONG BEARISH", add a third, highly aggressive idea. This should be a short-dated, far out-of-the-money option play. Clearly label it as high-risk.
+    *   **Idea 2: The Alternative Idea.** This could be a more creative play, perhaps using a different assumption (e.g., a time-based play like a Calendar Spread if chop is expected before a move). You MUST explicitly label this strategy's name as something like "Alternative: [Strategy Name]".
+    *   **Idea 3 (Optional): The "Lotto Ticket".** If and only if the momentum signal is "STRONG BULLISH" or "STRONG BEARISH", add a third, highly aggressive idea. You MUST name this strategy "Lotto Ticket: [Strategy Name]". Clearly label it as high-risk.
     *   For each idea, provide:
-        *   **strategy:** Name of the strategy.
+        *   **strategy:** Name of the strategy, with the required prefixes for ideas 2 and 3.
         *   **conviction:** Your calculated conviction level.
         *   **rationale:** A 1-2 sentence explanation referencing model agreement, volatility, and why this specific strategy is a good fit.
         *   **action:** A concrete trade structure. You **MUST** use the Pivot Points and Fibonacci levels to inform your choice of strike prices. State the strike prices clearly (e.g., '~$175') and suggest a specific expiration (e.g., '30-60 days').
 
 **Example for a "STRONG BULLISH" signal, price $150, target $165, range $160-$175, volatility 45% (High), pivots {R1: 158, S1: 145}:**
 - Idea 1: { strategy: "Bull Put Spread", conviction: "High", rationale: "Models agree on the upward move and high volatility makes selling premium attractive.", action: "Sell a put at the ~$145 strike, aligning with the S1 pivot support, and buy a put at ~$140 for protection, with 30-45 days to expiration." }
-- Idea 2: { strategy: "Bull Call Spread", conviction: "High", rationale: "A risk-defined way to participate in the upside, with the short strike providing a buffer against high volatility.", action: "Buy a call at ~$150 and sell a call at ~$165, near the momentum target, with 45-60 days to expiration." }
-- Idea 3: { strategy: "Weekly OTM Call ('Lotto Ticket')", conviction: "Low", rationale: "This is a very high-risk, speculative play that will only profit from a massive, immediate rally. Probability of success is low.", action: "Buy a weekly call with a strike at ~$170, expiring in 1-2 weeks."}
+- Idea 2: { strategy: "Alternative: Bull Call Spread", conviction: "High", rationale: "A risk-defined way to participate in the upside. This is an alternative for those who prefer debit spreads over credit spreads to control the exact risk upfront.", action: "Buy a call at ~$150 and sell a call at ~$165, near the momentum target, with 45-60 days to expiration." }
+- Idea 3: { strategy: "Lotto Ticket: Weekly OTM Call", conviction: "Low", rationale: "This is a very high-risk, speculative play that will only profit from a massive, immediate rally. Probability of success is low.", action: "Buy a weekly call with a strike at ~$170, expiring in 1-2 weeks."}
 
 Now, analyze the inputs provided and generate your response.
 `,
