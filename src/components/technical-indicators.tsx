@@ -210,7 +210,22 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>A momentum oscillator that measures the speed and change of price movements on a scale of 0 to 100. A value above 70 is considered 'overbought', and below 30 is 'oversold'.</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                          <p className="font-bold text-foreground">What is RSI?</p>
+                                          <p>A momentum oscillator that measures the speed and magnitude of a security's recent price changes on a scale of 0 to 100.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                          <p className="font-bold text-foreground">How to Interpret It:</p>
+                                          <ul className="list-disc list-inside mt-1 space-y-1">
+                                            <li><span className="font-semibold text-red-400">Overbought (Above 70):</span> Suggests the asset may be overvalued and could be due for a pullback.</li>
+                                            <li><span className="font-semibold text-green-400">Oversold (Below 30):</span> Suggests the asset may be undervalued and could be due for a bounce.</li>
+                                            <li><span className="font-semibold text-primary">Centerline (50):</span> RSI movements above 50 generally indicate a bullish trend, while movements below 50 indicate a bearish trend.</li>
+                                            <li><span className="font-semibold">Divergence:</span> A key signal occurs when the price makes a new high/low but the RSI does not, which can signal a potential trend reversal.</li>
+                                          </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                                 <div className="flex items-center gap-1">
                                      <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">P:</label>
@@ -558,10 +573,3 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
-
-
-
-
-
-
-
