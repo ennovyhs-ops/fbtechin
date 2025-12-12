@@ -284,7 +284,7 @@ export const calculateMAVol = (volumeData: number[], period: number): number[] =
  * @param period - The number of periods to average over.
  * @returns An array of the VWMA.
  */
-export const calculateVWMA = (prices: number[], volumes: number[], period: number[]): number[] => {
+export const calculateVWMA = (prices: number[], volumes: number[], period: number): number[] => {
     if (prices.length < period) return new Array(prices.length).fill(NaN);
 
     const result: number[] = new Array(period - 1).fill(NaN);
@@ -566,7 +566,7 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
 
     let firstValidIndex = -1;
     for(let i=0; i<volumes.length; i++) {
-        if (!isNaN(volumes[i])) {
+        if (!isNaN(volumes[i]) && !isNaN(closes[i])) {
             firstValidIndex = i;
             break;
         }
@@ -574,8 +574,7 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
 
     if (firstValidIndex === -1) return obv;
 
-    // The initial OBV is the first day's volume.
-    obv[firstValidIndex] = volumes[firstValidIndex];
+    obv[firstValidIndex] = 0; // Standard practice to start OBV at 0
 
     for (let i = firstValidIndex + 1; i < closes.length; i++) {
         if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i]) || isNaN(obv[i-1])) {
@@ -673,10 +672,13 @@ export const calculateCMF = (
         const mfVolumeSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
         const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
 
-        const sumMfVolume = mfVolumeSlice.reduce((sum, val) => val === null ? sum : sum + val, 0);
-        const sumVolume = volumeSlice.reduce((sum, val) => isNaN(val) ? sum : sum + val, 0);
+        const validMfVolumes = mfVolumeSlice.filter(v => v !== null) as number[];
+        const validVolumes = volumeSlice.filter(v => !isNaN(v));
 
-        if (sumVolume === 0 || sumMfVolume === null) {
+        const sumMfVolume = validMfVolumes.reduce((sum, val) => sum + val, 0);
+        const sumVolume = validVolumes.reduce((sum, val) => sum + val, 0);
+        
+        if (sumVolume === 0) {
             cmfValues.push(NaN);
         } else {
             cmfValues.push(sumMfVolume / sumVolume);
