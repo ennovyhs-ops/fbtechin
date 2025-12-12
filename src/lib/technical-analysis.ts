@@ -566,7 +566,7 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
     const obv: number[] = new Array(closes.length).fill(NaN);
     if (isNaN(volumes[0])) return obv;
 
-    obv[0] = volumes[0]; // Initialize with the first day's volume
+    obv[0] = volumes[0]; // Correctly initialize with the first day's volume
 
     for (let i = 1; i < closes.length; i++) {
         if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i])) {
@@ -588,8 +588,8 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
  * Calculates the Slow Stochastic Oscillator.
  * @param data - Array of chronological data points {high, low, close}.
  * @param kPeriod - The lookback period for the %K line (e.g., 14).
- * @param dPeriod - The smoothing period for the %K line to create Slow %K (e.g., 3).
- * @param slowingPeriod - The final smoothing period for the Slow %D line (e.g., 3).
+ * @param dPeriod - The smoothing period for the Fast %K to create Slow %K (e.g., 3).
+ * @param slowingPeriod - The final smoothing period for the Slow %K to create Slow %D (e.g., 3).
  * @returns An array of objects containing the Slow %K and Slow %D values.
  */
 export const calculateStochastic = (
@@ -621,10 +621,10 @@ export const calculateStochastic = (
         }
     }
 
-    // 2. Calculate Slow %K (which is a smoothed Fast %K, and is what we will show as '%K')
+    // 2. Calculate Slow %K (which is a smoothed Fast %K, using dPeriod)
     const slowKValues = sma(fastKValues, dPeriod);
     
-    // 3. Calculate Slow %D (which is a smoothed Slow %K)
+    // 3. Calculate Slow %D (which is a smoothed Slow %K, using slowingPeriod)
     const slowDValues = sma(slowKValues, slowingPeriod);
 
     for (let i = 0; i < data.length; i++) {
@@ -650,8 +650,8 @@ export const calculateCMF = (
     const moneyFlowVolumes: number[] = [];
     for(let i = 0; i < data.length; i++) {
         const { high, low, close, volume } = data[i];
-        if (high === low) {
-            moneyFlowVolumes.push(0);
+        if (isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low) {
+            moneyFlowVolumes.push(NaN);
             continue;
         }
         const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
@@ -660,12 +660,33 @@ export const calculateCMF = (
     
     const result: number[] = new Array(period - 1).fill(NaN);
     
-    for (let i = period - 1; i < data.length; i++) {
-        const mfSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
-        const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
+    let sumMf = 0;
+    let sumVolume = 0;
 
-        const sumMf = mfSlice.reduce((a, b) => a + b, 0);
-        const sumVolume = volumeSlice.reduce((a, b) => a + b, 0);
+    // Calculate initial sums for the first window
+    for (let i = 0; i < period; i++) {
+        sumMf += moneyFlowVolumes[i];
+        sumVolume += data[i].volume;
+    }
+    result.push(sumVolume === 0 ? 0 : sumMf / sumVolume);
+    
+    // Use sliding window for subsequent calculations
+    for (let i = period; i < data.length; i++) {
+        const firstMf = moneyFlowVolumes[i - period];
+        const firstVolume = data[i-period].volume;
+
+        if (!isNaN(firstMf) && !isNaN(firstVolume)) {
+            sumMf -= firstMf;
+            sumVolume -= firstVolume;
+        }
+        
+        const currentMf = moneyFlowVolumes[i];
+        const currentVolume = data[i].volume;
+
+        if (!isNaN(currentMf) && !isNaN(currentVolume)) {
+            sumMf += currentMf;
+            sumVolume += currentVolume;
+        }
 
         result.push(sumVolume === 0 ? 0 : sumMf / sumVolume);
     }
