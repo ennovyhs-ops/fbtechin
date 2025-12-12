@@ -398,7 +398,21 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">ON-BALANCE VOLUME (OBV)</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>A momentum indicator that uses volume flow to predict changes in stock price. A rising OBV reflects positive volume pressure that can lead to higher prices.</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                          <p className="font-bold text-foreground">What is OBV?</p>
+                                          <p>On-Balance Volume is a momentum indicator that uses volume flow to predict price changes. It keeps a running total of volume, adding on up days and subtracting on down days.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                          <p className="font-bold text-foreground">How to Interpret It:</p>
+                                          <p>The absolute value of OBV is not important. The <span className="font-semibold text-primary">trend of OBV is key</span>. A rising OBV reflects positive buying pressure, which can confirm an uptrend or foreshadow a bullish reversal.</p>
+                                          <ul className="list-disc list-inside mt-1 space-y-1">
+                                            <li><span className="text-green-400 font-semibold">Bullish Divergence:</span> Price makes a new low, but OBV makes a higher low. This can signal that the downtrend is losing momentum.</li>
+                                            <li><span className="text-red-400 font-semibold">Bearish Divergence:</span> Price makes a new high, but OBV makes a lower high. This can signal that the uptrend is losing momentum.</li>
+                                          </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                              </div>
                               <div className="flex items-center flex-wrap gap-2 pt-1">
@@ -471,4 +485,5 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
 

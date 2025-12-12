@@ -35,8 +35,7 @@ const sma = (data: number[], period: number): number[] => {
     for (let i = period; i < data.length; i++) {
         // If the new value or the value falling off is NaN, the SMA becomes unreliable.
         if (isNaN(data[i]) || isNaN(data[i - period])) {
-            const lastSma = result[i - 1];
-            result.push(lastSma); // Carry over the last valid SMA
+            result.push(NaN); 
             continue;
         }
         sum -= data[i - period];
@@ -564,7 +563,7 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
     if (closes.length !== volumes.length || closes.length === 0) {
         return obv;
     }
-    
+
     let firstValidIndex = -1;
     for(let i=0; i<volumes.length; i++) {
         if (!isNaN(volumes[i])) {
@@ -575,11 +574,12 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
 
     if (firstValidIndex === -1) return obv;
 
-    obv[firstValidIndex] = volumes[firstValidIndex]; // Initialize with first valid volume
+    // The initial OBV can be the first day's volume. Some conventions use 0.
+    obv[firstValidIndex] = volumes[firstValidIndex];
 
     for (let i = firstValidIndex + 1; i < closes.length; i++) {
         if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i]) || isNaN(obv[i-1])) {
-            obv[i] = obv[i - 1]; // Carry over last value if data is invalid
+            obv[i] = NaN; // If current data is invalid, result is invalid
             continue;
         }
         if (closes[i] > closes[i - 1]) {
@@ -687,5 +687,6 @@ export const calculateCMF = (
 
     return cmfValues;
 };
+
 
 
