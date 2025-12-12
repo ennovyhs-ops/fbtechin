@@ -560,16 +560,25 @@ export const calculateStdDev = (data: number[]): number => {
  * @returns An array of OBV values.
  */
 export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
-    if (closes.length !== volumes.length || closes.length === 0) {
-        return new Array(closes.length).fill(NaN);
-    }
     const obv: number[] = new Array(closes.length).fill(NaN);
-    if (isNaN(volumes[0])) return obv;
+    if (closes.length !== volumes.length || closes.length === 0) {
+        return obv;
+    }
+    
+    let firstValidIndex = -1;
+    for(let i=0; i<volumes.length; i++) {
+        if (!isNaN(volumes[i])) {
+            firstValidIndex = i;
+            break;
+        }
+    }
 
-    obv[0] = 0; // Standard practice often starts OBV at 0 for the first data point
+    if (firstValidIndex === -1) return obv;
 
-    for (let i = 1; i < closes.length; i++) {
-        if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i])) {
+    obv[firstValidIndex] = volumes[firstValidIndex]; // Initialize with first valid volume
+
+    for (let i = firstValidIndex + 1; i < closes.length; i++) {
+        if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i]) || isNaN(obv[i-1])) {
             obv[i] = obv[i - 1]; // Carry over last value if data is invalid
             continue;
         }
@@ -642,55 +651,41 @@ export const calculateStochastic = (
  * @returns An array of CMF values.
  */
 export const calculateCMF = (
-    data: { high: number, low: number, close: number, volume: number }[],
+    data: { high: number; low: number; close: number; volume: number }[],
     period: number
 ): number[] => {
     if (data.length < period) return new Array(data.length).fill(NaN);
 
-    const moneyFlowVolumes: number[] = [];
-    for(let i = 0; i < data.length; i++) {
+    const moneyFlowVolumes: (number | null)[] = [];
+    for (let i = 0; i < data.length; i++) {
         const { high, low, close, volume } = data[i];
-        if (isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low) {
-            moneyFlowVolumes.push(NaN);
+        if (
+            isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low
+        ) {
+            moneyFlowVolumes.push(null);
             continue;
         }
         const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
         moneyFlowVolumes.push(moneyFlowMultiplier * volume);
     }
     
-    const result: number[] = new Array(period - 1).fill(NaN);
-    
-    let sumMf = 0;
-    let sumVolume = 0;
+    const cmfValues: number[] = new Array(period - 1).fill(NaN);
 
-    // Calculate initial sums for the first window
-    for (let i = 0; i < period; i++) {
-        sumMf += moneyFlowVolumes[i] || 0;
-        sumVolume += data[i].volume || 0;
-    }
-    result.push(sumVolume === 0 ? 0 : sumMf / sumVolume);
-    
-    // Use sliding window for subsequent calculations
-    for (let i = period; i < data.length; i++) {
-        const firstMf = moneyFlowVolumes[i - period];
-        const firstVolume = data[i-period].volume;
+    for (let i = period - 1; i < data.length; i++) {
+        const mfVolumeSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
+        const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
 
-        if (!isNaN(firstMf) && !isNaN(firstVolume)) {
-            sumMf -= firstMf;
-            sumVolume -= firstVolume;
+        const sumMfVolume = mfVolumeSlice.reduce((sum, val) => val === null ? sum : sum + val, 0);
+        const sumVolume = volumeSlice.reduce((sum, val) => isNaN(val) ? sum : sum + val, 0);
+
+        if (sumVolume === 0 || sumMfVolume === null) {
+            cmfValues.push(NaN);
+        } else {
+            cmfValues.push(sumMfVolume / sumVolume);
         }
-        
-        const currentMf = moneyFlowVolumes[i];
-        const currentVolume = data[i].volume;
-
-        if (!isNaN(currentMf) && !isNaN(currentVolume)) {
-            sumMf += currentMf;
-            sumVolume += currentVolume;
-        }
-
-        result.push(sumVolume === 0 ? 0 : sumMf / sumVolume);
     }
 
-    return result;
+    return cmfValues;
 };
+
 
