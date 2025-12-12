@@ -6,7 +6,7 @@ import { useState, useTransition, useCallback, useRef, useMemo, useEffect } from
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain, X } from 'lucide-react';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -400,13 +400,28 @@ export default function Home() {
                             <FormItem>
                               <FormLabel>Ticker Symbol / Currency Pair / Crypto</FormLabel>
                                <FormControl>
-                                  <Input
-                                    placeholder="e.g., AAPL, EURUSD, 0700.HK"
-                                    {...field}
-                                    onInput={(e) => {
-                                        field.onChange(e.currentTarget.value.toUpperCase())
-                                    }}
-                                  />
+                                <div className="relative">
+                                    <Input
+                                        placeholder="e.g., AAPL, EURUSD, 0700.HK"
+                                        {...field}
+                                        onInput={(e) => {
+                                            field.onChange(e.currentTarget.value.toUpperCase())
+                                        }}
+                                        className={field.value ? 'pr-8' : ''}
+                                    />
+                                    {field.value && (
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                            onClick={() => form.setValue('ticker', '')}
+                                        >
+                                            <X className="h-4 w-4" />
+                                            <span className="sr-only">Clear</span>
+                                        </Button>
+                                    )}
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>

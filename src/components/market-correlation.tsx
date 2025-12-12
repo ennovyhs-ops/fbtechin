@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertCircle, BarChart, TrendingUp, TrendingDown, Upload } from 'lucide-react';
+import { Loader2, AlertCircle, BarChart, TrendingUp, TrendingDown, Upload, X } from 'lucide-react';
 import { fetchMarketData } from '@/app/actions';
 import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
@@ -242,14 +242,28 @@ export function MarketCorrelation({ baseTicker, baseMarketData }: MarketCorrelat
                         <label htmlFor="comparison-ticker" className="text-sm font-medium text-foreground">
                             Comparison Ticker (uses 1 API request)
                         </label>
-                        <Input
-                            id="comparison-ticker"
-                            placeholder="e.g., SPY, QQQ"
-                            value={comparisonTicker}
-                            onInput={(e) => setComparisonTicker(e.currentTarget.value.toUpperCase())}
-                            className="mt-1"
-                            disabled={isPending}
-                        />
+                        <div className="relative mt-1">
+                            <Input
+                                id="comparison-ticker"
+                                placeholder="e.g., SPY, QQQ"
+                                value={comparisonTicker}
+                                onInput={(e) => setComparisonTicker(e.currentTarget.value.toUpperCase())}
+                                className={comparisonTicker ? 'pr-8' : ''}
+                                disabled={isPending}
+                            />
+                            {comparisonTicker && (
+                                <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setComparisonTicker('')}
+                                >
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Clear</span>
+                                </Button>
+                            )}
+                        </div>
                     </div>
                     <Button onClick={handleApiAnalysis} disabled={isPending || !comparisonTicker} className="w-full sm:w-auto">
                         {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
