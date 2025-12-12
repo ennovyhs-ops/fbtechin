@@ -55,6 +55,22 @@ export type VwmaData = {
     VWMA: string | null;
 }
 
+export type ObvData = {
+    date: string;
+    OBV: string | null;
+}
+
+export type StochasticData = {
+    date: string;
+    k: string | null;
+    d: string | null;
+}
+
+export type CmfData = {
+    date: string;
+    CMF: string | null;
+}
+
 export type NewsArticle = {
   title: string;
   url:string;
@@ -97,6 +113,11 @@ export type IndicatorPeriods = {
   };
   maVol: number;
   vwma: number;
+  stochastic: {
+      kPeriod: number;
+      dPeriod: number;
+  };
+  cmf: number;
 };
 
 export type MonteCarloResult = {
@@ -114,3 +135,5 @@ export type CombinedAnalysisResult = {
 }
 
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
+
+    

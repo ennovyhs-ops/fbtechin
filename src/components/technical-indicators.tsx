@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown } from 'lucide-react';
-import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData } from '@/lib/types';
+import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from './ui/separator';
@@ -21,6 +21,9 @@ interface TechnicalIndicatorsProps {
         roc: RocData[];
         maVol: MAVolData[];
         vwma: VwmaData[];
+        obv: ObvData[];
+        stochastic: StochasticData[];
+        cmf: CmfData[];
     } | null;
     loading: boolean;
     error: string | null;
@@ -33,20 +36,20 @@ interface TechnicalIndicatorsProps {
 export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange, latestClose }: TechnicalIndicatorsProps) {
     const [localPeriods, setLocalPeriods] = useState(periods);
 
-    const handlePeriodChange = (indicator: keyof Omit<IndicatorPeriods, 'macd' | 'bbands'>, value: string) => {
+    const handlePeriodChange = (indicator: keyof Omit<IndicatorPeriods, 'macd' | 'bbands' | 'stochastic'>, value: string) => {
         const numValue = parseInt(value, 10);
         if (!isNaN(numValue) && numValue > 0) {
             setLocalPeriods(prev => ({ ...prev, [indicator]: numValue }));
         }
     };
 
-    const handleComplexPeriodChange = (indicator: 'macd' | 'bbands', subKey: keyof IndicatorPeriods['macd'] | keyof IndicatorPeriods['bbands'], value: string) => {
+    const handleComplexPeriodChange = (indicator: 'macd' | 'bbands' | 'stochastic', subKey: keyof IndicatorPeriods['macd'] | keyof IndicatorPeriods['bbands'] | keyof IndicatorPeriods['stochastic'], value: string) => {
         const numValue = parseFloat(value); // Use parseFloat for stdDev
          if (!isNaN(numValue) && numValue > 0) {
             setLocalPeriods(prev => ({
                 ...prev,
                 [indicator]: {
-                    ...prev[indicator],
+                    ...(prev[indicator] as any),
                     [subKey]: numValue
                 }
             }));
@@ -99,6 +102,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const latestRoc = data?.roc?.[0];
     const latestMaVol = data?.maVol?.[0];
     const latestVwma = data?.vwma?.[0];
+    const latestObv = data?.obv?.[0];
+    const latestStochastic = data?.stochastic?.[0];
+    const latestCmf = data?.cmf?.[0];
+
 
     const getRsiStatus = (rsiValue: string | null) => {
         if (rsiValue === null) return 'N/A';
@@ -108,7 +115,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         return 'Neutral';
     };
 
+    const getStochasticStatus = (k: string | null) => {
+        if (k === null) return 'N/A';
+        const kVal = parseFloat(k);
+        if (kVal > 80) return 'Overbought';
+        if (kVal < 20) return 'Oversold';
+        return 'Neutral';
+    }
+
     const rsiStatus = getRsiStatus(latestRsi?.RSI ?? null);
+    const stochasticStatus = getStochasticStatus(latestStochastic?.k ?? null);
     
     const isVolumeSpike = latestMaVol?.volume && latestMaVol?.MAVol ? parseFloat(latestMaVol.volume) > parseFloat(latestMaVol.MAVol) * 1.5 : false;
 
@@ -130,6 +146,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const macdLine = latestMacd?.MACD ? parseFloat(latestMacd.MACD) : null;
     const signalLine = latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal) : null;
     const macdPosition = macdLine !== null && signalLine !== null ? (macdLine > signalLine ? 'Bullish' : 'Bearish') : null;
+    
+    const obvValue = latestObv?.OBV ? parseFloat(latestObv.OBV) : null;
+    const obvTrend = data?.obv && data.obv.length > 1 && data.obv[0].OBV && data.obv[1].OBV
+        ? parseFloat(data.obv[0].OBV) > parseFloat(data.obv[1].OBV) ? 'Rising' : 'Falling'
+        : null;
+        
+    const cmfValue = latestCmf?.CMF ? parseFloat(latestCmf.CMF) : null;
+    const cmfPosition = cmfValue !== null ? (cmfValue > 0 ? 'Bullish' : 'Bearish') : null;
 
 
     return (
@@ -225,7 +249,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          </div>
                          
                         {/* Bollinger Bands */}
-                        <div className="p-3 border rounded-lg space-y-2 col-span-1 md:col-span-2">
+                        <div className="p-3 border rounded-lg space-y-2">
                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -285,7 +309,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          </div>
                          
                         {/* MACD */}
-                         <div className="p-3 border rounded-lg space-y-2 col-span-1 md:col-span-3">
+                         <div className="p-3 border rounded-lg space-y-2">
                              <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
@@ -322,6 +346,86 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                  )}
                              </div>
                          </div>
+
+                        {/* Stochastic Oscillator */}
+                        <div className="p-3 border rounded-lg space-y-2">
+                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
+                                 <Tooltip>
+                                     <TooltipTrigger asChild>
+                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">STOCHASTIC OSCILLATOR</h3>
+                                     </TooltipTrigger>
+                                     <TooltipContent className="max-w-xs"><p>Compares a particular closing price of a security to a range of its prices over a certain period of time. It is used to generate overbought and oversold trading signals.</p></TooltipContent>
+                                 </Tooltip>
+                                 <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                                    <div className="flex items-center gap-1">
+                                         <label htmlFor="stoch-k" className="text-xs font-medium text-muted-foreground">%K:</label>
+                                         <Input id="stoch-k" type="number" value={localPeriods.stochastic.kPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'kPeriod', e.target.value)} className="w-16 h-7 text-sm" />
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                         <label htmlFor="stoch-d" className="text-xs font-medium text-muted-foreground">%D:</label>
+                                         <Input id="stoch-d" type="number" value={localPeriods.stochastic.dPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'dPeriod', e.target.value)} className="w-16 h-7 text-sm" />
+                                    </div>
+                                 </div>
+                             </div>
+                              <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                                 <div className="grid grid-cols-2 gap-x-4">
+                                     <div><p className="text-xs text-muted-foreground">%K Line</p><p className="font-semibold text-sm">{latestStochastic?.k ?? 'N/A'}</p></div>
+                                     <div><p className="text-xs text-muted-foreground">%D Line</p><p className="font-semibold text-sm">{latestStochastic?.d ?? 'N/A'}</p></div>
+                                 </div>
+                                <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
+                                     stochasticStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
+                                     stochasticStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
+                                     'bg-muted text-muted-foreground'
+                                 }`}>{stochasticStatus}</p>
+                             </div>
+                         </div>
+                         
+                        {/* On-Balance Volume (OBV) */}
+                        <div className="p-3 border rounded-lg space-y-2">
+                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                                 <Tooltip>
+                                     <TooltipTrigger asChild>
+                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">ON-BALANCE VOLUME (OBV)</h3>
+                                     </TooltipTrigger>
+                                     <TooltipContent className="max-w-xs"><p>A momentum indicator that uses volume flow to predict changes in stock price. A rising OBV reflects positive volume pressure that can lead to higher prices.</p></TooltipContent>
+                                 </Tooltip>
+                             </div>
+                              <div className="flex items-center flex-wrap gap-2 pt-1">
+                                 <p className="font-semibold text-sm">{latestObv?.OBV ? Number(latestObv.OBV).toLocaleString() : 'N/A'}</p>
+                                 {obvTrend && (
+                                      <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                         {obvTrend === 'Rising' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                         {obvTrend}
+                                     </div>
+                                 )}
+                             </div>
+                         </div>
+                         
+                        {/* Chaikin Money Flow (CMF) */}
+                        <div className="p-3 border rounded-lg space-y-2">
+                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                                 <Tooltip>
+                                     <TooltipTrigger asChild>
+                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">CHAIKIN MONEY FLOW (CMF)</h3>
+                                     </TooltipTrigger>
+                                     <TooltipContent className="max-w-xs"><p>Measures money flow volume over a set period. A CMF value above zero indicates buying pressure (accumulation), while a value below zero indicates selling pressure (distribution).</p></TooltipContent>
+                                 </Tooltip>
+                                <div className="flex items-center gap-1">
+                                     <label htmlFor="cmf-period" className="text-xs font-medium text-muted-foreground">P:</label>
+                                     <Input id="cmf-period" type="number" value={localPeriods.cmf} onChange={(e) => handlePeriodChange('cmf', e.target.value)} className="w-16 h-7 text-sm" />
+                                 </div>
+                             </div>
+                              <div className="flex items-center flex-wrap gap-2 pt-1">
+                                 <p className="font-semibold text-sm">{latestCmf?.CMF ?? 'N/A'}</p>
+                                 {cmfPosition && (
+                                      <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                         {cmfPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                         {cmfPosition === 'Bullish' ? 'Buying Pressure' : 'Selling Pressure'}
+                                     </div>
+                                 )}
+                             </div>
+                         </div>
+
                     </div>
                     <div className="flex justify-end pt-2">
                         <Button onClick={handleUpdateClick} disabled={loading} size="sm">

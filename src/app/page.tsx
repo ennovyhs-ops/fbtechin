@@ -7,9 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain } from 'lucide-react';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation } from '@/lib/technical-analysis';
+import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF } from '@/lib/technical-analysis';
 import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 
@@ -46,6 +46,8 @@ const defaultPeriods: IndicatorPeriods = {
   bbands: { period: 20, stdDev: 2 },
   maVol: 50,
   vwma: 20,
+  stochastic: { kPeriod: 14, dPeriod: 3 },
+  cmf: 20,
 };
 
 export default function Home() {
@@ -59,7 +61,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -82,8 +84,11 @@ export default function Home() {
     setIndicatorsLoading(true);
     setIndicatorsError(null);
     try {
-        const closePrices = data.map(d => parseFloat(d.close)).reverse(); // Reverse for chronological order
-        const volumes = data.map(d => parseFloat(d.volume)).reverse();
+        const chronologicalData = [...data].reverse(); // Reverse once for chronological order
+        const closePrices = chronologicalData.map(d => parseFloat(d.close));
+        const highPrices = chronologicalData.map(d => parseFloat(d.high));
+        const lowPrices = chronologicalData.map(d => parseFloat(d.low));
+        const volumes = chronologicalData.map(d => parseFloat(d.volume));
         
         const rsi = calculateRSI(closePrices, periods.rsi);
         const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal);
@@ -91,6 +96,10 @@ export default function Home() {
         const roc = calculateROC(closePrices, periods.roc);
         const maVol = calculateMAVol(volumes, periods.maVol);
         const vwma = calculateVWMA(closePrices, volumes, periods.vwma);
+        const obv = calculateOBV(closePrices, volumes);
+        const stochastic = calculateStochastic(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) })), periods.stochastic.kPeriod, periods.stochastic.dPeriod);
+        const cmf = calculateCMF(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close), volume: parseFloat(d.volume) })), periods.cmf);
+
 
         const formatNumber = (num: number | null | undefined, precision: number = 2): string | null => {
             if (num === null || num === undefined || isNaN(num)) return null;
@@ -121,6 +130,13 @@ export default function Home() {
                 MAVol: formatNumber(val, 0) 
             })),
             vwma: vwma.reverse().map((val, i) => ({ date: dates[i], VWMA: formatNumber(val) })),
+            obv: obv.reverse().map((val, i) => ({ date: dates[i], OBV: formatNumber(val, 0) })),
+            stochastic: stochastic.reverse().map((val, i) => ({ 
+                date: dates[i], 
+                k: formatNumber(val.k), 
+                d: formatNumber(val.d) 
+            })),
+            cmf: cmf.reverse().map((val, i) => ({ date: dates[i], CMF: formatNumber(val, 3) })),
         });
     } catch (e: any) {
         setIndicatorsError(e.message || 'Failed to calculate indicators.');
@@ -156,7 +172,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [] });
         }
       } else {
         setMarketData(null);
@@ -224,7 +240,7 @@ export default function Home() {
       
       handleDataResult(marketResult, ticker);
     });
-  }, [calculateIndicators]);
+  }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -812,3 +828,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
