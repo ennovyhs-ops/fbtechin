@@ -361,7 +361,29 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">STOCHASTIC OSCILLATOR</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>Compares a particular closing price of a security to a range of its prices over a certain period of time. It is used to generate overbought and oversold trading signals.</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                            <p className="font-bold text-foreground">What is the Stochastic Oscillator?</p>
+                                            <p>It's a momentum indicator that compares a security's closing price to its price range over a specific period. Its sensitivity to market moves makes it useful for spotting potential trend reversals.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">Key Components:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="font-semibold text-primary">%K Line:</span> The main line, which measures where the latest close is relative to the recent high-low range.</li>
+                                                <li><span className="font-semibold text-primary">%D Line:</span> A moving average of the %K line, acting as a smoother signal line.</li>
+                                            </ul>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">How to Interpret It:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="text-red-400 font-semibold">Overbought:</span> Readings above 80 suggest the asset might be due for a pullback.</li>
+                                                <li><span className="text-green-400 font-semibold">Oversold:</span> Readings below 20 suggest the asset might be due for a bounce.</li>
+                                                <li><span className="font-semibold">Crossovers:</span> A bullish signal can occur when the %K line crosses above the %D line, especially in oversold territory. A bearish signal occurs when %K crosses below %D in overbought territory.</li>
+                                            </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                                  <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
                                     <div className="flex items-center gap-1">
@@ -401,15 +423,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipContent className="max-w-xs p-3 space-y-2">
                                         <div>
                                           <p className="font-bold text-foreground">What is OBV?</p>
-                                          <p>On-Balance Volume is a momentum indicator that uses volume flow to predict price changes. It keeps a running total of volume, adding on up days and subtracting on down days.</p>
+                                          <p>On-Balance Volume is a momentum indicator that uses volume flow to predict price changes. It maintains a running total of volume, adding volume on up days and subtracting it on down days.</p>
                                         </div>
                                         <Separator />
                                         <div>
                                           <p className="font-bold text-foreground">How to Interpret It:</p>
-                                          <p>The absolute value of OBV is not important. The <span className="font-semibold text-primary">trend of OBV is key</span>. A rising OBV reflects positive buying pressure, which can confirm an uptrend or foreshadow a bullish reversal.</p>
+                                          <p>The <span className="font-semibold text-primary">trend of OBV is key</span>; the absolute numeric value is not important. A rising OBV reflects positive buying pressure, which can confirm an uptrend or signal a potential bullish reversal.</p>
                                           <ul className="list-disc list-inside mt-1 space-y-1">
-                                            <li><span className="text-green-400 font-semibold">Bullish Divergence:</span> Price makes a new low, but OBV makes a higher low. This can signal that the downtrend is losing momentum.</li>
-                                            <li><span className="text-red-400 font-semibold">Bearish Divergence:</span> Price makes a new high, but OBV makes a lower high. This can signal that the uptrend is losing momentum.</li>
+                                            <li><span className="text-green-400 font-semibold">Bullish Divergence:</span> Occurs when price makes a new low, but OBV makes a higher low. This suggests selling pressure is weakening.</li>
+                                            <li><span className="text-red-400 font-semibold">Bearish Divergence:</span> Occurs when price makes a new high, but OBV makes a lower high. This suggests buying pressure is weakening.</li>
                                           </ul>
                                         </div>
                                      </TooltipContent>
@@ -436,16 +458,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipContent className="max-w-xs p-3 space-y-2">
                                         <div>
                                             <p className="font-bold text-foreground">What is CMF?</p>
-                                            <p>The Chaikin Money Flow (CMF), developed by Marc Chaikin, is a technical indicator that measures the amount of Money Flow Volume over a set period (typically 21 days). It oscillates between -1 and +1.</p>
+                                            <p>The Chaikin Money Flow (CMF), developed by Marc Chaikin, is a technical indicator that measures the amount of Money Flow Volume over a set period. It oscillates between -1 and +1.</p>
                                         </div>
                                         <Separator />
                                         <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation).</li>
-                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution).</li>
-                                                <li>A <span className="font-semibold text-primary">Bullish Divergence</span> occurs when price makes a new low but CMF makes a higher low, suggesting a potential bottom.</li>
-                                                <li>A <span className="font-semibold text-primary">Bearish Divergence</span> occurs when price makes a new high but CMF fails to reach a new high, suggesting a potential top.</li>
+                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation), as the stock is closing in the upper portion of its daily range.</li>
+                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution), as it's closing in the lower portion of its range.</li>
+                                                <li><span className="font-semibold text-primary">Bullish Divergence:</span> Occurs when price makes a new low but CMF makes a higher low, suggesting a potential bottom.</li>
+                                                <li><span className="font-semibold text-primary">Bearish Divergence:</span> Occurs when price makes a new high but CMF fails to reach a new high, suggesting a potential top.</li>
                                             </ul>
                                         </div>
                                      </TooltipContent>
@@ -485,5 +507,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
 
 
