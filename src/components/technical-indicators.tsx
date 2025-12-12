@@ -322,7 +322,31 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>A trend-following momentum indicator that shows the relationship between two moving averages of a security's price. A crossover of the MACD line and signal line can indicate a change in trend.</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                            <p className="font-bold text-foreground">What is MACD?</p>
+                                            <p>A trend-following momentum indicator that shows the relationship between two exponential moving averages (EMAs) of a security's price.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">Key Components:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="font-semibold text-primary">MACD Line:</span> The difference between the 12-period and 26-period EMAs. It shows short-term momentum.</li>
+                                                <li><span className="font-semibold text-primary">Signal Line:</span> A 9-period EMA of the MACD Line. It acts as a trigger for buy and sell signals.</li>
+                                                <li><span className="font-semibold text-primary">Histogram:</span> The difference between the MACD Line and the Signal Line. It visualizes the distance between the two lines.</li>
+                                            </ul>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">How to Interpret It:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="text-green-400 font-semibold">Bullish Crossover:</span> MACD Line crosses above the Signal Line.</li>
+                                                <li><span className="text-red-400 font-semibold">Bearish Crossover:</span> MACD Line crosses below the Signal Line.</li>
+                                                <li><span className="font-semibold">Centerline Crossover:</span> When the MACD line crosses above 0, it's considered bullish; when it crosses below 0, it's bearish.</li>
+                                                <li><span className="font-semibold">Divergence:</span> When the stock price makes a new high/low but the MACD does not, it can signal a potential reversal.</li>
+                                            </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                                  <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
                                     <div className="flex items-center gap-1">
@@ -507,6 +531,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
 
 
 
