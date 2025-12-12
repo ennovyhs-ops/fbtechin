@@ -577,7 +577,7 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
     obv[firstValidIndex] = 0; // Standard practice to start OBV at 0
 
     for (let i = firstValidIndex + 1; i < closes.length; i++) {
-        if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i]) || isNaN(obv[i-1])) {
+        if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i])) {
             obv[i] = obv[i-1]; // Carry over last valid OBV if current data is bad
             continue;
         }
@@ -651,40 +651,52 @@ export const calculateCMF = (
     data: { high: number; low: number; close: number; volume: number }[],
     period: number
 ): number[] => {
-    if (data.length < period) return new Array(data.length).fill(NaN);
-
     const moneyFlowVolumes: (number | null)[] = [];
     for (let i = 0; i < data.length; i++) {
         const { high, low, close, volume } = data[i];
-        if (
-            isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low
-        ) {
+        if ( isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low ) {
             moneyFlowVolumes.push(null);
-            continue;
+        } else {
+            const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
+            moneyFlowVolumes.push(moneyFlowMultiplier * volume);
         }
-        const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
-        moneyFlowVolumes.push(moneyFlowMultiplier * volume);
     }
     
     const cmfValues: number[] = new Array(period - 1).fill(NaN);
+    if (data.length < period) return cmfValues;
 
-    for (let i = period - 1; i < data.length; i++) {
-        const mfVolumeSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
-        const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
+    let mfVolumeSum = 0;
+    let volumeSum = 0;
 
-        const validMfVolumes = mfVolumeSlice.filter(v => v !== null) as number[];
-        const validVolumes = volumeSlice.filter(v => !isNaN(v));
-
-        const sumMfVolume = validMfVolumes.reduce((sum, val) => sum + val, 0);
-        const sumVolume = validVolumes.reduce((sum, val) => sum + val, 0);
-        
-        if (sumVolume === 0) {
-            cmfValues.push(NaN);
-        } else {
-            cmfValues.push(sumMfVolume / sumVolume);
+    // Calculate initial sum for the first window
+    for (let i = 0; i < period; i++) {
+        if (moneyFlowVolumes[i] !== null && !isNaN(data[i].volume)) {
+            mfVolumeSum += moneyFlowVolumes[i]!;
+            volumeSum += data[i].volume;
         }
     }
 
+    cmfValues.push(volumeSum === 0 ? 0 : mfVolumeSum / volumeSum);
+
+    // Slide the window
+    for (let i = period; i < data.length; i++) {
+        const oldMfVolume = moneyFlowVolumes[i - period];
+        const oldVolume = data[i - period].volume;
+        const newMfVolume = moneyFlowVolumes[i];
+        const newVolume = data[i].volume;
+
+        if (oldMfVolume !== null && !isNaN(oldVolume)) {
+            mfVolumeSum -= oldMfVolume;
+            volumeSum -= oldVolume;
+        }
+        if (newMfVolume !== null && !isNaN(newVolume)) {
+            mfVolumeSum += newMfVolume;
+            volumeSum += newVolume;
+        }
+        
+        cmfValues.push(volumeSum === 0 ? 0 : mfVolumeSum / volumeSum);
+    }
+    
     return cmfValues;
 };
 
