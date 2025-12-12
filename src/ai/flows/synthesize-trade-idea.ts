@@ -50,7 +50,7 @@ const TradeIdeaSchema = z.object({
 });
 
 const SynthesizeTradeIdeaOutputSchema = z.object({
-  ideas: z.array(TradeIdeaSchema).min(2).max(3).describe("An array containing 2-3 suitable trade ideas, from most suitable to most aggressive.")
+  ideas: z.array(TradeIdeaSchema).length(3).describe("An array containing exactly 3 suitable trade ideas, from most suitable to most aggressive.")
 });
 export type SynthesizeTradeIdeaOutput = z.infer<typeof SynthesizeTradeIdeaOutputSchema>;
 
@@ -64,7 +64,7 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
   name: 'synthesizeTradeIdeaPrompt',
   input: { schema: SynthesizeTradeIdeaInputSchema },
   output: { schema: SynthesizeTradeIdeaOutputSchema },
-  prompt: `You are an expert quantitative trading strategist. Your task is to synthesize the outputs of multiple financial models into **up to three distinct trade ideas** for {{ticker}}, ranging from most suitable to most aggressive.
+  prompt: `You are an expert quantitative trading strategist. Your task is to synthesize the outputs of multiple financial models into **exactly three distinct trade ideas** for {{ticker}}, ordered from most suitable to most aggressive.
 
 **Model Inputs:**
 *   **Current Price:** {{currentPrice}}
@@ -91,13 +91,13 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
         *   **Aggressive "Lotto Tickets":** Far out-of-the-money, short-dated weekly options.
 
 3.  **Formulate the Output:**
-    *   You must generate an array called 'ideas' containing 2 or 3 distinct trade ideas, ordered by suitability.
+    *   You must generate an array called 'ideas' containing **exactly 3** distinct trade ideas, ordered by suitability.
     *   **Idea 1: The Primary Idea.** This should be the most suitable, well-reasoned trade based on all inputs.
-    *   **Idea 2: The Alternative Idea.** This could be a more creative play, perhaps using a different assumption (e.g., a time-based play like a Calendar Spread if chop is expected before a move). You MUST explicitly label this strategy's name as something like "Alternative: [Strategy Name]".
-    *   **Idea 3 (Optional): The "Lotto Ticket".** If and only if the momentum signal is "STRONG BULLISH" or "STRONG BEARISH", add a third, highly aggressive idea. You MUST name this strategy "Lotto Ticket: [Strategy Name]". Clearly label it as high-risk.
+    *   **Idea 2: The Alternative Idea.** This could be a more creative play, perhaps using a different assumption (e.g., a time-based play like a Calendar Spread if chop is expected before a move). You MUST explicitly label this strategy's name as "Alternative: [Strategy Name]".
+    *   **Idea 3: The "Lotto Ticket".** You MUST include a third, highly aggressive idea. You MUST name this strategy "Lotto Ticket: [Strategy Name]". This should be a speculative, high-risk/high-reward play (e.g., buying far out-of-the-money, short-dated weekly options). Clearly label it as high-risk in the rationale.
     *   For each idea, provide:
         *   **strategy:** Name of the strategy, with the required prefixes for ideas 2 and 3.
-        *   **conviction:** Your calculated conviction level.
+        *   **conviction:** Your calculated conviction level. For the Lotto Ticket, this should almost always be "Low" due to its nature.
         *   **rationale:** A 1-2 sentence explanation referencing model agreement, volatility, and why this specific strategy is a good fit.
         *   **action:** A concrete trade structure. You **MUST** use the Pivot Points and Fibonacci levels to inform your choice of strike prices. State the strike prices clearly (e.g., '~$175') and suggest a specific expiration (e.g., '30-60 days').
 
