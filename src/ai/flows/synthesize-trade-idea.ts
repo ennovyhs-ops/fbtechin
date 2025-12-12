@@ -50,7 +50,7 @@ const TradeIdeaSchema = z.object({
 });
 
 const SynthesizeTradeIdeaOutputSchema = z.object({
-  ideas: z.array(TradeIdeaSchema).length(2).describe("An array containing the top two most suitable trade ideas.")
+  ideas: z.array(TradeIdeaSchema).min(2).max(3).describe("An array containing 2-3 suitable trade ideas, from most suitable to most aggressive.")
 });
 export type SynthesizeTradeIdeaOutput = z.infer<typeof SynthesizeTradeIdeaOutputSchema>;
 
@@ -64,7 +64,7 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
   name: 'synthesizeTradeIdeaPrompt',
   input: { schema: SynthesizeTradeIdeaInputSchema },
   output: { schema: SynthesizeTradeIdeaOutputSchema },
-  prompt: `You are an expert quantitative trading strategist. Your task is to synthesize the outputs of multiple financial models into the **top two most suitable, distinct trade ideas** for {{ticker}}.
+  prompt: `You are an expert quantitative trading strategist. Your task is to synthesize the outputs of multiple financial models into **up to three distinct trade ideas** for {{ticker}}, ranging from most suitable to most aggressive.
 
 **Model Inputs:**
 *   **Current Price:** {{currentPrice}}
@@ -81,31 +81,30 @@ const synthesizeTradeIdeaPrompt = ai.definePrompt({
 1.  **Analyze Model Agreement & Conviction:**
     *   Do the Momentum Target and the Monte Carlo range point in the same direction? Strong agreement implies **High Conviction**. Disagreement implies **Low Conviction** or **Caution**.
 
-2.  **Select Volatility-Aware & Creative Strategies:** Based on conviction AND volatility, choose the **two most appropriate, distinct** strategies from your comprehensive toolkit.
+2.  **Select Volatility-Aware & Creative Strategies:** Based on conviction AND volatility, choose your strategies from your comprehensive toolkit.
     *   **Your Strategy Toolkit Includes:**
         *   **Directional (Debit/Credit):** Long Calls/Puts, Bull Call Spreads, Bear Put Spreads, etc.
         *   **Premium Selling (High Vol):** Bull Put Spreads, Bear Call Spreads.
         *   **Range-Bound (Low Vol):** Iron Condors, Butterflies.
         *   **Volatility Buying (Expecting a move):** Strangles, Straddles.
         *   **Creative Time/Volatility Plays:** Calendar Spreads, Diagonal Spreads, Ratio Spreads.
-    *   **Decision Logic:**
-        *   **High Vol + Directional Conviction:** Favor premium-selling (e.g., Bull Put Spread, Bear Call Spread).
-        *   **Low Vol + Directional Conviction:** Favor premium-buying (e.g., Debit Spreads, Long Calls/Puts).
-        *   **High Vol + Low/Neutral Conviction:** Favor volatility-profiting (e.g., Strangles, Straddles).
-        *   **Low Vol + Low/Neutral Conviction:** Favor range-bound strategies that profit from time decay (e.g., Iron Condors, Butterflies).
-        *   **Complex Scenarios:** Consider **Calendar or Diagonal Spreads** for time decay plays or if you expect short-term chop followed by a directional move. Use **Ratio Spreads** for a directional bias with a hedge or to profit from high volatility.
+        *   **Aggressive "Lotto Tickets":** Far out-of-the-money, short-dated weekly options.
 
 3.  **Formulate the Output:**
-    *   You must generate an array called 'ideas' containing exactly two distinct trade ideas. The first should be the primary, most suitable one.
+    *   You must generate an array called 'ideas' containing 2 or 3 distinct trade ideas, ordered by suitability.
+    *   **Idea 1: The Primary Idea.** This should be the most suitable, well-reasoned trade based on all inputs.
+    *   **Idea 2: The Alternative Idea.** This could be a more creative play, perhaps using a different assumption (e.g., a time-based play like a Calendar Spread if chop is expected before a move).
+    *   **Idea 3 (Optional): The "Lotto Ticket".** If and only if the momentum signal is "STRONG BULLISH" or "STRONG BEARISH", add a third, highly aggressive idea. This should be a short-dated, far out-of-the-money option play. Clearly label it as high-risk.
     *   For each idea, provide:
         *   **strategy:** Name of the strategy.
         *   **conviction:** Your calculated conviction level.
         *   **rationale:** A 1-2 sentence explanation referencing model agreement, volatility, and why this specific strategy is a good fit.
-        *   **action:** A concrete trade structure. You **MUST** use the Pivot Points and Fibonacci levels to inform your choice of strike prices. For example, for a bullish spread, you might sell a put at a strike near a support level (like S1 or a Fibonacci level). State the strike prices clearly (e.g., '~$175') and suggest a specific expiration (e.g., '30-60 days').
+        *   **action:** A concrete trade structure. You **MUST** use the Pivot Points and Fibonacci levels to inform your choice of strike prices. State the strike prices clearly (e.g., '~$175') and suggest a specific expiration (e.g., '30-60 days').
 
-**Example for a "STRONG BULLISH" signal, price $150, target $165, range $160-$175, volatility 45% (High), pivots {R1: 158, S1: 145}, fibonacci {level382: 142}:**
+**Example for a "STRONG BULLISH" signal, price $150, target $165, range $160-$175, volatility 45% (High), pivots {R1: 158, S1: 145}:**
 - Idea 1: { strategy: "Bull Put Spread", conviction: "High", rationale: "Models agree on the upward move and high volatility makes selling premium attractive.", action: "Sell a put at the ~$145 strike, aligning with the S1 pivot support, and buy a put at ~$140 for protection, with 30-45 days to expiration." }
 - Idea 2: { strategy: "Bull Call Spread", conviction: "High", rationale: "A risk-defined way to participate in the upside, with the short strike providing a buffer against high volatility.", action: "Buy a call at ~$150 and sell a call at ~$165, near the momentum target, with 45-60 days to expiration." }
+- Idea 3: { strategy: "Weekly OTM Call ('Lotto Ticket')", conviction: "Low", rationale: "This is a very high-risk, speculative play that will only profit from a massive, immediate rally. Probability of success is low.", action: "Buy a weekly call with a strike at ~$170, expiring in 1-2 weeks."}
 
 Now, analyze the inputs provided and generate your response.
 `,
@@ -122,3 +121,5 @@ const synthesizeTradeIdeaFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

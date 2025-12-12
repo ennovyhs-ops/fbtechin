@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, Loader2, AlertCircle, Sparkles, Wand, HelpCircle, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { synthesizeTradeIdea } from '@/ai/flows/synthesize-trade-idea';
@@ -122,28 +122,26 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
                 <span>{error}</span>
             </div>
         ) : ideas && ideas.ideas.length > 0 ? (
-          <Collapsible defaultOpen>
-            <div className="space-y-4 animate-in fade-in-50 duration-500">
-                {ideas.ideas.map((idea, index) => (
-                   <div key={index} className="p-3 rounded-lg border bg-background/50 text-sm space-y-3">
-                       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-                          <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
-                            <span>{index + 1}.</span> {idea.strategy}
-                          </h3>
-                           <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
-                               Conviction: {idea.conviction}
-                           </Badge>
-                       </div>
-                       <CollapsibleTrigger className="w-full">
-                          <p className="text-xs text-left text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
-                       </CollapsibleTrigger>
-                       <CollapsibleContent>
-                          <p className="text-xs text-muted-foreground pt-2"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
-                       </CollapsibleContent>
-                   </div>
-                ))}
-            </div>
-          </Collapsible>
+          <div className="space-y-4 animate-in fade-in-50 duration-500">
+              {ideas.ideas.map((idea, index) => {
+                  const isLotto = idea.strategy.toLowerCase().includes('lotto');
+                  return (
+                     <div key={index} className={`p-3 rounded-lg border text-sm space-y-3 ${isLotto ? 'bg-orange-500/10 border-orange-500/20' : 'bg-background/50'}`}>
+                         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+                            <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
+                              {isLotto && <AlertTriangle className="h-4 w-4 text-orange-400" />}
+                              <span>{index + 1}.</span> {idea.strategy}
+                            </h3>
+                             <Badge variant="outline" className={getConvictionColor(idea.conviction)}>
+                                 Conviction: {idea.conviction}
+                             </Badge>
+                         </div>
+                         <p className="text-xs text-left text-muted-foreground"><span className="font-semibold text-primary">RATIONALE:</span> {idea.rationale}</p>
+                         <p className="text-xs text-muted-foreground pt-2"><span className="font-semibold text-primary">ACTION:</span> {idea.action}</p>
+                     </div>
+                  )
+              })}
+          </div>
         ) : (
             <Button onClick={handleSynthesizeIdea} disabled={loading}>
                 <Sparkles className="mr-2 h-4 w-4" />
@@ -154,3 +152,5 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
     </Card>
   );
 }
+
+    
