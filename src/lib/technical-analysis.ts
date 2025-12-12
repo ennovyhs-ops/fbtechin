@@ -284,7 +284,7 @@ export const calculateMAVol = (volumeData: number[], period: number): number[] =
  * @param period - The number of periods to average over.
  * @returns An array of the VWMA.
  */
-export const calculateVWMA = (prices: number[], volumes: number[], period: number): number[] => {
+export const calculateVWMA = (prices: number[], volumes: number[], period: number[]): number[] => {
     if (prices.length < period) return new Array(prices.length).fill(NaN);
 
     const result: number[] = new Array(period - 1).fill(NaN);
@@ -574,12 +574,12 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
 
     if (firstValidIndex === -1) return obv;
 
-    // The initial OBV can be the first day's volume. Some conventions use 0.
+    // The initial OBV is the first day's volume.
     obv[firstValidIndex] = volumes[firstValidIndex];
 
     for (let i = firstValidIndex + 1; i < closes.length; i++) {
         if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i]) || isNaN(obv[i-1])) {
-            obv[i] = NaN; // If current data is invalid, result is invalid
+            obv[i] = obv[i-1]; // Carry over last valid OBV if current data is bad
             continue;
         }
         if (closes[i] > closes[i - 1]) {
@@ -620,10 +620,8 @@ export const calculateStochastic = (
         const highestHigh = Math.max(...slice.map(d => d.high).filter(v => !isNaN(v)));
         const currentClose = data[i].close;
 
-        if (isNaN(lowestLow) || isNaN(highestHigh) || isNaN(currentClose)) {
+        if (isNaN(lowestLow) || isNaN(highestHigh) || isNaN(currentClose) || highestHigh === lowestLow) {
             fastKValues.push(NaN);
-        } else if (highestHigh === lowestLow) {
-            fastKValues.push(100);
         } else {
             const k = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
             fastKValues.push(k);
@@ -690,3 +688,6 @@ export const calculateCMF = (
 
 
 
+
+
+    
