@@ -402,7 +402,6 @@ export default function Home() {
                                <FormControl>
                                   <Input
                                     placeholder="e.g., AAPL, EURUSD, 0700.HK"
-                                    autoComplete="off"
                                     {...field}
                                     onInput={(e) => {
                                         field.onChange(e.currentTarget.value.toUpperCase())
