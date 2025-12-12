@@ -13,11 +13,32 @@ const sma = (data: number[], period: number): number[] => {
     
     let sum = 0;
     for (let i = 0; i < period; i++) {
+        if (isNaN(data[i])) { // Handle NaN in the initial window
+            result.push(NaN);
+            if (i === period - 1) { // If the first full window has a NaN, we must propagate NaN
+                for (let j = period; j < data.length; j++) result.push(NaN);
+                return result;
+            }
+            continue;
+        }
         sum += data[i];
     }
-    result.push(sum / period);
+    
+    // Check if sum is still 0 after a full valid window, might mean NaNs were skipped
+    if(result.length === period) {
+       // This condition means all initial values were NaN, already handled above
+    } else {
+        result.push(sum / period);
+    }
+
 
     for (let i = period; i < data.length; i++) {
+        // If the new value or the value falling off is NaN, the SMA becomes unreliable.
+        if (isNaN(data[i]) || isNaN(data[i - period])) {
+            const lastSma = result[i - 1];
+            result.push(lastSma); // Carry over the last valid SMA
+            continue;
+        }
         sum -= data[i - period];
         sum += data[i];
         result.push(sum / period);
@@ -584,12 +605,15 @@ export const calculateStochastic = (
 
     for (let i = kPeriod - 1; i < data.length; i++) {
         const slice = data.slice(i - kPeriod + 1, i + 1);
-        const lowestLow = Math.min(...slice.map(d => d.low));
-        const highestHigh = Math.max(...slice.map(d => d.high));
+        const lowestLow = Math.min(...slice.map(d => d.low).filter(v => !isNaN(v)));
+        const highestHigh = Math.max(...slice.map(d => d.high).filter(v => !isNaN(v)));
         const currentClose = data[i].close;
 
-        if (highestHigh === lowestLow) {
-            kValues.push(NaN); // Avoid division by zero
+        if (isNaN(lowestLow) || isNaN(highestHigh) || isNaN(currentClose)) {
+            kValues.push(NaN);
+        } else if (highestHigh === lowestLow) {
+             // If high and low are the same, the close is at 100% of the range.
+            kValues.push(100);
         } else {
             const k = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
             kValues.push(k);
@@ -642,4 +666,5 @@ export const calculateCMF = (
 
     return result;
 };
+
 
