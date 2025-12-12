@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -36,7 +37,7 @@ interface TechnicalIndicatorsProps {
 export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange, latestClose }: TechnicalIndicatorsProps) {
     const [localPeriods, setLocalPeriods] = useState(periods);
 
-    const handlePeriodChange = (indicator: keyof Omit<IndicatorPeriods, 'macd' | 'bbands' | 'stochastic'>, value: string) => {
+    const handlePeriodChange = (indicator: keyof Omit<IndicatorPeriods, 'macd' | 'bbands' | 'stochastic' | 'cmf'>, value: string) => {
         const numValue = parseInt(value, 10);
         if (!isNaN(numValue) && numValue > 0) {
             setLocalPeriods(prev => ({ ...prev, [indicator]: numValue }));
@@ -53,6 +54,13 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                     [subKey]: numValue
                 }
             }));
+        }
+    };
+    
+    const handleCmfPeriodChange = (indicator: 'cmf', value: string) => {
+        const numValue = parseInt(value, 10);
+        if (!isNaN(numValue) && numValue > 0) {
+            setLocalPeriods(prev => ({ ...prev, [indicator]: numValue }));
         }
     };
 
@@ -409,13 +417,28 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                              <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
-                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">CHAIKIN MONEY FLOW (CMF)</h3>
+                                        <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">CHAIKIN MONEY FLOW (CMF)</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>Measures money flow volume over a set period. A CMF value above zero indicates buying pressure (accumulation), while a value below zero indicates selling pressure (distribution).</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                            <p className="font-bold text-foreground">What is CMF?</p>
+                                            <p>The Chaikin Money Flow (CMF), developed by Marc Chaikin, is a technical indicator that measures the amount of Money Flow Volume over a set period (typically 21 days). It oscillates between -1 and +1.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">How to Interpret It:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation).</li>
+                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution).</li>
+                                                <li>A <span className="font-semibold text-primary">Bullish Divergence</span> occurs when price makes a new low but CMF makes a higher low, suggesting a potential bottom.</li>
+                                                <li>A <span className="font-semibold text-primary">Bearish Divergence</span> occurs when price makes a new high but CMF fails to reach a new high, suggesting a potential top.</li>
+                                            </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                                 <div className="flex items-center gap-1">
                                      <label htmlFor="cmf-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                     <Input id="cmf-period" type="number" value={localPeriods.cmf} onChange={(e) => handlePeriodChange('cmf', e.target.value)} className="w-16 h-7 text-sm" />
+                                     <Input id="cmf-period" type="number" value={localPeriods.cmf} onChange={(e) => handleCmfPeriodChange('cmf', e.target.value)} className="w-16 h-7 text-sm" />
                                  </div>
                              </div>
                               <div className="flex items-center flex-wrap gap-2 pt-1">
@@ -448,3 +471,4 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
