@@ -297,7 +297,21 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>An average price over a period, where prices with higher trading volume are given more weight. It's often considered a truer representation of the average price.</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                            <p className="font-bold text-foreground">What is VWMA?</p>
+                                            <p>The Volume-Weighted Moving Average (VWMA) is an average price over a period, but it gives more weight to prices that were accompanied by higher trading volume. This makes it different from a Simple Moving Average (SMA), which treats all prices equally.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">How to Interpret It:</p>
+                                            <p>The VWMA is often considered a more accurate reflection of the "true" average price because it factors in the conviction of the market (as measured by volume). Traders watch for:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="font-semibold text-primary">Price vs. VWMA:</span> When the price is above the VWMA, it's a bullish sign. When it's below, it's bearish.</li>
+                                                <li><span className="font-semibold text-primary">Crossovers:</span> Price crossing above or below the VWMA can signal a change in trend.</li>
+                                            </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                                 <div className="flex items-center gap-1">
                                      <label htmlFor="vwma-period" className="text-xs font-medium text-muted-foreground">P:</label>
@@ -340,8 +354,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li><span className="text-green-400 font-semibold">Bullish Crossover:</span> MACD Line crosses above the Signal Line.</li>
-                                                <li><span className="text-red-400 font-semibold">Bearish Crossover:</span> MACD Line crosses below the Signal Line.</li>
+                                                <li><span className="text-green-400 font-semibold">Crossovers:</span> A bullish signal occurs when the MACD Line crosses above the Signal Line. A bearish signal is when it crosses below.</li>
                                                 <li><span className="font-semibold">Centerline Crossover:</span> When the MACD line crosses above 0, it's considered bullish; when it crosses below 0, it's bearish.</li>
                                                 <li><span className="font-semibold">Divergence:</span> When the stock price makes a new high/low but the MACD does not, it can signal a potential reversal.</li>
                                             </ul>
@@ -388,7 +401,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipContent className="max-w-xs p-3 space-y-2">
                                         <div>
                                             <p className="font-bold text-foreground">What is the Stochastic Oscillator?</p>
-                                            <p>It's a momentum indicator that compares a security's closing price to its price range over a specific period. Its sensitivity to market moves makes it useful for spotting potential trend reversals.</p>
+                                            <p>It's a momentum indicator comparing a particular closing price of a security to a range of its prices over a certain period of time. It is used to generate overbought and oversold trading signals, utilizing a 0-100 bounded range of values.</p>
                                         </div>
                                         <Separator />
                                         <div>
@@ -454,8 +467,8 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                           <p className="font-bold text-foreground">How to Interpret It:</p>
                                           <p>The <span className="font-semibold text-primary">trend of OBV is key</span>; the absolute numeric value is not important. A rising OBV reflects positive buying pressure, which can confirm an uptrend or signal a potential bullish reversal.</p>
                                           <ul className="list-disc list-inside mt-1 space-y-1">
-                                            <li><span className="text-green-400 font-semibold">Bullish Divergence:</span> Occurs when price makes a new low, but OBV makes a higher low. This suggests selling pressure is weakening.</li>
-                                            <li><span className="text-red-400 font-semibold">Bearish Divergence:</span> Occurs when price makes a new high, but OBV makes a lower high. This suggests buying pressure is weakening.</li>
+                                            <li><span className="text-green-400 font-semibold">Bullish Divergence:</span> Occurs when price makes a new low, but OBV makes a higher low. This suggests selling pressure is weakening and the trend could reverse upwards.</li>
+                                            <li><span className="text-red-400 font-semibold">Bearish Divergence:</span> Occurs when price makes a new high, but OBV makes a lower high. This suggests buying pressure is weakening and the trend could reverse downwards.</li>
                                           </ul>
                                         </div>
                                      </TooltipContent>
@@ -488,10 +501,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation), as the stock is closing in the upper portion of its daily range.</li>
-                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution), as it's closing in the lower portion of its range.</li>
-                                                <li><span className="font-semibold text-primary">Bullish Divergence:</span> Occurs when price makes a new low but CMF makes a higher low, suggesting a potential bottom.</li>
-                                                <li><span className="font-semibold text-primary">Bearish Divergence:</span> Occurs when price makes a new high but CMF fails to reach a new high, suggesting a potential top.</li>
+                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation), as the stock is closing in the upper portion of its daily range. The higher the value, the stronger the buying pressure.</li>
+                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution), as it's closing in the lower portion of its range. The lower the value, the stronger the selling pressure.</li>
+                                                <li><span className="font-semibold text-primary">Bullish Divergence:</span> Occurs when price makes a new low but CMF makes a higher low, suggesting a potential bottom is forming.</li>
+                                                <li><span className="font-semibold text-primary">Bearish Divergence:</span> Occurs when price makes a new high but CMF fails to reach a new high, suggesting a potential top is forming.</li>
                                             </ul>
                                         </div>
                                      </TooltipContent>
@@ -531,6 +544,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
 
 
 
