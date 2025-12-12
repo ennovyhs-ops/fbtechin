@@ -47,7 +47,7 @@ const defaultPeriods: IndicatorPeriods = {
   maVol: 50,
   vwma: 20,
   stochastic: { kPeriod: 14, dPeriod: 3 },
-  cmf: 20,
+  cmf: 21,
 };
 
 export default function Home() {
