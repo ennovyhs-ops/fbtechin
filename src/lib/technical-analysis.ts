@@ -566,7 +566,7 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
     const obv: number[] = new Array(closes.length).fill(NaN);
     if (isNaN(volumes[0])) return obv;
 
-    obv[0] = volumes[0]; // Correctly initialize with the first day's volume
+    obv[0] = 0; // Standard practice often starts OBV at 0 for the first data point
 
     for (let i = 1; i < closes.length; i++) {
         if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i])) {
@@ -665,8 +665,8 @@ export const calculateCMF = (
 
     // Calculate initial sums for the first window
     for (let i = 0; i < period; i++) {
-        sumMf += moneyFlowVolumes[i];
-        sumVolume += data[i].volume;
+        sumMf += moneyFlowVolumes[i] || 0;
+        sumVolume += data[i].volume || 0;
     }
     result.push(sumVolume === 0 ? 0 : sumMf / sumVolume);
     
@@ -693,3 +693,4 @@ export const calculateCMF = (
 
     return result;
 };
+
