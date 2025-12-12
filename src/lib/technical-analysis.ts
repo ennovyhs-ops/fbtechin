@@ -606,11 +606,7 @@ export const calculateStochastic = (
     dPeriod: number,
     slowingPeriod: number,
 ): { k: number, d: number }[] => {
-    const totalPeriod = kPeriod + dPeriod + slowingPeriod - 2;
-    if (data.length < totalPeriod) {
-        return new Array(data.length).fill({ k: NaN, d: NaN });
-    }
-
+    
     // 1. Calculate Fast %K
     const fastKValues: number[] = [];
     for (let i = 0; i < data.length; i++) {
@@ -632,8 +628,6 @@ export const calculateStochastic = (
     }
     
     // 2. Calculate Slow %K (which is a smoothed Fast %K, using dPeriod)
-    // Note: The original formula for "Slow %K" from many sources is actually just a 3-period SMA of Fast %K.
-    // The `dPeriod` parameter here is what's often called the "slowing" period for Fast %K.
     const slowKValues = sma(fastKValues, dPeriod);
     
     // 3. Calculate Slow %D (which is a smoothed Slow %K, using slowingPeriod)
@@ -659,55 +653,38 @@ export const calculateCMF = (
     period: number
 ): number[] => {
     const moneyFlowVolumes: (number | null)[] = [];
-    const volumes: (number|null)[] = [];
 
     for (let i = 0; i < data.length; i++) {
         const { high, low, close, volume } = data[i];
         if ( isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low ) {
             moneyFlowVolumes.push(null);
-            volumes.push(null);
         } else {
             const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
             moneyFlowVolumes.push(moneyFlowMultiplier * volume);
-            volumes.push(volume);
         }
     }
     
-    const cmfValues: number[] = new Array(period - 1).fill(NaN);
-    if (data.length < period) {
-      for(let i=period -1; i < data.length; i++) cmfValues.push(NaN);
-      return cmfValues;
-    }
+    const cmfValues: number[] = new Array(data.length).fill(NaN);
 
-    // Initial window calculation
-    let mfVolumeSum = 0;
-    let volumeSum = 0;
-    for (let i = 0; i < period; i++) {
-        if (moneyFlowVolumes[i] !== null && volumes[i] !== null) {
-            mfVolumeSum += moneyFlowVolumes[i]!;
-            volumeSum += volumes[i]!;
-        }
-    }
+    for (let i = period - 1; i < data.length; i++) {
+        const mfVolumeSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
+        const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
 
-    cmfValues.push(volumeSum === 0 ? 0 : mfVolumeSum / volumeSum);
-    
-    // Sliding window for subsequent values
-    for (let i = period; i < data.length; i++) {
-        const oldMfVolume = moneyFlowVolumes[i - period];
-        const oldVolume = volumes[i - period];
-        if (oldMfVolume !== null && oldVolume !== null) {
-            mfVolumeSum -= oldMfVolume;
-            volumeSum -= oldVolume;
-        }
+        let mfVolumeSum = 0;
+        let volumeSum = 0;
 
-        const newMfVolume = moneyFlowVolumes[i];
-        const newVolume = volumes[i];
-        if (newMfVolume !== null && newVolume !== null) {
-            mfVolumeSum += newMfVolume;
-            volumeSum += newVolume;
+        for (let j = 0; j < period; j++) {
+            if (mfVolumeSlice[j] !== null && !isNaN(volumeSlice[j])) {
+                mfVolumeSum += mfVolumeSlice[j]!;
+                volumeSum += volumeSlice[j];
+            }
         }
         
-        cmfValues.push(volumeSum === 0 ? 0 : mfVolumeSum / volumeSum);
+        if (volumeSum === 0) {
+            cmfValues[i] = 0;
+        } else {
+            cmfValues[i] = mfVolumeSum / volumeSum;
+        }
     }
     
     return cmfValues;
