@@ -98,7 +98,7 @@ export function SynthesizedTradeIdea({ ticker, analysis, monteCarlo, currentPric
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
                         <p className="font-semibold text-foreground mb-1">How this is generated:</p>
-                        <p>The AI acts as a quantitative strategist, synthesizing multiple data points into a coherent trade idea:</p>
+                        <p>The AI acts as a <strong className="text-foreground">quantitative strategist</strong>, synthesizing multiple data points into a coherent trade idea:</p>
                         <ul className="list-disc list-inside space-y-1 mt-1">
                             <li><span className="font-semibold text-foreground">Momentum Model:</span> Provides a deterministic score (-1 to 1) indicating trend strength.</li>
                             <li><span className="font-semibold text-foreground">Monte Carlo Model:</span> A probabilistic forecast that provides a likely 30-day price range.</li>
