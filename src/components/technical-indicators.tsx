@@ -262,7 +262,21 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
                                     </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs"><p>A volatility indicator. When bands are wide, volatility is high. When they are narrow (a 'squeeze'), it signals low volatility and a potential for a large price move.</p></TooltipContent>
+                                    <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                            <p className="font-bold text-foreground">What are Bollinger Bands®?</p>
+                                            <p>A volatility indicator consisting of a Simple Moving Average (Middle Band) and two outer bands representing standard deviations.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">How to Interpret Them:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="font-semibold text-primary">Volatility:</span> Bands widen as volatility increases and narrow as it decreases.</li>
+                                                <li><span className="font-semibold text-primary">The Squeeze:</span> Very narrow bands signal a period of low volatility that is often followed by a significant price move.</li>
+                                                <li><span className="font-semibold text-primary">Overbought/Oversold:</span> Prices near the upper band can be considered overbought, while prices near the lower band can be considered oversold. However, this is not a direct buy/sell signal.</li>
+                                            </ul>
+                                        </div>
+                                     </TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
                                     <div className="flex items-center gap-1">
@@ -401,7 +415,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipContent className="max-w-xs p-3 space-y-2">
                                         <div>
                                             <p className="font-bold text-foreground">What is the Stochastic Oscillator?</p>
-                                            <p>It's a momentum indicator comparing a particular closing price of a security to a range of its prices over a certain period of time. It is used to generate overbought and oversold trading signals, utilizing a 0-100 bounded range of values.</p>
+                                            <p>It's a momentum indicator that compares a security's closing price to its price range over a specific period. It is designed to show overbought and oversold conditions on a scale of 0 to 100.</p>
                                         </div>
                                         <Separator />
                                         <div>
@@ -544,6 +558,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
+
 
 
 
