@@ -665,30 +665,31 @@ export const calculateCMF = (
     const cmfValues: number[] = new Array(period - 1).fill(NaN);
     if (data.length < period) return cmfValues;
 
+    // Initial window calculation
     let mfVolumeSum = 0;
     let volumeSum = 0;
-
-    // Calculate initial sum for the first window
+    let validPoints = 0;
     for (let i = 0; i < period; i++) {
         if (moneyFlowVolumes[i] !== null && !isNaN(data[i].volume)) {
             mfVolumeSum += moneyFlowVolumes[i]!;
             volumeSum += data[i].volume;
+            validPoints++;
         }
     }
 
     cmfValues.push(volumeSum === 0 ? 0 : mfVolumeSum / volumeSum);
-
-    // Slide the window
+    
+    // Sliding window for subsequent values
     for (let i = period; i < data.length; i++) {
         const oldMfVolume = moneyFlowVolumes[i - period];
         const oldVolume = data[i - period].volume;
-        const newMfVolume = moneyFlowVolumes[i];
-        const newVolume = data[i].volume;
-
         if (oldMfVolume !== null && !isNaN(oldVolume)) {
             mfVolumeSum -= oldMfVolume;
             volumeSum -= oldVolume;
         }
+
+        const newMfVolume = moneyFlowVolumes[i];
+        const newVolume = data[i].volume;
         if (newMfVolume !== null && !isNaN(newVolume)) {
             mfVolumeSum += newMfVolume;
             volumeSum += newVolume;
