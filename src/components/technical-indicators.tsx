@@ -468,16 +468,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                  </Tooltip>
                                  <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
                                     <div className="flex items-center gap-1">
-                                         <label htmlFor="stoch-k" className="text-xs font-medium text-muted-foreground">%K:</label>
+                                         <label htmlFor="stoch-k" className="text-xs font-medium text-muted-foreground">P:</label>
                                          <Input id="stoch-k" type="number" value={localPeriods.stochastic.kPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'kPeriod', e.target.value)} className="w-12 h-7 text-sm" />
                                     </div>
                                     <div className="flex items-center gap-1">
-                                         <label htmlFor="stoch-d" className="text-xs font-medium text-muted-foreground">%D:</label>
-                                         <Input id="stoch-d" type="number" value={localPeriods.stochastic.dPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'dPeriod', e.target.value)} className="w-12 h-7 text-sm" />
+                                         <label htmlFor="stoch-d" className="text-xs font-medium text-muted-foreground">K%:</label>
+                                         <Input id="stoch-d" type="number" value={localPeriods.stochastic.kSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'kSlowing', e.target.value)} className="w-12 h-7 text-sm" />
                                     </div>
                                     <div className="flex items-center gap-1">
-                                         <label htmlFor="stoch-slowing" className="text-xs font-medium text-muted-foreground">S:</label>
-                                         <Input id="stoch-slowing" type="number" value={localPeriods.stochastic.slowingPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'slowingPeriod', e.target.value)} className="w-12 h-7 text-sm" />
+                                         <label htmlFor="stoch-slowing" className="text-xs font-medium text-muted-foreground">D%:</label>
+                                         <Input id="stoch-slowing" type="number" value={localPeriods.stochastic.dSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'dSlowing', e.target.value)} className="w-12 h-7 text-sm" />
                                     </div>
                                  </div>
                              </div>

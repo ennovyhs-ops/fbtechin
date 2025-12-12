@@ -115,8 +115,8 @@ export type IndicatorPeriods = {
   vwma: number;
   stochastic: {
       kPeriod: number;
-      dPeriod: number;
-      slowingPeriod: number;
+      kSlowing: number;
+      dSlowing: number;
   };
   cmf: number;
 };

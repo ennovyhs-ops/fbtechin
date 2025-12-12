@@ -595,19 +595,19 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
 /**
  * Calculates the Slow Stochastic Oscillator.
  * @param data - Array of chronological data points {high, low, close}.
- * @param kPeriod - The lookback period for the %K line (e.g., 14).
- * @param dPeriod - The smoothing period for the Fast %K to create Slow %K (e.g., 3).
- * @param slowing - The final smoothing period for the Slow %K to create Slow %D (e.g., 3).
+ * @param kPeriod - The lookback period for the raw %K (e.g., 14).
+ * @param kSlowing - The smoothing period for the raw %K to create Slow %K (e.g., 3).
+ * @param dSlowing - The final smoothing period for the Slow %K to create Slow %D (e.g., 3).
  * @returns An array of objects containing the Slow %K and Slow %D values.
  */
 export const calculateStochastic = (
     data: { high: number, low: number, close: number }[],
     kPeriod: number,
-    dPeriod: number,
-    slowing: number,
+    kSlowing: number,
+    dSlowing: number,
 ): { k: number, d: number }[] => {
     
-    // 1. Calculate Fast %K
+    // 1. Calculate Fast %K (raw value)
     const fastKValues: number[] = [];
     for (let i = 0; i < data.length; i++) {
         if (i < kPeriod - 1) {
@@ -627,11 +627,11 @@ export const calculateStochastic = (
         }
     }
     
-    // 2. Calculate Slow %K (which is a smoothed Fast %K, using dPeriod)
-    const slowKValues = sma(fastKValues, dPeriod);
+    // 2. Calculate Slow %K (which is a smoothed Fast %K)
+    const slowKValues = sma(fastKValues, kSlowing);
     
-    // 3. Calculate Slow %D (which is a smoothed Slow %K, using slowing period)
-    const slowDValues = sma(slowKValues, slowing);
+    // 3. Calculate Slow %D (which is a smoothed Slow %K)
+    const slowDValues = sma(slowKValues, dSlowing);
 
     const results: {k: number, d: number}[] = [];
     for (let i = 0; i < data.length; i++) {
