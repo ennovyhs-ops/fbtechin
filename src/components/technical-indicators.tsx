@@ -147,8 +147,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const signalLine = latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal) : null;
     const macdPosition = macdLine !== null && signalLine !== null ? (macdLine > signalLine ? 'Bullish' : 'Bearish') : null;
     
-    const obvValue = latestObv?.OBV ? parseFloat(latestObv.OBV) : null;
-    const obvTrend = data?.obv && data.obv.length > 1 && data.obv[0].OBV && data.obv[1].OBV
+    const obvTrend = data?.obv && data.obv.length > 1 && data.obv[0]?.OBV && data.obv[1]?.OBV
         ? parseFloat(data.obv[0].OBV) > parseFloat(data.obv[1].OBV) ? 'Rising' : 'Falling'
         : null;
         
@@ -173,7 +172,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* ROC */}
                          <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                             <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
@@ -198,7 +197,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         
                         {/* RSI */}
                          <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RELATIVE STRENGTH INDEX (RSI)</h3>
@@ -222,7 +221,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* Volume */}
                          <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
@@ -250,7 +249,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* Bollinger Bands */}
                         <div className="p-3 border rounded-lg space-y-2">
-                            <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
+                            <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS®</h3>
@@ -285,7 +284,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* VWMA */}
                         <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                             <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME-WEIGHTED MOVING AVG (VWMA)</h3>
@@ -310,7 +309,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* MACD */}
                          <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
+                             <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVG CONVERGENCE DIVERGENCE (MACD)</h3>
@@ -349,7 +348,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
                         {/* Stochastic Oscillator */}
                         <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-x-4 gap-y-2">
+                             <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">STOCHASTIC OSCILLATOR</h3>
@@ -382,7 +381,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* On-Balance Volume (OBV) */}
                         <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                             <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">ON-BALANCE VOLUME (OBV)</h3>
@@ -403,7 +402,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                          
                         {/* Chaikin Money Flow (CMF) */}
                         <div className="p-3 border rounded-lg space-y-2">
-                             <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-2">
+                             <div className="flex flex-wrap justify-between items-center gap-2">
                                  <Tooltip>
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">CHAIKIN MONEY FLOW (CMF)</h3>
