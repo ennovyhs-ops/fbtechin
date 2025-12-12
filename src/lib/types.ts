@@ -1,4 +1,5 @@
 
+
 import type { AnalyzeStockMomentumOutput } from "@/ai/flows/analyze-stock-momentum";
 import type { PredictPriceTargetOutput as PredictPriceTargetOutputFlow } from "@/ai/flows/predict-price-target";
 import type { SynthesizeTradeIdeaOutput as SynthesizeTradeIdeaOutputFlow } from "@/ai/flows/synthesize-trade-idea";
@@ -35,6 +36,14 @@ export type MacdData = {
   MACD_Hist: string | null;
   MACD_Signal: string | null;
   MACD: string | null;
+}
+
+export type EmaData = {
+  date: string;
+  EMA12: string | null;
+  EMA26: string | null;
+  EMA50: string | null;
+  EMA200: string | null;
 }
 
 export type BbandsData = {

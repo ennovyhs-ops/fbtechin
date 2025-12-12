@@ -1,5 +1,6 @@
 
 
+
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
@@ -46,7 +47,7 @@ const sma = (data: number[], period: number): number[] => {
 };
 
 // Exponential Moving Average
-const ema = (data: number[], period: number): number[] => {
+export const ema = (data: number[], period: number): number[] => {
     if (data.length < period) {
         return new Array(data.length).fill(NaN);
     }
