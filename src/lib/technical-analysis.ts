@@ -542,18 +542,22 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
     if (closes.length !== volumes.length || closes.length === 0) {
         return new Array(closes.length).fill(NaN);
     }
-    const obv: number[] = [0];
+    const obv: number[] = new Array(closes.length).fill(NaN);
+    if (isNaN(volumes[0])) return obv;
+
+    obv[0] = volumes[0]; // Initialize with the first day's volume
+
     for (let i = 1; i < closes.length; i++) {
         if (isNaN(closes[i]) || isNaN(closes[i-1]) || isNaN(volumes[i])) {
-            obv.push(obv[i - 1]); // Carry over last value if data is invalid
+            obv[i] = obv[i - 1]; // Carry over last value if data is invalid
             continue;
         }
         if (closes[i] > closes[i - 1]) {
-            obv.push(obv[i - 1] + volumes[i]);
+            obv[i] = obv[i - 1] + volumes[i];
         } else if (closes[i] < closes[i - 1]) {
-            obv.push(obv[i - 1] - volumes[i]);
+            obv[i] = obv[i - 1] - volumes[i];
         } else {
-            obv.push(obv[i - 1]);
+            obv[i] = obv[i - 1];
         }
     }
     return obv;
@@ -638,3 +642,4 @@ export const calculateCMF = (
 
     return result;
 };
+

@@ -234,7 +234,7 @@ export async function analyzeStockMomentum(
         
         // Classic Bearish Divergence: Price makes a higher high, but RSI makes a lower high.
         if (currentPriceHigh > lookbackHigh && currentRsi < lookbackHighRsi) {
-            totalScore -= (weights.rsi * divergenceScore-score);
+            totalScore -= (weights.rsi * divergenceScoreFactor);
         }
     }
 
