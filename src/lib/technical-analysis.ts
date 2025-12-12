@@ -585,24 +585,26 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
 };
 
 /**
- * Calculates the Stochastic Oscillator.
+ * Calculates the Slow Stochastic Oscillator.
  * @param data - Array of chronological data points {high, low, close}.
- * @param kPeriod - The lookback period for the %K line (usually 14).
- * @param dPeriod - The smoothing period for the %D line (usually 3).
- * @returns An array of objects containing the %K and %D values.
+ * @param kPeriod - The lookback period for the %K line (e.g., 14).
+ * @param dPeriod - The smoothing period for the %K line to create Slow %K (e.g., 3).
+ * @param slowingPeriod - The final smoothing period for the Slow %D line (e.g., 3).
+ * @returns An array of objects containing the Slow %K and Slow %D values.
  */
 export const calculateStochastic = (
     data: { high: number, low: number, close: number }[],
     kPeriod: number,
-    dPeriod: number
+    dPeriod: number,
+    slowingPeriod: number,
 ): { k: number, d: number }[] => {
     const results: { k: number, d: number }[] = [];
     if (data.length < kPeriod) {
         return new Array(data.length).fill({ k: NaN, d: NaN });
     }
 
-    const kValues: number[] = new Array(kPeriod - 1).fill(NaN);
-
+    // 1. Calculate Fast %K
+    const fastKValues: number[] = new Array(kPeriod - 1).fill(NaN);
     for (let i = kPeriod - 1; i < data.length; i++) {
         const slice = data.slice(i - kPeriod + 1, i + 1);
         const lowestLow = Math.min(...slice.map(d => d.low).filter(v => !isNaN(v)));
@@ -610,24 +612,28 @@ export const calculateStochastic = (
         const currentClose = data[i].close;
 
         if (isNaN(lowestLow) || isNaN(highestHigh) || isNaN(currentClose)) {
-            kValues.push(NaN);
+            fastKValues.push(NaN);
         } else if (highestHigh === lowestLow) {
-             // If high and low are the same, the close is at 100% of the range.
-            kValues.push(100);
+            fastKValues.push(100);
         } else {
             const k = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
-            kValues.push(k);
+            fastKValues.push(k);
         }
     }
 
-    const dValues = sma(kValues, dPeriod);
+    // 2. Calculate Slow %K (which is a smoothed Fast %K, and is what we will show as '%K')
+    const slowKValues = sma(fastKValues, dPeriod);
+    
+    // 3. Calculate Slow %D (which is a smoothed Slow %K)
+    const slowDValues = sma(slowKValues, slowingPeriod);
 
     for (let i = 0; i < data.length; i++) {
-        results.push({ k: kValues[i], d: dValues[i] });
+        results.push({ k: slowKValues[i], d: slowDValues[i] });
     }
 
     return results;
 };
+
 
 /**
  * Calculates Chaikin Money Flow (CMF).
@@ -666,5 +672,3 @@ export const calculateCMF = (
 
     return result;
 };
-
-

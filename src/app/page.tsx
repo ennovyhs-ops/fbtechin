@@ -46,7 +46,7 @@ const defaultPeriods: IndicatorPeriods = {
   bbands: { period: 20, stdDev: 2 },
   maVol: 50,
   vwma: 20,
-  stochastic: { kPeriod: 14, dPeriod: 3 },
+  stochastic: { kPeriod: 14, dPeriod: 3, slowingPeriod: 3 },
   cmf: 21,
 };
 
@@ -97,7 +97,7 @@ export default function Home() {
         const maVol = calculateMAVol(volumes, periods.maVol);
         const vwma = calculateVWMA(closePrices, volumes, periods.vwma);
         const obv = calculateOBV(closePrices, volumes);
-        const stochastic = calculateStochastic(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) })), periods.stochastic.kPeriod, periods.stochastic.dPeriod);
+        const stochastic = calculateStochastic(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) })), periods.stochastic.kPeriod, periods.stochastic.dPeriod, periods.stochastic.slowingPeriod);
         const cmf = calculateCMF(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close), volume: parseFloat(d.volume) })), periods.cmf);
 
 
@@ -828,5 +828,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

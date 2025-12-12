@@ -116,6 +116,7 @@ export type IndicatorPeriods = {
   stochastic: {
       kPeriod: number;
       dPeriod: number;
+      slowingPeriod: number;
   };
   cmf: number;
 };
@@ -135,5 +136,3 @@ export type CombinedAnalysisResult = {
 }
 
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
-
-    
