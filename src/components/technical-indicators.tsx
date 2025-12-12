@@ -185,7 +185,22 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipTrigger asChild>
                                          <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">RATE OF CHANGE (ROC)</h3>
                                      </TooltipTrigger>
-                                     <TooltipContent className="max-w-xs"><p>Measures the percentage change in price between the current price and the price a set number of periods ago. It indicates momentum.</p></TooltipContent>
+                                     <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                          <p className="font-bold text-foreground">What is ROC?</p>
+                                          <p>The Rate of Change (ROC) is a momentum-based technical indicator that measures the percentage change in price between the current price and the price a certain number of periods ago.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                          <p className="font-bold text-foreground">How to Interpret It:</p>
+                                          <ul className="list-disc list-inside mt-1 space-y-1">
+                                            <li><span className="font-semibold text-green-400">Positive Values:</span> Indicate upward buying pressure or momentum. A cross above the zero line can signal the start of an uptrend.</li>
+                                            <li><span className="font-semibold text-red-400">Negative Values:</span> Indicate downward selling pressure. A cross below the zero line can signal the start of a downtrend.</li>
+                                            <li><span className="font-semibold text-primary">Overbought/Oversold:</span> Extreme positive or negative values can indicate overbought or oversold conditions, respectively, suggesting a potential price reversal.</li>
+                                            <li><span className="font-semibold text-primary">Divergence:</span> When the stock's price moves in one direction but the ROC moves in the opposite direction, it can signal an upcoming trend change.</li>
+                                          </ul>
+                                        </div>
+                                     </TooltipContent>
                                  </Tooltip>
                                  <div className="flex items-center gap-1">
                                      <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">P:</label>
