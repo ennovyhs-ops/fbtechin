@@ -597,14 +597,14 @@ export const calculateOBV = (closes: number[], volumes: number[]): number[] => {
  * @param data - Array of chronological data points {high, low, close}.
  * @param kPeriod - The lookback period for the %K line (e.g., 14).
  * @param dPeriod - The smoothing period for the Fast %K to create Slow %K (e.g., 3).
- * @param slowingPeriod - The final smoothing period for the Slow %K to create Slow %D (e.g., 3).
+ * @param slowing - The final smoothing period for the Slow %K to create Slow %D (e.g., 3).
  * @returns An array of objects containing the Slow %K and Slow %D values.
  */
 export const calculateStochastic = (
     data: { high: number, low: number, close: number }[],
     kPeriod: number,
     dPeriod: number,
-    slowingPeriod: number,
+    slowing: number,
 ): { k: number, d: number }[] => {
     
     // 1. Calculate Fast %K
@@ -630,8 +630,8 @@ export const calculateStochastic = (
     // 2. Calculate Slow %K (which is a smoothed Fast %K, using dPeriod)
     const slowKValues = sma(fastKValues, dPeriod);
     
-    // 3. Calculate Slow %D (which is a smoothed Slow %K, using slowingPeriod)
-    const slowDValues = sma(slowKValues, slowingPeriod);
+    // 3. Calculate Slow %D (which is a smoothed Slow %K, using slowing period)
+    const slowDValues = sma(slowKValues, slowing);
 
     const results: {k: number, d: number}[] = [];
     for (let i = 0; i < data.length; i++) {
@@ -667,23 +667,28 @@ export const calculateCMF = (
     const cmfValues: number[] = new Array(data.length).fill(NaN);
 
     for (let i = period - 1; i < data.length; i++) {
-        const mfVolumeSlice = moneyFlowVolumes.slice(i - period + 1, i + 1);
-        const volumeSlice = data.slice(i - period + 1, i + 1).map(d => d.volume);
-
         let mfVolumeSum = 0;
         let volumeSum = 0;
+        let validPoints = 0;
 
         for (let j = 0; j < period; j++) {
-            if (mfVolumeSlice[j] !== null && !isNaN(volumeSlice[j])) {
-                mfVolumeSum += mfVolumeSlice[j]!;
-                volumeSum += volumeSlice[j];
+            const index = i - j;
+            const mfVolume = moneyFlowVolumes[index];
+            const vol = data[index].volume;
+
+            if (mfVolume !== null && !isNaN(vol)) {
+                mfVolumeSum += mfVolume;
+                volumeSum += vol;
+                validPoints++;
             }
         }
         
         if (volumeSum === 0) {
-            cmfValues[i] = 0;
-        } else {
+            cmfValues[i] = cmfValues[i-1] ?? 0;
+        } else if (validPoints > 0) {
             cmfValues[i] = mfVolumeSum / volumeSum;
+        } else {
+            cmfValues[i] = NaN;
         }
     }
     
