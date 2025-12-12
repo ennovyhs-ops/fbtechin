@@ -549,3 +549,4 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
 
 
+
