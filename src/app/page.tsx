@@ -587,14 +587,14 @@ export default function Home() {
                     <div className="flex items-center gap-2">
                         <TrendingUp className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-xs text-muted-foreground">High</p>
+                            <p className="text-xs text-muted-foreground">Day's High</p>
                             <p className="font-semibold text-sm">{formatCurrency(latestData.high, currency)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <TrendingDown className="text-muted-foreground h-5 w-5" />
                         <div>
-                            <p className="text-xs text-muted-foreground">Low</p>
+                            <p className="text-xs text-muted-foreground">Day's Low</p>
                             <p className="font-semibold text-sm">{formatCurrency(latestData.low, currency)}</p>
                         </div>
                     </div>
