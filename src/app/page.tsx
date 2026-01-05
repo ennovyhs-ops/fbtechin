@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain, X } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
@@ -264,70 +265,123 @@ export default function Home() {
 
     startTransition(async () => {
         const reader = new FileReader();
+        const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+
         reader.onload = async (e) => {
-            const text = e.target?.result;
-            if (typeof text !== 'string') {
-                setError({message: 'Failed to read the file.'});
-                return;
-            }
-
             try {
-                const lines = text.split('\n').filter(line => line.trim() !== '');
-                if (lines.length < 2) {
-                    setError({message: 'CSV file must contain a header row and at least one data row.'});
-                    return;
-                }
-                
-                const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
-                const headerMap: { [key: string]: number } = {};
-                
-                const requiredHeaders = ['date', 'close', 'volume'];
-                const optionalHeaders = ['open', 'high', 'low'];
+                let data: MarketData[] = [];
+                if (isExcel) {
+                    const fileData = e.target?.result;
+                    if (!fileData) throw new Error('Failed to read Excel file.');
+                    
+                    const workbook = XLSX.read(fileData, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
 
-                const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
-                if (missingHeaders.length > 0) {
-                     throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low.`);
-                }
-                
-                [...requiredHeaders, ...optionalHeaders].forEach(header => {
-                    headerMap[header] = headerLine.indexOf(header); // Will be -1 if not found
-                });
-                
-                const data: MarketData[] = lines.slice(1).map((line, index) => {
-                    const values = line.split(',');
-                    const closeValue = values[headerMap['close']];
-                     if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) {
-                        throw new Error(`Row ${index + 2} is missing required data for date, close, or volume.`);
+                    if (jsonData.length < 2) throw new Error('Excel file must contain a header and at least one data row.');
+                    
+                    const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/"/g, ''));
+                    const requiredHeaders = ['date', 'close', 'volume'];
+                    const optionalHeaders = ['open', 'high', 'low'];
+                    
+                    const headerMap: { [key: string]: number } = {};
+                    [...requiredHeaders, ...optionalHeaders].forEach(header => {
+                        headerMap[header] = headerLine.indexOf(header);
+                    });
+                    
+                    const missingHeaders = requiredHeaders.filter(h => headerMap[h] === -1);
+                    if (missingHeaders.length > 0) {
+                        throw new Error(`Excel file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low.`);
                     }
-                    return {
-                        date: values[headerMap['date']],
-                        close: closeValue,
-                        volume: values[headerMap['volume']],
-                        open: headerMap['open'] !== -1 ? values[headerMap['open']] : closeValue,
-                        high: headerMap['high'] !== -1 ? values[headerMap['high']] : closeValue,
-                        low: headerMap['low'] !== -1 ? values[headerMap['low']] : closeValue,
-                    };
-                }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Ensure descending order
 
-                if(data.length === 0) {
-                    setError({message: 'CSV file is empty or in an invalid format.'});
-                    return;
+                    data = jsonData.slice(1).map((row: any[], index: number) => {
+                        const closeValue = row[headerMap['close']];
+                        const dateValue = row[headerMap['date']];
+                        if (!closeValue || !dateValue || !row[headerMap['volume']]) {
+                             throw new Error(`Row ${index + 2} is missing required data for date, close, or volume.`);
+                        }
+                        
+                        // Handle Excel dates
+                        let formattedDate: string;
+                        if (typeof dateValue === 'number') {
+                             // It's an Excel serial date
+                             const utc_days  = Math.floor(dateValue - 25569);
+                             const utc_value = utc_days * 86400;                                        
+                             const date_info = new Date(utc_value * 1000);
+                             formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
+                        } else {
+                            // Assume it's a string date
+                            formattedDate = new Date(dateValue).toISOString().split('T')[0];
+                        }
+                        
+                        return {
+                            date: formattedDate,
+                            close: String(closeValue),
+                            volume: String(row[headerMap['volume']]),
+                            open: headerMap['open'] !== -1 ? String(row[headerMap['open']]) : String(closeValue),
+                            high: headerMap['high'] !== -1 ? String(row[headerMap['high']]) : String(closeValue),
+                            low: headerMap['low'] !== -1 ? String(row[headerMap['low']]) : String(closeValue),
+                        };
+                    });
+
+                } else { // CSV parsing
+                    const text = e.target?.result;
+                    if (typeof text !== 'string') throw new Error('Failed to read the CSV file.');
+                    
+                    const lines = text.split('\n').filter(line => line.trim() !== '');
+                    if (lines.length < 2) throw new Error('CSV file must contain a header row and at least one data row.');
+                    
+                    const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+                    const headerMap: { [key: string]: number } = {};
+                    
+                    const requiredHeaders = ['date', 'close', 'volume'];
+                    const optionalHeaders = ['open', 'high', 'low'];
+
+                    const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
+                    if (missingHeaders.length > 0) throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low.`);
+                    
+                    [...requiredHeaders, ...optionalHeaders].forEach(header => {
+                        headerMap[header] = headerLine.indexOf(header);
+                    });
+                    
+                    data = lines.slice(1).map((line, index) => {
+                        const values = line.split(',');
+                        const closeValue = values[headerMap['close']];
+                        if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) throw new Error(`Row ${index + 2} is missing required data for date, close, or volume.`);
+                        
+                        return {
+                            date: values[headerMap['date']],
+                            close: closeValue,
+                            volume: values[headerMap['volume']],
+                            open: headerMap['open'] !== -1 ? values[headerMap['open']] : closeValue,
+                            high: headerMap['high'] !== -1 ? values[headerMap['high']] : closeValue,
+                            low: headerMap['low'] !== -1 ? values[headerMap['low']] : closeValue,
+                        };
+                    });
                 }
+                
+                const sortedData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                if(sortedData.length === 0) throw new Error('File is empty or in an invalid format.');
                 
                 const tickerFromFile = file.name.split(/[\._\s]/)[0].toUpperCase();
                 form.setValue('ticker', tickerFromFile);
                 setSubmittedTicker(tickerFromFile);
-
-                handleDataResult({ data }, tickerFromFile);
+                handleDataResult({ data: sortedData }, tickerFromFile);
 
             } catch (err: any) {
-                setError({message: `Error parsing CSV: ${err.message}.`});
+                setError({message: `Error parsing file: ${err.message}.`});
             }
         };
-        reader.readAsText(file);
+
+        if (isExcel) {
+            reader.readAsArrayBuffer(file);
+        } else {
+            reader.readAsText(file);
+        }
     });
 
-    // Reset file input to allow re-uploading the same file
     event.target.value = '';
   };
   
@@ -398,7 +452,7 @@ export default function Home() {
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
-            <CardDescription>Enter a symbol to fetch data, or upload a CSV file with historical data.</CardDescription>
+            <CardDescription>Enter a symbol to fetch data, or upload a CSV/XLSX file with historical data.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -449,16 +503,16 @@ export default function Home() {
                             type="file"
                             ref={fileInputRef}
                             onChange={handleFileUpload}
-                            accept=".csv"
+                            accept=".csv, .xlsx, .xls"
                             className="hidden"
                         />
                         <div className="w-full text-center">
                              <p className="text-xs text-muted-foreground mb-2">
-                                CSV format; "Date", "Close" & "Volume" required
+                                File format: Date, Close, Volume required
                             </p>
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isPending} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" />
-                                {uploadedFileName ? 'New CSV' : 'Upload CSV'}
+                                {uploadedFileName ? 'New File' : 'Upload File'}
                             </Button>
                         </div>
                    </div>
@@ -488,7 +542,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">1. Data Input</h3>
                         <p className="text-muted-foreground">
-                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV file. For best results with CSV uploads, name your file with the ticker (e.g., "SPY.csv"). The CSV file must have 'date', 'close', and 'volume' columns; 'open', 'high', and 'low' are optional but recommended for full analysis.
+                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV or Excel (.xls, .xlsx) file. For best results with file uploads, name your file with the ticker (e.g., "SPY.xlsx"). The file must have 'date', 'close', and 'volume' columns; 'open', 'high', and 'low' are optional but recommended for full analysis.
                         </p>
                       </div>
 
@@ -499,7 +553,7 @@ export default function Home() {
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
                           <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. It will try to get full data, but may fall back to 100 data points if you are on the free plan.</li>
-                          <li><span className="font-semibold text-foreground">Upload CSV:</span> Uses **0** API requests.</li>
+                          <li><span className="font-semibold text-foreground">Upload File:</span> Uses **0** API requests.</li>
                           <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
                         </ul>
                          <p className="text-muted-foreground mt-2">
