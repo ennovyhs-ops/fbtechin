@@ -38,6 +38,22 @@ const actionGlossary: Record<string, { title: string; description: string; }> = 
     'Use rallies to enter': {
         title: "What is a 'Rally'?",
         description: "A rally is a temporary price increase in a stock's strong downward trend. The suggestion to 'use rallies to enter' a short position means waiting for one of these small price spikes to sell or short the stock, rather than selling when the price is at a low point. It's a strategy for getting a better entry price within a larger downtrend."
+    },
+    'Manage risk with stop losses': {
+        title: "What does 'Manage Risk' mean?",
+        description: "This suggests that while there is a directional trend, it's not strong enough to ignore potential reversals. Using a 'stop loss' order—an automated order to sell if the stock drops to a certain price—is a common way to manage this risk and protect capital."
+    },
+    'Look for additional confirmation': {
+        title: "What is 'Additional Confirmation'?",
+        description: "This means the signal is weak and you should look for other signs before acting. This could include waiting for another day of price movement in the same direction, seeing a volume increase, or getting confirmation from another indicator before committing to a trade."
+    },
+    'Market is choppy, avoid new trades': {
+        title: "What does 'Choppy Market' mean?",
+        description: "A choppy market moves up and down without a clear direction. The 'Neutral' signal indicates that indicators are mixed, making it difficult to predict the next move. In these conditions, it's often wise to wait for a clearer trend to emerge before entering new positions."
+    },
+    'Caution is advised, consider hedging': {
+        title: "What does 'Hedging' mean?",
+        description: "A hedge is an investment made to reduce the risk of adverse price movements in an asset. If you own the stock, for example, you could buy a put option to protect against a potential decline. The 'Mild Bearish' signal suggests there's a risk of a downturn, but it's not yet a strong trend."
     }
 }
 

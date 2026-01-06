@@ -281,8 +281,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                           <ul className="list-disc list-inside mt-1 space-y-1">
                                             <li><span className="font-semibold text-green-400">Positive Values:</span> Indicate upward buying pressure or momentum. A cross above the zero line can signal the start of an uptrend.</li>
                                             <li><span className="font-semibold text-red-400">Negative Values:</span> Indicate downward selling pressure. A cross below the zero line can signal the start of a downtrend.</li>
-                                            <li><span className="font-semibold text-primary">Overbought/Oversold:</span> Extreme positive or negative values can indicate overbought or oversold conditions, respectively, suggesting a potential price reversal.</li>
-                                            <li><span className="font-semibold text-primary">Divergence:</span> When the stock's price moves in one direction but the ROC moves in the opposite direction, it can signal an upcoming trend change.</li>
                                           </ul>
                                         </div>
                                      </TooltipContent>
@@ -322,7 +320,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                             <li><span className="font-semibold text-red-400">Overbought (Above 70):</span> Suggests the asset may be overvalued and could be due for a pullback.</li>
                                             <li><span className="font-semibold text-green-400">Oversold (Below 30):</span> Suggests the asset may be undervalued and could be due for a bounce.</li>
                                             <li><span className="font-semibold text-primary">Centerline (50):</span> RSI movements above 50 generally indicate a bullish trend, while movements below 50 indicate a bearish trend.</li>
-                                            <li><span className="font-semibold">Divergence:</span> A key signal occurs when the price makes a new high/low but the RSI does not, which can signal a potential trend reversal.</li>
                                           </ul>
                                         </div>
                                      </TooltipContent>
@@ -388,7 +385,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                             <ul className="list-disc list-inside mt-1 space-y-1">
                                                 <li><span className="font-semibold text-primary">Volatility:</span> Bands widen as volatility increases and narrow as it decreases.</li>
                                                 <li><span className="font-semibold text-primary">The Squeeze:</span> Very narrow bands signal a period of low volatility that is often followed by a significant price move.</li>
-                                                <li><span className="font-semibold text-primary">Overbought/Oversold:</span> Prices near the upper band can be considered overbought, while prices near the lower band can be considered oversold. However, this is not a direct buy/sell signal.</li>
+                                                <li><span className="font-semibold text-primary">Price vs. Bands:</span> Prices near the upper band can be considered overbought, while prices near the lower band can be considered oversold.</li>
                                             </ul>
                                         </div>
                                      </TooltipContent>
@@ -429,15 +426,13 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipContent className="max-w-xs p-3 space-y-2">
                                         <div>
                                             <p className="font-bold text-foreground">What is VWMA?</p>
-                                            <p>The Volume-Weighted Moving Average (VWMA) is an average price over a period, but it gives more weight to prices that were accompanied by higher trading volume. This makes it different from a Simple Moving Average (SMA), which treats all prices equally.</p>
+                                            <p>The Volume-Weighted Moving Average (VWMA) is an average price over a period, but it gives more weight to prices that were accompanied by higher trading volume.</p>
                                         </div>
                                         <Separator />
                                         <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
-                                            <p>The VWMA is often considered a more accurate reflection of the "true" average price because it factors in the conviction of the market (as measured by volume). Traders watch for:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li><span className="font-semibold text-primary">Price vs. VWMA:</span> When the price is above the VWMA, it's a bullish sign. When it's below, it's bearish.</li>
-                                                <li><span className="font-semibold text-primary">Crossovers:</span> Price crossing above or below the VWMA can signal a change in trend.</li>
+                                                <li><span className="font-semibold text-primary">Price vs. VWMA:</span> When the price is above the VWMA, it's a bullish sign. When it's below, it's bearish. Crossovers can signal a change in trend.</li>
                                             </ul>
                                         </div>
                                      </TooltipContent>
@@ -472,19 +467,9 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         </div>
                                         <Separator />
                                         <div>
-                                            <p className="font-bold text-foreground">Key Components:</p>
-                                            <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li><span className="font-semibold text-primary">MACD Line:</span> The difference between the 12-period and 26-period EMAs. It shows short-term momentum.</li>
-                                                <li><span className="font-semibold text-primary">Signal Line:</span> A 9-period EMA of the MACD Line. It acts as a trigger for buy and sell signals.</li>
-                                                <li><span className="font-semibold text-primary">Histogram:</span> The difference between the MACD Line and the Signal Line. It visualizes the distance between the two lines.</li>
-                                            </ul>
-                                        </div>
-                                        <Separator />
-                                        <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
                                                 <li><span className="text-green-400 font-semibold">Crossovers:</span> A bullish signal occurs when the MACD Line crosses above the Signal Line. A bearish signal is when it crosses below.</li>
-                                                <li><span className="font-semibold">Centerline Crossover:</span> When the MACD line crosses above 0, it's considered bullish; when it crosses below 0, it's bearish.</li>
                                                 <li><span className="font-semibold">Divergence:</span> When the stock price makes a new high/low but the MACD does not, it can signal a potential reversal.</li>
                                             </ul>
                                         </div>
@@ -534,19 +519,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         </div>
                                         <Separator />
                                         <div>
-                                            <p className="font-bold text-foreground">Key Components:</p>
-                                            <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li><span className="font-semibold text-primary">%K Line:</span> The main line, which measures where the latest close is relative to the recent high-low range.</li>
-                                                <li><span className="font-semibold text-primary">%D Line:</span> A moving average of the %K line, acting as a smoother signal line.</li>
-                                            </ul>
-                                        </div>
-                                        <Separator />
-                                        <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
                                                 <li><span className="text-red-400 font-semibold">Overbought:</span> Readings above 80 suggest the asset might be due for a pullback.</li>
                                                 <li><span className="text-green-400 font-semibold">Oversold:</span> Readings below 20 suggest the asset might be due for a bounce.</li>
-                                                <li><span className="font-semibold">Crossovers:</span> A bullish signal can occur when the %K line crosses above the %D line, especially in oversold territory. A bearish signal occurs when %K crosses below %D in overbought territory.</li>
+                                                <li><span className="font-semibold">Crossovers:</span> A bullish signal can occur when the %K line crosses above the %D line, especially in oversold territory.</li>
                                             </ul>
                                         </div>
                                      </TooltipContent>
@@ -594,11 +571,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         <Separator />
                                         <div>
                                           <p className="font-bold text-foreground">How to Interpret It:</p>
-                                          <p>The <span className="font-semibold text-primary">trend of OBV is key</span>; the absolute numeric value is not important. A rising OBV reflects positive buying pressure, which can confirm an uptrend or signal a potential bullish reversal.</p>
-                                          <ul className="list-disc list-inside mt-1 space-y-1">
-                                            <li><span className="text-green-400 font-semibold">Bullish Divergence:</span> Occurs when price makes a new low, but OBV makes a higher low. This suggests selling pressure is weakening and the trend could reverse upwards.</li>
-                                            <li><span className="text-red-400 font-semibold">Bearish Divergence:</span> Occurs when price makes a new high, but OBV makes a lower high. This suggests buying pressure is weakening and the trend could reverse downwards.</li>
-                                          </ul>
+                                          <p>The <span className="font-semibold text-primary">trend of OBV is key</span>; the absolute numeric value is not important. A rising OBV reflects positive buying pressure, which can confirm an uptrend. A falling OBV suggests selling pressure.</p>
                                         </div>
                                      </TooltipContent>
                                  </Tooltip>
@@ -624,16 +597,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <TooltipContent className="max-w-xs p-3 space-y-2">
                                         <div>
                                             <p className="font-bold text-foreground">What is CMF?</p>
-                                            <p>The Chaikin Money Flow (CMF), developed by Marc Chaikin, is a technical indicator that measures the amount of Money Flow Volume over a set period. It oscillates between -1 and +1.</p>
+                                            <p>The Chaikin Money Flow (CMF) measures the amount of Money Flow Volume over a set period. It oscillates between -1 and +1.</p>
                                         </div>
                                         <Separator />
                                         <div>
                                             <p className="font-bold text-foreground">How to Interpret It:</p>
                                             <ul className="list-disc list-inside mt-1 space-y-1">
-                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation), as the stock is closing in the upper portion of its daily range. The higher the value, the stronger the buying pressure.</li>
-                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution), as it's closing in the lower portion of its range. The lower the value, the stronger the selling pressure.</li>
-                                                <li><span className="font-semibold text-primary">Bullish Divergence:</span> Occurs when price makes a new low but CMF makes a higher low, suggesting a potential bottom is forming.</li>
-                                                <li><span className="font-semibold text-primary">Bearish Divergence:</span> Occurs when price makes a new high but CMF fails to reach a new high, suggesting a potential top is forming.</li>
+                                                <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation).</li>
+                                                <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution).</li>
                                             </ul>
                                         </div>
                                      </TooltipContent>

@@ -382,7 +382,9 @@ export default function Home() {
         }
     });
 
-    event.target.value = '';
+    if (event.target) {
+        event.target.value = '';
+    }
   };
   
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
@@ -468,7 +470,7 @@ export default function Home() {
                                <FormControl>
                                 <div className="relative">
                                     <Input
-                                        placeholder="e.g., AAPL, EURUSD, 0700.HK"
+                                        placeholder="e.g., AAPL, EURUSD, 0700.HK, BTCUSD"
                                         {...field}
                                         onInput={(e) => {
                                             field.onChange(e.currentTarget.value.toUpperCase())
@@ -549,10 +551,10 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">2. Data Source & API Usage</h3>
                         <p className="text-muted-foreground">
-                          All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which limits `outputsize=full` to a premium feature for stock data, and has a general limit of 25 requests per day.
+                          All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a general limit of 25 requests per day.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. It will try to get full data, but may fall back to 100 data points if you are on the free plan.</li>
+                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. For stocks, this fetches the last 100 days of data. For Forex/Crypto, it fetches a more extensive history.</li>
                           <li><span className="font-semibold text-foreground">Upload File:</span> Uses **0** API requests.</li>
                           <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
                         </ul>
@@ -571,7 +573,7 @@ export default function Home() {
                           <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility (ATR).</li>
                           <li><span className="font-semibold text-foreground">Monte Carlo Forecast:</span> A probabilistic 30-day price forecast based on thousands of simulations.</li>
                           <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
-                          <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> Both AI-powered and rule-based engines suggest potential option strategies.</li>
+                          <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> A rule-based engine suggests potential option strategies based on momentum and volatility.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When news is loaded, an AI analyzes the articles to provide a summary and predict its impact.</li>
                           <li><span className="font-semibold text-foreground">Suggested Exploration:</span> Get AI-powered suggestions for follow-up research questions.</li>
                         </ul>
@@ -580,7 +582,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">4. Customizable Indicators</h3>
                         <p className="text-muted-foreground">
-                          You can adjust the periods for ROC, RSI, MACD, and Bollinger Bands in the "Technical Indicators" card. Click "Update" to re-calculate all indicators instantly in your browser at no API cost.
+                          You can adjust the periods for all technical indicators in the "Technical Indicators" card. Click "Update" to re-calculate all indicators instantly in your browser at no API cost.
                         </p>
                       </div>
 
