@@ -299,7 +299,8 @@ export default function Home() {
                         const closeValue = row[headerMap['close']];
                         const dateValue = row[headerMap['date']];
                         if (!closeValue || !dateValue || !row[headerMap['volume']]) {
-                             throw new Error(`Row ${index + 2} is missing required data for date, close, or volume.`);
+                             console.warn(`Skipping row ${index + 2} due to missing required data.`);
+                             return null;
                         }
                         
                         // Handle Excel dates
@@ -312,7 +313,13 @@ export default function Home() {
                              formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
                         } else {
                             // Assume it's a string date
-                            formattedDate = new Date(dateValue).toISOString().split('T')[0];
+                            try {
+                                formattedDate = new Date(dateValue).toISOString().split('T')[0];
+                                if (formattedDate === 'Invalid Date') throw new Error();
+                            } catch {
+                                console.warn(`Skipping row ${index + 2} due to invalid date format.`);
+                                return null;
+                            }
                         }
                         
                         return {
@@ -323,7 +330,7 @@ export default function Home() {
                             high: headerMap['high'] !== -1 ? String(row[headerMap['high']]) : String(closeValue),
                             low: headerMap['low'] !== -1 ? String(row[headerMap['low']]) : String(closeValue),
                         };
-                    });
+                    }).filter((row): row is MarketData => row !== null);
 
                 } else { // CSV parsing
                     const text = e.target?.result;
@@ -348,7 +355,10 @@ export default function Home() {
                     data = lines.slice(1).map((line, index) => {
                         const values = line.split(',');
                         const closeValue = values[headerMap['close']];
-                        if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) throw new Error(`Row ${index + 2} is missing required data for date, close, or volume.`);
+                        if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) {
+                            console.warn(`Skipping row ${index + 2} due to missing required data.`);
+                            return null;
+                        }
                         
                         return {
                             date: values[headerMap['date']],
@@ -358,12 +368,12 @@ export default function Home() {
                             high: headerMap['high'] !== -1 ? values[headerMap['high']] : closeValue,
                             low: headerMap['low'] !== -1 ? values[headerMap['low']] : closeValue,
                         };
-                    });
+                    }).filter((row): row is MarketData => row !== null);
                 }
                 
                 const sortedData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-                if(sortedData.length === 0) throw new Error('File is empty or in an invalid format.');
+                if(sortedData.length === 0) throw new Error('File is empty or contains no valid data rows.');
                 
                 const tickerFromFile = file.name.split(/[\._\s]/)[0].toUpperCase();
                 form.setValue('ticker', tickerFromFile);
