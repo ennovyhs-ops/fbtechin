@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -25,20 +24,28 @@ const AnalyzeStockMomentumOutputSchema = z.object({
     "🚨 STRONG BEARISH",
     "N/A"
   ]).describe("The overall signal derived from the total score."),
+  recommendation: z.enum([
+    "Strong Buy",
+    "Buy",
+    "Hold/Neutral",
+    "Sell",
+    "Strong Sell",
+    "N/A"
+  ]).describe("The explicit buy/sell/hold recommendation based on the score."),
   interpretation: z.string().describe("A concise interpretation of the signal (e.g., 'High conviction long')."),
   tradeAction: z.string().describe("A suggested trading action based on the signal (e.g., 'Use pullbacks to enter').")
 });
 export type AnalyzeStockMomentumOutput = z.infer<typeof AnalyzeStockMomentumOutputSchema>;
 
 
-const getSignalFromScore = (score: number): Pick<AnalyzeStockMomentumOutput, 'signal' | 'interpretation' | 'tradeAction'> => {
-  if (score >= 0.7) return { signal: "🚀 STRONG BULLISH", interpretation: "Multiple indicators are aligned, signaling a strong upward trend.", tradeAction: "Use pullbacks to enter" };
-  if (score >= 0.4) return { signal: "✅ MODERATE BULLISH", interpretation: "Indicators are broadly positive, suggesting a potential uptrend.", tradeAction: "Manage risk with stop losses" };
-  if (score >= 0.1) return { signal: "⚠️ MILD BULLISH", interpretation: "Some bullish signs are present, but confirmation is needed.", tradeAction: "Look for additional confirmation" };
-  if (score > -0.1) return { signal: "⚖️ NEUTRAL", interpretation: "Indicators are mixed, with no clear directional advantage.", tradeAction: "Market is choppy, avoid new trades" };
-  if (score > -0.4) return { signal: "⚠️ MILD BEARISH", interpretation: "Some bearish signs are present, suggesting caution is warranted.", tradeAction: "Caution is advised, consider hedging" };
-  if (score > -0.7) return { signal: "✅ MODERATE BEARISH", interpretation: "Indicators are broadly negative, suggesting a potential downtrend.", tradeAction: "Manage risk with stop losses" };
-  return { signal: "🚨 STRONG BEARISH", interpretation: "Multiple indicators are aligned, signaling a strong downward trend.", tradeAction: "Use rallies to enter" };
+const getSignalFromScore = (score: number): Omit<AnalyzeStockMomentumOutput, 'totalScore'> => {
+  if (score >= 0.7) return { signal: "🚀 STRONG BULLISH", recommendation: "Strong Buy", interpretation: "Multiple indicators are aligned, signaling a strong upward trend.", tradeAction: "Use pullbacks to enter" };
+  if (score >= 0.4) return { signal: "✅ MODERATE BULLISH", recommendation: "Buy", interpretation: "Indicators are broadly positive, suggesting a potential uptrend.", tradeAction: "Manage risk with stop losses" };
+  if (score >= 0.1) return { signal: "⚠️ MILD BULLISH", recommendation: "Hold/Neutral", interpretation: "Some bullish signs are present, but confirmation is needed.", tradeAction: "Look for additional confirmation" };
+  if (score > -0.1) return { signal: "⚖️ NEUTRAL", recommendation: "Hold/Neutral", interpretation: "Indicators are mixed, with no clear directional advantage.", tradeAction: "Market is choppy, avoid new trades" };
+  if (score > -0.4) return { signal: "⚠️ MILD BEARISH", recommendation: "Hold/Neutral", interpretation: "Some bearish signs are present, suggesting caution is warranted.", tradeAction: "Caution is advised, consider hedging" };
+  if (score > -0.7) return { signal: "✅ MODERATE BEARISH", recommendation: "Sell", interpretation: "Indicators are broadly negative, suggesting a potential downtrend.", tradeAction: "Manage risk with stop losses" };
+  return { signal: "🚨 STRONG BEARISH", recommendation: "Strong Sell", interpretation: "Multiple indicators are aligned, signaling a strong downward trend.", tradeAction: "Use rallies to enter" };
 };
 
 
@@ -85,6 +92,7 @@ export async function analyzeStockMomentum(
         return {
             totalScore: 0,
             signal: 'N/A',
+            recommendation: 'N/A',
             interpretation: 'AI momentum analysis is not applicable to currency or crypto pairs.',
             tradeAction: 'Technical indicator analysis is not supported for currency or crypto pairs.'
         };
@@ -294,11 +302,12 @@ export async function analyzeStockMomentum(
     // Normalize score to be within -1 and 1
     totalScore = Math.max(-1, Math.min(1, totalScore));
 
-    const { signal, interpretation, tradeAction } = getSignalFromScore(totalScore);
+    const { signal, interpretation, tradeAction, recommendation } = getSignalFromScore(totalScore);
 
     return {
         totalScore,
         signal,
+        recommendation,
         interpretation,
         tradeAction,
     };

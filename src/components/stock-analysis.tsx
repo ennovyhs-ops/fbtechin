@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -28,6 +27,14 @@ const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string }
     if (signal.includes('MODERATE BEARISH')) return { icon: <ShieldAlert className="h-5 w-5" />, color: 'text-red-400' };
     if (signal.includes('MILD BEARISH')) return { icon: <Hand className="h-5 w-5" />, color: 'text-orange-400' };
     return { icon: <Scale className="h-5 w-5" />, color: 'text-muted-foreground' };
+}
+
+const getRecommendationColor = (recommendation: string) => {
+    if (recommendation.includes('Strong Buy')) return 'bg-green-500 text-white';
+    if (recommendation.includes('Buy')) return 'bg-green-500/80 text-white';
+    if (recommendation.includes('Sell')) return 'bg-red-500/80 text-white';
+    if (recommendation.includes('Strong Sell')) return 'bg-red-500 text-white';
+    return 'bg-muted text-muted-foreground';
 }
 
 const actionGlossary: Record<string, { title: string; description: string; }> = {
@@ -87,7 +94,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                     <Zap className="h-6 w-6 text-accent" />
-                    <span>Analysis for {ticker}</span>
+                    <span>Analysis &amp; Recommendation for {ticker}</span>
                 </CardTitle>
                 <CardDescription>
                     Running a detailed scoring model and price projection...
@@ -224,13 +231,22 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <Zap className="h-6 w-6 text-accent" />
-          <span>Analysis for {ticker} (Calculated)</span>
+          <span>Analysis &amp; Recommendation for {ticker}</span>
         </CardTitle>
         <CardDescription>
           A proprietary momentum score and derived short- and long-term price targets.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {'recommendation' in momentumAnalysis && momentumAnalysis.recommendation !== "N/A" && (
+            <div className="text-center p-4 rounded-lg bg-muted/50">
+                <h3 className="font-semibold text-sm text-muted-foreground mb-2">Recommendation from Technicals</h3>
+                <div className={`inline-block px-6 py-2 rounded-full font-bold text-lg ${getRecommendationColor(momentumAnalysis.recommendation)}`}>
+                    {momentumAnalysis.recommendation}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">{momentumAnalysis.interpretation}</p>
+            </div>
+        )}
         <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
             {/* Left side: Momentum Score */}
             <div className="flex flex-col items-center gap-2 text-center">
@@ -262,7 +278,6 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                 <p className="text-sm text-muted-foreground">{momentumAnalysis.interpretation}</p>
             </div>
 
             <Separator orientation="vertical" className="h-24 hidden md:block" />
@@ -398,5 +413,3 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
-
-    
