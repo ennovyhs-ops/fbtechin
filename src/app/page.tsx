@@ -298,8 +298,9 @@ export default function Home() {
                     data = jsonData.slice(1).map((row: any[], index: number) => {
                         const closeValue = row[headerMap['close']];
                         const dateValue = row[headerMap['date']];
+                        // Skip row if required data is missing
                         if (!closeValue || !dateValue || !row[headerMap['volume']]) {
-                             console.warn(`Skipping row ${index + 2} due to missing required data.`);
+                             console.warn(`Skipping row ${index + 2} due to missing required data for date, close, or volume.`);
                              return null;
                         }
                         
@@ -355,8 +356,9 @@ export default function Home() {
                     data = lines.slice(1).map((line, index) => {
                         const values = line.split(',');
                         const closeValue = values[headerMap['close']];
+                        // Skip row if required data is missing
                         if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) {
-                            console.warn(`Skipping row ${index + 2} due to missing required data.`);
+                            console.warn(`Skipping row ${index + 2} due to missing required data for date, close, or volume.`);
                             return null;
                         }
                         
@@ -564,7 +566,7 @@ export default function Home() {
                           All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a general limit of 25 requests per day.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. For stocks, this fetches the last 100 days of data. For Forex/Crypto, it fetches a more extensive history.</li>
+                          <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. For stocks, this fetches the last 100 days of data (`compact`). For Forex/Crypto, it can fetch a more extensive history (`full`), as this is often supported on the free tier for those asset types.</li>
                           <li><span className="font-semibold text-foreground">Upload File:</span> Uses **0** API requests.</li>
                           <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
                         </ul>
@@ -579,11 +581,11 @@ export default function Home() {
                             After loading data, the application automatically uses a mix of deterministic calculations and generative AI to provide insights.
                         </p>
                          <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
-                          <li><span className="font-semibold text-foreground">Momentum Score:</span> A proprietary score (-1.0 to +1.0) calculated from multiple technical indicators.</li>
+                          <li><span className="font-semibold text-foreground">Momentum Score & Recommendation:</span> A proprietary score (-1.0 to +1.0) and a direct 'Buy/Sell/Hold' recommendation calculated from multiple technical indicators.</li>
                           <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility (ATR).</li>
                           <li><span className="font-semibold text-foreground">Monte Carlo Forecast:</span> A probabilistic 30-day price forecast based on thousands of simulations.</li>
                           <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
-                          <li><span className="font-semibold text-foreground">Option Strategy Ideas:</span> A rule-based engine suggests potential option strategies based on momentum and volatility.</li>
+                          <li><span className="font-semibold text-foreground">Rule-Based Option Strategies:</span> A deterministic engine suggests potential option strategies based on momentum and volatility.</li>
                           <li><span className="font-semibold text-foreground">AI News Impact:</span> When news is loaded, an AI analyzes the articles to provide a summary and predict its impact.</li>
                           <li><span className="font-semibold text-foreground">Suggested Exploration:</span> Get AI-powered suggestions for follow-up research questions.</li>
                         </ul>
@@ -924,3 +926,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
