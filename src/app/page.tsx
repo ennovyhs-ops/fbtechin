@@ -290,23 +290,23 @@ export default function Home() {
 
                 if (jsonData.length < 2) throw new Error('File must contain a header and at least one data row.');
                 
-                const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/"/g, ''));
+                const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/[\s_-]/g, ''));
                 
                 const findHeaderIndex = (aliases: string[]): number => {
                     for (const alias of aliases) {
-                        const index = headerLine.indexOf(alias);
+                        const index = headerLine.indexOf(alias.toLowerCase().replace(/[\s_-]/g, ''));
                         if (index !== -1) return index;
                     }
                     return -1;
                 };
 
                 const headerMap = {
-                    date: findHeaderIndex(['date', 'time', 'timestamp']),
-                    open: findHeaderIndex(['open']),
-                    high: findHeaderIndex(['high']),
-                    low: findHeaderIndex(['low']),
-                    close: findHeaderIndex(['close', 'price', 'last']),
-                    volume: findHeaderIndex(['volume', 'vol']),
+                    date: findHeaderIndex(['date', 'time', 'datetime', 'timestamp', 'trade_date', 'tradedate']),
+                    open: findHeaderIndex(['open', 'open_price', 'openprice']),
+                    high: findHeaderIndex(['high', 'high_price', 'highprice', 'max']),
+                    low: findHeaderIndex(['low', 'low_price', 'lowprice', 'min']),
+                    close: findHeaderIndex(['close', 'closed', 'closed_price', 'close_price', 'last', 'last_price', 'price', 'adj_close', 'adjusted_close']),
+                    volume: findHeaderIndex(['volume', 'vol', 'qty', 'quantity', 'trade_volume']),
                 };
                 
                 const missingHeaders = ['date', 'close', 'volume'].filter(h => headerMap[h as keyof typeof headerMap] === -1);
