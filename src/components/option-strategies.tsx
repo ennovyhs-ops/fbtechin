@@ -171,3 +171,5 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
     </Card>
   );
 }
+
+    

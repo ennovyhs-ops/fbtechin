@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -368,10 +369,20 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                            <p>Fibonacci levels are horizontal lines that indicate where support and resistance are likely to occur. They are based on the 90-day high-low range. A price may reverse near these levels.</p>
-                            <p className="font-bold">The "Golden Zone": The area between the 50% and 61.8% retracement levels is often considered a high-probability trading zone for potential reversals.</p>
-                        </TooltipContent>
+                         <TooltipContent className="max-w-xs p-3 space-y-2">
+                             <div>
+                               <p className="font-bold text-foreground">What are Fibonacci Levels?</p>
+                               <p>These are horizontal lines that indicate where support and resistance are likely to occur. They are calculated based on the high and low points of the price over the last 90 days.</p>
+                             </div>
+                             <Separator />
+                             <div>
+                               <p className="font-bold text-foreground">How to Use Them:</p>
+                               <ul className="list-disc list-inside mt-1 space-y-1">
+                                    <li>After a significant price move, the price will often "retrace" or pull back to one of these levels before continuing in the original direction.</li>
+                                    <li>The area between the 50% and 61.8% levels is known as the <strong className="text-primary">"Golden Zone,"</strong> often considered a high-probability area for a reversal.</li>
+                               </ul>
+                             </div>
+                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
                 <div className="flex flex-row flex-wrap justify-around items-center gap-x-4 gap-y-2 p-3 rounded-lg bg-muted/50">
@@ -413,3 +424,5 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
+
+    
