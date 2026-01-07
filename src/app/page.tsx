@@ -270,6 +270,8 @@ export default function Home() {
         reader.onload = async (e) => {
             try {
                 let data: MarketData[] = [];
+                let jsonData: any[][] = [];
+
                 if (isExcel) {
                     const fileData = e.target?.result;
                     if (!fileData) throw new Error('Failed to read Excel file.');
@@ -277,105 +279,81 @@ export default function Home() {
                     const workbook = XLSX.read(fileData, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
-
-                    if (jsonData.length < 2) throw new Error('Excel file must contain a header and at least one data row.');
-                    
-                    const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/"/g, ''));
-                    const requiredHeaders = ['date', 'close', 'volume'];
-                    const optionalHeaders = ['open', 'high', 'low'];
-                    
-                    const headerMap: { [key: string]: number } = {};
-                    [...requiredHeaders, ...optionalHeaders].forEach(header => {
-                        headerMap[header] = headerLine.indexOf(header);
-                    });
-                    
-                    const missingHeaders = requiredHeaders.filter(h => headerMap[h] === -1);
-                    if (missingHeaders.length > 0) {
-                        throw new Error(`Excel file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low.`);
-                    }
-
-                    data = jsonData.slice(1).map((row: any[], index: number) => {
-                        const closeValue = row[headerMap['close']];
-                        const dateValue = row[headerMap['date']];
-                        // Skip row if required data is missing
-                        if (!closeValue || !dateValue || !row[headerMap['volume']]) {
-                             console.warn(`Skipping row ${index + 2} due to missing required data for date, close, or volume.`);
-                             return null;
-                        }
-                        
-                        // Handle Excel dates
-                        let formattedDate: string;
-                        if (typeof dateValue === 'number') {
-                             // It's an Excel serial date
-                             const utc_days  = Math.floor(dateValue - 25569);
-                             const utc_value = utc_days * 86400;                                        
-                             const date_info = new Date(utc_value * 1000);
-                             formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
-                        } else {
-                            // Assume it's a string date
-                            try {
-                                formattedDate = new Date(dateValue).toISOString().split('T')[0];
-                                if (formattedDate === 'Invalid Date') throw new Error();
-                            } catch {
-                                console.warn(`Skipping row ${index + 2} due to invalid date format.`);
-                                return null;
-                            }
-                        }
-                        
-                        return {
-                            date: formattedDate,
-                            close: String(closeValue),
-                            volume: String(row[headerMap['volume']]),
-                            open: headerMap['open'] !== -1 ? String(row[headerMap['open']]) : String(closeValue),
-                            high: headerMap['high'] !== -1 ? String(row[headerMap['high']]) : String(closeValue),
-                            low: headerMap['low'] !== -1 ? String(row[headerMap['low']]) : String(closeValue),
-                        };
-                    }).filter((row): row is MarketData => row !== null);
-
-                } else { // CSV parsing
+                    jsonData = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
+                } else { // CSV
                     const text = e.target?.result;
                     if (typeof text !== 'string') throw new Error('Failed to read the CSV file.');
-                    
                     const lines = text.split('\n').filter(line => line.trim() !== '');
-                    if (lines.length < 2) throw new Error('CSV file must contain a header row and at least one data row.');
-                    
-                    const headerLine = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
-                    const headerMap: { [key: string]: number } = {};
-                    
-                    const requiredHeaders = ['date', 'close', 'volume'];
-                    const optionalHeaders = ['open', 'high', 'low'];
+                    if (lines.length < 2) throw new Error('CSV file must contain a header and at least one data row.');
+                    jsonData = lines.map(line => line.split(','));
+                }
 
-                    const missingHeaders = requiredHeaders.filter(h => !headerLine.includes(h));
-                    if (missingHeaders.length > 0) throw new Error(`CSV file is missing required header(s): ${missingHeaders.join(', ')}. Optional headers are: open, high, low.`);
+                if (jsonData.length < 2) throw new Error('File must contain a header and at least one data row.');
+                
+                const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/"/g, ''));
+                
+                const findHeaderIndex = (aliases: string[]): number => {
+                    for (const alias of aliases) {
+                        const index = headerLine.indexOf(alias);
+                        if (index !== -1) return index;
+                    }
+                    return -1;
+                };
+
+                const headerMap = {
+                    date: findHeaderIndex(['date', 'time', 'timestamp']),
+                    open: findHeaderIndex(['open']),
+                    high: findHeaderIndex(['high']),
+                    low: findHeaderIndex(['low']),
+                    close: findHeaderIndex(['close', 'price', 'last']),
+                    volume: findHeaderIndex(['volume', 'vol']),
+                };
+                
+                const missingHeaders = ['date', 'close', 'volume'].filter(h => headerMap[h as keyof typeof headerMap] === -1);
+                if (missingHeaders.length > 0) {
+                    throw new Error(`File is missing required headers. Could not find a column for: ${missingHeaders.join(', ')}.`);
+                }
+
+                data = jsonData.slice(1).map((row: any[], index: number) => {
+                    const closeValue = row[headerMap.close];
+                    const dateValue = row[headerMap.date];
+                    const volumeValue = row[headerMap.volume];
+
+                    if (!closeValue || !dateValue || !volumeValue) {
+                         console.warn(`Row ${index + 2} is missing required data for date, close, or volume. Skipping row.`);
+                         return null;
+                    }
                     
-                    [...requiredHeaders, ...optionalHeaders].forEach(header => {
-                        headerMap[header] = headerLine.indexOf(header);
-                    });
-                    
-                    data = lines.slice(1).map((line, index) => {
-                        const values = line.split(',');
-                        const closeValue = values[headerMap['close']];
-                        // Skip row if required data is missing
-                        if (!closeValue || !values[headerMap['date']] || !values[headerMap['volume']]) {
-                            console.warn(`Skipping row ${index + 2} due to missing required data for date, close, or volume.`);
+                    let formattedDate: string;
+                    if (typeof dateValue === 'number' && dateValue > 10000) { // Excel serial date check
+                         const utc_days  = Math.floor(dateValue - 25569);
+                         const utc_value = utc_days * 86400;                                        
+                         const date_info = new Date(utc_value * 1000);
+                         formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
+                    } else {
+                        try {
+                            const parsedDate = new Date(dateValue);
+                            if (isNaN(parsedDate.getTime())) throw new Error();
+                            formattedDate = parsedDate.toISOString().split('T')[0];
+                        } catch {
+                            console.warn(`Skipping row ${index + 2} due to invalid date format: ${dateValue}`);
                             return null;
                         }
-                        
-                        return {
-                            date: values[headerMap['date']],
-                            close: closeValue,
-                            volume: values[headerMap['volume']],
-                            open: headerMap['open'] !== -1 ? values[headerMap['open']] : closeValue,
-                            high: headerMap['high'] !== -1 ? values[headerMap['high']] : closeValue,
-                            low: headerMap['low'] !== -1 ? values[headerMap['low']] : closeValue,
-                        };
-                    }).filter((row): row is MarketData => row !== null);
-                }
+                    }
+                    
+                    return {
+                        date: formattedDate,
+                        close: String(closeValue),
+                        volume: String(volumeValue),
+                        open: headerMap.open !== -1 && row[headerMap.open] ? String(row[headerMap.open]) : String(closeValue),
+                        high: headerMap.high !== -1 && row[headerMap.high] ? String(row[headerMap.high]) : String(closeValue),
+                        low: headerMap.low !== -1 && row[headerMap.low] ? String(row[headerMap.low]) : String(closeValue),
+                    };
+                }).filter((row): row is MarketData => row !== null);
+
+                if(data.length === 0) throw new Error('File is empty or contains no valid data rows.');
                 
                 const sortedData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-                if(sortedData.length === 0) throw new Error('File is empty or contains no valid data rows.');
                 
                 const tickerFromFile = file.name.split(/[\._\s]/)[0].toUpperCase();
                 form.setValue('ticker', tickerFromFile);
@@ -556,7 +534,7 @@ export default function Home() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">1. Data Input</h3>
                         <p className="text-muted-foreground">
-                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV or Excel (.xls, .xlsx) file. For best results with file uploads, name your file with the ticker (e.g., "SPY.xlsx"). The file must have 'date', 'close', and 'volume' columns; 'open', 'high', and 'low' are optional but recommended for full analysis.
+                            You can fetch market data by entering a ticker, or upload your own historical data via a CSV or Excel (.xls, .xlsx) file. For best results with file uploads, name your file with the ticker (e.g., "SPY.xlsx"). The file must have columns that can be identified as 'date', 'close', and 'volume'; 'open', 'high', and 'low' are optional but recommended for full analysis.
                         </p>
                       </div>
 
