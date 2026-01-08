@@ -1,8 +1,8 @@
 
-
 import type { AnalyzeStockMomentumOutput } from "@/ai/flows/analyze-stock-momentum";
 import type { PredictPriceTargetOutput as PredictPriceTargetOutputFlow } from "@/ai/flows/predict-price-target";
 import type { SynthesizeTradeIdeaOutput as SynthesizeTradeIdeaOutputFlow } from "@/ai/flows/synthesize-trade-idea";
+import type { SummarizeTechnicalAnalysisOutput as SummarizeTechnicalAnalysisOutputFlow } from "@/ai/flows/summarize-technical-analysis";
 
 export type MarketData = {
   date: string;
@@ -145,3 +145,5 @@ export type CombinedAnalysisResult = {
 }
 
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
+
+export type SummarizeTechnicalAnalysisOutput = SummarizeTechnicalAnalysisOutputFlow;

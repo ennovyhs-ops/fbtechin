@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useTransition, useCallback, useRef, useMemo, useEffect } from 'react';
@@ -35,6 +34,7 @@ import { HistoricalVolatility } from '@/components/historical-volatility';
 import { SignalExplanation } from '@/components/signal-explanation';
 import { MonteCarloSimulation } from '@/components/monte-carlo-simulation';
 import { SynthesizedTradeIdea } from '@/components/synthesized-trade-idea';
+import { TechnicalSummary } from '@/components/technical-summary';
 
 
 const FormSchema = z.object({
@@ -710,6 +710,17 @@ export default function Home() {
            </Card>
           )}
 
+          {analysisResult?.analysis && 'totalScore' in analysisResult.analysis && analysisResult.prediction && !('error' in analysisResult.prediction) && latestData && thirtyDayVolatility && (
+            <TechnicalSummary
+              ticker={submittedTicker!}
+              analysis={analysisResult}
+              currentPrice={parseFloat(latestData.close)}
+              volatility={thirtyDayVolatility}
+              indicatorData={indicatorData}
+              marketData={marketData}
+            />
+          )}
+
           {submittedTicker && marketData && (
             <>
                 {(isAnalyzing || analysisResult) &&
@@ -904,7 +915,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    
