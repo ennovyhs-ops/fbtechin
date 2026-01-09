@@ -44,8 +44,8 @@ const strategyLibrary = {
         action: (price: number) => `Buy an at-the-money call (e.g., ~$${price.toFixed(2)}) and sell an out-of-the-money call (e.g., ~$${(price * 1.075).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
-    'Put Credit Spread': {
-        rationale: 'A high-probability bullish strategy that profits if the stock stays above a certain price. It collects a premium and benefits from time decay.',
+    'Bull Put Spread': {
+        rationale: 'A high-probability bullish strategy that profits if the stock stays above a certain price. It collects a premium and benefits from time decay, making it ideal in higher volatility.',
         action: (price: number) => `Sell an out-of-the-money put (e.g., ~$${(price * 0.95).toFixed(2)}) and buy a further OTM put for protection (e.g., ~$${(price * 0.90).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
@@ -59,8 +59,8 @@ const strategyLibrary = {
         action: (price: number) => `Buy an at-the-money put (e.g., ~$${price.toFixed(2)}) and sell an out-of-the-money put (e.g., ~$${(price * 0.925).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
-    'Call Credit Spread': {
-        rationale: 'A high-probability bearish strategy that profits if the stock remains below a certain price. It collects premium and benefits from time decay.',
+    'Bear Call Spread': {
+        rationale: 'A high-probability bearish strategy that profits if the stock remains below a certain price. It collects premium and benefits from time decay, making it ideal in higher volatility.',
         action: (price: number) => `Sell an out-of-the-money call (e.g., ~$${(price * 1.05).toFixed(2)}) and buy a further OTM call for protection (e.g., ~$${(price * 1.10).toFixed(2)}) with 30-45 days to expiration.`,
         isAggressive: false,
     },
@@ -70,9 +70,14 @@ const strategyLibrary = {
         isAggressive: false,
     },
     'Strangle': {
-        rationale: 'A neutral strategy that profits from a large price move in either direction. Best used when expecting a significant increase in volatility (a big price swing).',
+        rationale: 'A neutral strategy that profits from a large price move in either direction. Best used when expecting a significant increase in volatility from a current low-volatility state.',
         action: (price: number) => `Buy an out-of-the-money call (e.g., ~$${(price * 1.07).toFixed(2)}) and an out-of-the-money put (e.g., ~$${(price * 0.93).toFixed(2)}) with 30-60 days to expiration.`,
         isAggressive: false,
+    },
+    'Straddle': {
+        rationale: 'A more aggressive neutral strategy that profits from a large and rapid price move. It has a higher cost than a Strangle but provides greater profit potential if volatility expands significantly.',
+        action: (price: number) => `Buy both an at-the-money call and an at-the-money put (e.g., strike ~$${price.toFixed(2)}) with 30-60 days to expiration.`,
+        isAggressive: true,
     },
     'Weekly OTM Call': {
         rationale: "This is a high-risk 'lotto ticket' play for a massive short-term rally. The probability of success is low, but the potential reward is high.",
@@ -94,41 +99,41 @@ const getTopStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVol
     if (signal.includes("STRONG BULLISH")) {
         return isLowVolatility 
             ? ['Long Call', 'Bull Call Spread', 'Weekly OTM Call'] 
-            : ['Bull Call Spread', 'Put Credit Spread', 'Weekly OTM Call'];
+            : ['Bull Put Spread', 'Bull Call Spread', 'Weekly OTM Call'];
     }
     if (signal.includes("MODERATE BULLISH")) {
         return isLowVolatility 
-            ? ['Bull Call Spread', 'Long Call', 'Put Credit Spread'] 
-            : ['Put Credit Spread', 'Bull Call Spread', 'Long Call'];
+            ? ['Bull Call Spread', 'Long Call', 'Bull Put Spread'] 
+            : ['Bull Put Spread', 'Bull Call Spread', 'Long Call'];
     }
     if (signal.includes("MILD BULLISH")) {
         return isLowVolatility 
-            ? ['Bull Call Spread', 'Put Credit Spread', 'Iron Condor'] 
-            : ['Put Credit Spread', 'Bull Call Spread', 'Iron Condor'];
+            ? ['Bull Call Spread', 'Bull Put Spread', 'Iron Condor'] 
+            : ['Bull Put Spread', 'Bull Call Spread', 'Iron Condor'];
     }
 
     // Bearish Signals
     if (signal.includes("STRONG BEARISH")) {
         return isLowVolatility 
             ? ['Long Put', 'Bear Put Spread', 'Weekly OTM Put'] 
-            : ['Bear Put Spread', 'Call Credit Spread', 'Weekly OTM Put'];
+            : ['Bear Call Spread', 'Bear Put Spread', 'Weekly OTM Put'];
     }
     if (signal.includes("MODERATE BEARISH")) {
         return isLowVolatility 
-            ? ['Bear Put Spread', 'Long Put', 'Call Credit Spread'] 
-            : ['Call Credit Spread', 'Bear Put Spread', 'Long Put'];
+            ? ['Bear Put Spread', 'Long Put', 'Bear Call Spread'] 
+            : ['Bear Call Spread', 'Bear Put Spread', 'Long Put'];
     }
     if (signal.includes("MILD BEARISH")) {
         return isLowVolatility 
-            ? ['Bear Put Spread', 'Call Credit Spread', 'Iron Condor'] 
-            : ['Call Credit Spread', 'Bear Put Spread', 'Iron Condor'];
+            ? ['Bear Put Spread', 'Bear Call Spread', 'Iron Condor'] 
+            : ['Bear Call Spread', 'Bear Put Spread', 'Iron Condor'];
     }
     
     // Neutral Signal
     if (signal.includes("NEUTRAL")) {
         return isLowVolatility 
-            ? ['Iron Condor', 'Strangle'] 
-            : ['Strangle', 'Iron Condor'];
+            ? ['Iron Condor', 'Strangle', 'Straddle'] 
+            : ['Straddle', 'Iron Condor', 'Strangle'];
     }
     
     return [];

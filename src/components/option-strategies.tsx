@@ -89,15 +89,15 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                             <div className="space-y-2">
                                 <div>
                                     <p className="font-semibold text-foreground">Bullish Strategies</p>
-                                    <p className="text-muted-foreground">Long Call, Bull Call Spread, Put Credit Spread</p>
+                                    <p className="text-muted-foreground">Long Call, Bull Call Spread, Bull Put Spread</p>
                                 </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Bearish Strategies</p>
-                                    <p className="text-muted-foreground">Long Put, Bear Put Spread, Call Credit Spread</p>
+                                    <p className="text-muted-foreground">Long Put, Bear Put Spread, Bear Call Spread</p>
                                  </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Neutral / Volatility Plays</p>
-                                    <p className="text-muted-foreground">Iron Condor (for low volatility), Strangle (for high volatility)</p>
+                                    <p className="text-muted-foreground">Iron Condor, Strangle, Straddle</p>
                                  </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Aggressive "Lotto Tickets"</p>
@@ -171,5 +171,3 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
     </Card>
   );
 }
-
-    
