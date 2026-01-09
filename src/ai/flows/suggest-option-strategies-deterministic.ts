@@ -79,6 +79,26 @@ const strategyLibrary = {
         action: (price: number) => `Buy both an at-the-money call and an at-the-money put (e.g., strike ~$${price.toFixed(2)}) with 30-60 days to expiration.`,
         isAggressive: true,
     },
+    'Call Ratio Spread': {
+        rationale: 'A flexible bullish strategy, typically entered for a credit. It profits most if the stock price rises to the strike of the sold calls by expiration. It has unlimited risk if the price rises sharply.',
+        action: (price: number) => `Buy one at-the-money call (e.g., ~$${price.toFixed(2)}) and sell two out-of-the-money calls (e.g., ~$${(price * 1.05).toFixed(2)}) with 30-45 days to expiration.`,
+        isAggressive: true,
+    },
+    'Put Ratio Spread': {
+        rationale: 'A flexible bearish strategy, often entered for a credit. It profits most if the stock price falls to the strike of the sold puts by expiration. It has large, but defined, risk if the price drops sharply.',
+        action: (price: number) => `Buy one at-the-money put (e.g., ~$${price.toFixed(2)}) and sell two out-of-the-money puts (e.g., ~$${(price * 0.95).toFixed(2)}) with 30-45 days to expiration.`,
+        isAggressive: true,
+    },
+     'Call Calendar Spread': {
+        rationale: 'A neutral to slightly bullish strategy that profits from time decay and low volatility. It bets the stock will stay near the strike price in the short term.',
+        action: (price: number) => `Sell a front-month call (e.g., ~30 DTE) and buy a back-month call (e.g., ~60 DTE) at the same, near-the-money strike (e.g., ~$${price.toFixed(2)}).`,
+        isAggressive: false,
+    },
+    'Put Calendar Spread': {
+        rationale: 'A neutral to slightly bearish strategy that profits from time decay. It is ideal for when you expect the stock to be range-bound or drift slightly lower.',
+        action: (price: number) => `Sell a front-month put (e.g., ~30 DTE) and buy a back-month put (e.g., ~60 DTE) at the same, near-the-money strike (e.g., ~$${price.toFixed(2)}).`,
+        isAggressive: false,
+    },
     'Weekly OTM Call': {
         rationale: "This is a high-risk 'lotto ticket' play for a massive short-term rally. The probability of success is low, but the potential reward is high.",
         action: (price: number) => `Buy a far out-of-the-money call (e.g., strike at ~$${(price * 1.10).toFixed(2)}) expiring in the next 1-2 weeks.`,
@@ -103,12 +123,12 @@ const getTopStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVol
     }
     if (signal.includes("MODERATE BULLISH")) {
         return isLowVolatility 
-            ? ['Bull Call Spread', 'Long Call', 'Bull Put Spread'] 
+            ? ['Bull Call Spread', 'Long Call', 'Call Ratio Spread'] 
             : ['Bull Put Spread', 'Bull Call Spread', 'Long Call'];
     }
     if (signal.includes("MILD BULLISH")) {
         return isLowVolatility 
-            ? ['Bull Call Spread', 'Bull Put Spread', 'Iron Condor'] 
+            ? ['Bull Call Spread', 'Call Calendar Spread', 'Iron Condor'] 
             : ['Bull Put Spread', 'Bull Call Spread', 'Iron Condor'];
     }
 
@@ -120,20 +140,20 @@ const getTopStrategies = (signal: AnalyzeStockMomentumOutput['signal'], isLowVol
     }
     if (signal.includes("MODERATE BEARISH")) {
         return isLowVolatility 
-            ? ['Bear Put Spread', 'Long Put', 'Bear Call Spread'] 
+            ? ['Bear Put Spread', 'Long Put', 'Put Ratio Spread'] 
             : ['Bear Call Spread', 'Bear Put Spread', 'Long Put'];
     }
     if (signal.includes("MILD BEARISH")) {
         return isLowVolatility 
-            ? ['Bear Put Spread', 'Bear Call Spread', 'Iron Condor'] 
+            ? ['Bear Put Spread', 'Put Calendar Spread', 'Iron Condor'] 
             : ['Bear Call Spread', 'Bear Put Spread', 'Iron Condor'];
     }
     
     // Neutral Signal
     if (signal.includes("NEUTRAL")) {
         return isLowVolatility 
-            ? ['Iron Condor', 'Strangle', 'Straddle'] 
-            : ['Straddle', 'Iron Condor', 'Strangle'];
+            ? ['Iron Condor', 'Call Calendar Spread', 'Strangle'] 
+            : ['Iron Condor', 'Straddle', 'Strangle'];
     }
     
     return [];
