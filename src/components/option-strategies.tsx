@@ -79,7 +79,7 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                         <div>
                             <p className="font-semibold text-foreground">Volatility is Key:</p>
                              <ul className="list-disc list-inside mt-1 space-y-1">
-                                <li><span className="font-semibold text-primary">High Volatility (Bands Wide):</span> The engine favors strategies that benefit from high option premiums (e.g., selling credit spreads).</li>
+                                <li><span className="font-semibold text-primary">High Volatility (Bands Wide):</span> The engine favors strategies that benefit from high option premiums (e.g., selling credit spreads like Bull Puts or Bear Calls).</li>
                                 <li><span className="font-semibold text-primary">Low Volatility (Bands Squeezing):</span> It favors strategies that benefit from buying cheaper options (e.g., debit spreads or long calls/puts).</li>
                             </ul>
                         </div>
@@ -89,15 +89,19 @@ export function OptionStrategies({ ticker, analysis, latestClose, marketData }: 
                             <div className="space-y-2">
                                 <div>
                                     <p className="font-semibold text-foreground">Bullish Strategies</p>
-                                    <p className="text-muted-foreground">Long Call, Bull Call Spread, Bull Put Spread</p>
+                                    <p className="text-muted-foreground">Long Call, Bull Call Spread, Bull Put Spread, Call Ratio Spread</p>
                                 </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Bearish Strategies</p>
-                                    <p className="text-muted-foreground">Long Put, Bear Put Spread, Bear Call Spread</p>
+                                    <p className="text-muted-foreground">Long Put, Bear Put Spread, Bear Call Spread, Put Ratio Spread</p>
                                  </div>
                                  <div>
-                                    <p className="font-semibold text-foreground">Neutral / Volatility Plays</p>
-                                    <p className="text-muted-foreground">Iron Condor, Strangle, Straddle</p>
+                                    <p className="font-semibold text-foreground">Neutral / Time Decay Plays</p>
+                                    <p className="text-muted-foreground">Iron Condor, Call/Put Calendar Spreads</p>
+                                 </div>
+                                 <div>
+                                    <p className="font-semibold text-foreground">Volatility Expansion Plays</p>
+                                    <p className="text-muted-foreground">Strangle, Straddle</p>
                                  </div>
                                  <div>
                                     <p className="font-semibold text-foreground">Aggressive "Lotto Tickets"</p>
