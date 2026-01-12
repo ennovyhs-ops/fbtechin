@@ -5,7 +5,7 @@ import { useState, useTransition, useCallback, useRef, useMemo, useEffect } from
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain, X } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, ChevronDown, ChevronUp, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Upload, BarChart, Percent, LineChart, Building, Crown, Mountain, X, Printer } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
@@ -439,9 +439,9 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <Header />
+      <Header className="no-print" />
       <div className="max-w-4xl mx-auto">
-        <Card className="w-full">
+        <Card className="w-full no-print">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
             <CardDescription>Enter a symbol to fetch data, or upload a CSV/XLSX file with historical data.</CardDescription>
@@ -515,6 +515,10 @@ export default function Home() {
                   {isPending && !uploadedFileName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isPending && !uploadedFileName ? 'Retrieving Data...' : 'Get Data'}
                 </Button>
+                <Button type="button" variant="outline" onClick={() => window.print()} disabled={!marketData}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print Report
+                </Button>
                 <Dialog>
                   <DialogTrigger asChild>
                      <Button type="button" variant="outline">
@@ -586,13 +590,13 @@ export default function Home() {
 
         <div className="mt-8 space-y-8">
           {isPending && !marketData && (
-            <div className="flex justify-center items-center p-8">
+            <div className="flex justify-center items-center p-8 no-print">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           )}
           
           {info && (
-             <Alert variant="default">
+             <Alert variant="default" className="no-print">
               <Info className="h-4 w-4" />
               <AlertTitle>Heads up!</AlertTitle>
               <AlertDescription>
@@ -602,7 +606,7 @@ export default function Home() {
           )}
 
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="no-print">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>
@@ -626,7 +630,7 @@ export default function Home() {
           )}
 
           {latestData && submittedTicker && (
-             <Card>
+             <Card className="card">
              <CardHeader>
                <CardTitle className="font-headline text-2xl">
                  Latest Price for {submittedTicker}
@@ -701,7 +705,7 @@ export default function Home() {
                   </div>
                 </div>
              </CardContent>
-             <CardFooter className="flex flex-wrap gap-4">
+             <CardFooter className="flex flex-wrap gap-4 no-print">
                  <Button variant="outline" onClick={downloadCsv}>
                     <Download className="mr-2 h-4 w-4" />
                     Download as CSV
@@ -806,7 +810,7 @@ export default function Home() {
 
 
           {showInitialSkeleton && (
-            <div className="space-y-8 animate-pulse">
+            <div className="space-y-8 animate-pulse no-print">
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">

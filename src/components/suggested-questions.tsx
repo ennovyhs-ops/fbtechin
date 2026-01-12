@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -46,7 +45,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
   }
 
   return (
-    <Card>
+    <Card className="card no-print">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
           <BrainCircuit className="h-6 w-6 text-accent" />
@@ -84,7 +83,7 @@ export function SuggestedQuestions({ ticker }: SuggestedQuestionsProps) {
         ) : hasGenerated ? (
             <p className="text-sm text-muted-foreground">The AI could not find any specific questions for this ticker.</p>
         ) : (
-            <Button onClick={handleGenerateQuestions} disabled={loading}>
+            <Button onClick={handleGenerateQuestions} disabled={loading} className="no-print">
                 <BrainCircuit className="mr-2 h-4 w-4" />
                 Generate Questions
             </Button>
