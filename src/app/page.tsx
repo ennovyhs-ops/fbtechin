@@ -405,11 +405,15 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  const { latestData, fiftyTwoWeek } = useMemo(() => {
+  const { latestData, fiftyTwoWeek, displayDate } = useMemo(() => {
     if (!marketData || marketData.length === 0) {
-      return { latestData: null, fiftyTwoWeek: null };
+      return { latestData: null, fiftyTwoWeek: null, displayDate: null };
     }
     const latest = marketData[0];
+    
+    // Fix for timezone issue: treat date as local
+    const dateParts = latest.date.split('-').map(Number);
+    const localDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
     const oneYearData = marketData.slice(0, 252);
     let high52 = -Infinity;
@@ -426,6 +430,7 @@ export default function Home() {
     return {
       latestData: latest,
       fiftyTwoWeek: marketData.length >= 252 ? { high: high52, low: low52 } : null,
+      displayDate: localDate.toDateString(),
     };
   }, [marketData]);
 
@@ -444,7 +449,7 @@ export default function Home() {
         <Card className="w-full no-print">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Search or Upload Market Data</CardTitle>
-            <CardDescription>Enter a symbol to fetch data, or upload a CSV/XLSX file with historical data.</CardDescription>
+            <CardDescription>Enter a symbol to fetch data, or upload a CSV/XLS/XLSX file with historical data.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -639,7 +644,7 @@ export default function Home() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                        <div className="flex items-center gap-2">
                          <Calendar className="h-4 w-4" />
-                         <span>As of {new Date(latestData.date).toDateString()} Close</span>
+                         <span>As of {displayDate} Close</span>
                        </div>
                        {region && (
                           <div className="flex items-center gap-2">
