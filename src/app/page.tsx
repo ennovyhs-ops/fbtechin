@@ -325,7 +325,7 @@ export default function Home() {
                     }
                     
                     let formattedDate: string;
-                    if (typeof dateValue === 'number' && dateValue > 10000) { // Excel serial date check
+                    if (typeof dateValue === 'number' && dateValue > 25569) { // Excel serial date check (day 1 is 1900-01-01, 25569 is 1970-01-01)
                          const utc_days  = Math.floor(dateValue - 25569);
                          const utc_value = utc_days * 86400;                                        
                          const date_info = new Date(utc_value * 1000);
