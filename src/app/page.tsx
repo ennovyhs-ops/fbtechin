@@ -305,7 +305,7 @@ export default function Home() {
                     open: findHeaderIndex(['open', 'open_price', 'openprice']),
                     high: findHeaderIndex(['high', 'high_price', 'highprice', 'max']),
                     low: findHeaderIndex(['low', 'low_price', 'lowprice', 'min']),
-                    close: findHeaderIndex(['close', 'closed', 'closed_price', 'close_price', 'last', 'last_price', 'price', 'adj_close', 'adjusted_close']),
+                    close: findHeaderIndex(['close', 'closed', 'closed_price', 'close_price', 'last', 'last_price', 'price', 'adj_close', 'adjusted_close', 'lasttrade']),
                     volume: findHeaderIndex(['volume', 'vol', 'qty', 'quantity', 'trade_volume']),
                 };
                 
