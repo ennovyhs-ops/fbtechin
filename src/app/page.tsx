@@ -319,8 +319,8 @@ export default function Home() {
                     const dateValue = row[headerMap.date];
                     const volumeValue = row[headerMap.volume];
 
-                    if (!closeValue || !dateValue || !volumeValue) {
-                         // Lenient: allow rows with missing data
+                    if (!closeValue && !dateValue && !volumeValue) {
+                         return null; // Skip truly empty rows
                     }
                     
                     let formattedDate: string;
