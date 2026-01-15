@@ -320,8 +320,7 @@ export default function Home() {
                     const volumeValue = row[headerMap.volume];
 
                     if (!closeValue || !dateValue || !volumeValue) {
-                         console.warn(`Row ${index + 2} is missing required data for date, close, or volume. Skipping row.`);
-                         return null;
+                         // Lenient: allow rows with missing data
                     }
                     
                     let formattedDate: string;
@@ -343,13 +342,13 @@ export default function Home() {
                     
                     return {
                         date: formattedDate,
-                        close: String(closeValue),
-                        volume: String(volumeValue),
-                        open: headerMap.open !== -1 && row[headerMap.open] ? String(row[headerMap.open]) : String(closeValue),
-                        high: headerMap.high !== -1 && row[headerMap.high] ? String(row[headerMap.high]) : String(closeValue),
-                        low: headerMap.low !== -1 && row[headerMap.low] ? String(row[headerMap.low]) : String(closeValue),
+                        close: String(closeValue ?? ''),
+                        volume: String(volumeValue ?? '0'),
+                        open: headerMap.open !== -1 && row[headerMap.open] ? String(row[headerMap.open]) : String(closeValue ?? ''),
+                        high: headerMap.high !== -1 && row[headerMap.high] ? String(row[headerMap.high]) : String(closeValue ?? ''),
+                        low: headerMap.low !== -1 && row[headerMap.low] ? String(row[headerMap.low]) : String(closeValue ?? ''),
                     };
-                }).filter((row): row is MarketData => row !== null);
+                }).filter((row): row is MarketData => row !== null && !!row.date && !!row.close);
 
                 if(data.length === 0) throw new Error('File is empty or contains no valid data rows.');
                 
