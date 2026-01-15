@@ -318,10 +318,6 @@ export default function Home() {
                     const closeValue = row[headerMap.close];
                     const dateValue = row[headerMap.date];
                     const volumeValue = row[headerMap.volume];
-
-                    if (!closeValue && !dateValue && !volumeValue) {
-                         return null; // Skip truly empty rows
-                    }
                     
                     let formattedDate: string;
                     if (typeof dateValue === 'number' && dateValue > 25569) { // Excel serial date check (day 1 is 1900-01-01, 25569 is 1970-01-01)
