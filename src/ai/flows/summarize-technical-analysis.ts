@@ -22,6 +22,9 @@ const SummarizeTechnicalAnalysisInputSchema = z.object({
   macd: z.string().describe("The state of the MACD indicator (e.g., 'A bullish crossover just occurred')."),
   trends: z.string().describe("The alignment of short, medium, and long-term trends (e.g., 'Short, medium, and long-term trends are all bullish')."),
   volume: z.string().describe("The recent volume trend (e.g., 'Recent volume is high on a positive day (Accumulation)')."),
+  stochastic: z.string().describe("The state of the Stochastic Oscillator (e.g., 'Stochastic is 85 (Overbought)')."),
+  obv: z.string().describe("The trend of the On-Balance Volume (e.g., 'OBV is rising, confirming buying pressure')."),
+  cmf: z.string().describe("The state of the Chaikin Money Flow (e.g., 'CMF is positive, indicating accumulation')."),
   volatility: z.number().describe('The 30-day annualized historical volatility percentage.'),
   pivots: z.object({
     r1: z.number(),
@@ -60,9 +63,9 @@ const summarizeTechnicalAnalysisPrompt = ai.definePrompt({
 
 **Key Technical Drivers:**
 *   **Trends:** {{trends}}
-*   **RSI:** {{rsi}}
-*   **MACD:** {{macd}}
-*   **Volume:** {{volume}}
+*   **MACD & RSI:** {{macd}} and {{rsi}}.
+*   **Stochastic:** {{stochastic}}
+*   **Volume & Money Flow:** {{volume}}. The trend is being validated by {{obv}} and {{cmf}}.
 {{#if pivots}}
 *   **Key Levels:** Immediate resistance is near the R1 pivot at {{pivots.r1}}, with support at the S1 pivot around {{pivots.s1}}.
 {{/if}}
@@ -75,8 +78,8 @@ const summarizeTechnicalAnalysisPrompt = ai.definePrompt({
 
 1.  **Synthesize, Don't List:** Weave the data points above into a professional, narrative summary. Do not just list the indicators.
 2.  **Start with the Big Picture:** Begin with the overall momentum signal and recommendation as your headline.
-3.  **Explain the "Why":** Explain what's driving the signal. Is it strong trend alignment? A recent MACD crossover? High volume confirmation?
-4.  **Incorporate Price Context:** Mention the current price and the calculated target. Frame the key pivot and Fibonacci levels as the immediate hurdles (resistance) or safety nets (support) on the path to that target.
+3.  **Explain the "Why":** Explain what's driving the signal. Is it strong trend alignment? A recent MACD crossover? High volume confirmation? Is the trend being validated by On-Balance Volume and Chaikin Money Flow?
+4.  **Incorporate Price Context:** Mention the current price and the calculated target. Frame the key pivot and Fibonacci levels as the immediate hurdles (resistance) or safety nets (support) on the path to that target. Note if short-term oscillators like the Stochastic are in overbought/oversold territory.
 5.  **Mention Volatility:** Briefly touch on the volatility to give context on how stable or erratic the price action has been.
 6.  **Maintain a Professional Tone:** Use analytical language (e.g., "posture," "conviction," "reinforces," "suggests").
 7.  **Strict Word Count:** Keep the summary to approximately 150 words.

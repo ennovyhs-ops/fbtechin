@@ -21,6 +21,9 @@ const ExplainMomentumSignalInputSchema = z.object({
   bollingerBands: z.string().describe("The position of the price relative to the Bollinger Bands (e.g., 'Price is above the middle band (20-day average)')."),
   trends: z.string().describe("The alignment of short, medium, and long-term trends (e.g., 'Short, medium, and long-term trends are all bullish')."),
   volume: z.string().describe("The recent volume trend (e.g., 'Recent volume is high on a positive day (Accumulation)')."),
+  stochastic: z.string().describe("The state of the Stochastic Oscillator (e.g., 'Stochastic is 85 (Overbought)')."),
+  obv: z.string().describe("The trend of the On-Balance Volume (e.g., 'OBV is rising, confirming buying pressure')."),
+  cmf: z.string().describe("The state of the Chaikin Money Flow (e.g., 'CMF is positive, indicating accumulation')."),
 });
 export type ExplainMomentumSignalInput = z.infer<typeof ExplainMomentumSignalInputSchema>;
 
@@ -48,16 +51,19 @@ Analyze the following contributing factors and synthesize them into a concise, 2
 *   **Trend Alignment:** {{trends}}
 *   **RSI (Momentum Oscillator):** {{rsi}}
 *   **MACD (Trend Strength):** {{macd}}
+*   **Stochastic (Short-term Momentum):** {{stochastic}}
 *   **Bollinger Bands (Volatility & Price Level):** {{bollingerBands}}
 *   **Volume:** {{volume}}
+*   **On-Balance Volume (Volume Trend):** {{obv}}
+*   **Chaikin Money Flow (Accumulation/Distribution):** {{cmf}}
 
 **Your Thought Process:**
 1.  **Identify the Primary Driver:** What is the strongest piece of evidence? Is it the perfect alignment of all trends? Or a recent powerful MACD crossover? Start your explanation there.
-2.  **Find Confirmation:** What other indicators support the primary driver? Mention one or two confirming factors. (e.g., "...this is confirmed by an RSI in bullish territory and high accumulation volume.")
-3.  **Note Nuances (if any):** Are there any minor conflicts? (e.g., "While the overall trend is bullish, the RSI is approaching overbought levels, suggesting the rally might be due for a brief pause.") Avoid generic hedging language. Be specific.
+2.  **Find Confirmation:** What other indicators support the primary driver? Mention one or two confirming factors, now including money flow and volume trends. (e.g., "...this is confirmed by an RSI in bullish territory and positive money flow shown by the CMF." or "...additionally, the rising On-Balance Volume validates the price trend with strong volume.")
+3.  **Note Nuances (if any):** Are there any minor conflicts? (e.g., "While the overall trend is bullish, the Stochastic oscillator is in the overbought zone, suggesting the rally might be due for a brief consolidation.") Avoid generic hedging language. Be specific.
 
 **Example Explanation (for a Bullish signal):**
-"The bullish signal is primarily driven by strong trend alignment across all timeframes, indicating broad market agreement on the upward direction. This is further confirmed by a recent bullish MACD crossover, suggesting accelerating momentum. The price holding above its key 20-day average reinforces this positive short-term outlook."
+"The bullish signal is primarily driven by strong trend alignment across all timeframes, indicating broad market agreement. This is further confirmed by a recent bullish MACD crossover and a rising On-Balance Volume, which validates the uptrend with significant buying pressure. While the Stochastic Oscillator is nearing overbought territory, the price holding above its key 20-day average reinforces the positive outlook."
 
 **Your Turn:**
 Based on the data provided, generate the 'explanation'.

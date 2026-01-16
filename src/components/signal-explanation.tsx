@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { explainMomentumSignal } from '@/ai/flows/explain-momentum-signal';
 import type { AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
-import type { MarketData, RsiData, MacdData, BbandsData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, ObvData, CmfData, StochasticData } from '@/lib/types';
 import { calculateMultiROC, calculateMAVol } from '@/lib/technical-analysis';
 
 interface SignalExplanationProps {
@@ -19,6 +19,9 @@ interface SignalExplanationProps {
     rsi: RsiData[];
     macd: MacdData[];
     bbands: BbandsData[];
+    obv: ObvData[];
+    cmf: CmfData[];
+    stochastic: StochasticData[];
   } | null;
 }
 
@@ -30,7 +33,7 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
   const derivedSignalInfo = useMemo(() => {
     if (!indicatorData || marketData.length < 50) return null;
 
-    const { rsi, macd, bbands } = indicatorData;
+    const { rsi, macd, bbands, obv, cmf, stochastic } = indicatorData;
     const latestRsi = rsi[0]?.RSI ? parseFloat(rsi[0].RSI) : NaN;
     const latestMacd = macd[0];
     const prevMacd = macd[1];
@@ -82,13 +85,48 @@ export function SignalExplanation({ ticker, analysis, marketData, indicatorData 
             ? 'Recent volume is high on a positive day (Accumulation)'
             : 'Recent volume is high on a negative day (Distribution)';
     }
+    
+    // Stochastic
+    const latestStochastic = stochastic[0];
+    let stochasticState = 'Stochastic is Neutral';
+    if (latestStochastic?.k) {
+        const k = parseFloat(latestStochastic.k);
+        if (k > 80) stochasticState = `Stochastic is ${k.toFixed(2)} (Overbought)`;
+        else if (k < 20) stochasticState = `Stochastic is ${k.toFixed(2)} (Oversold)`;
+        else stochasticState = `Stochastic is ${k.toFixed(2)} (Neutral)`;
+    }
+
+    // OBV
+    const latestObv = obv[0];
+    const prevObv = obv[1];
+    let obvState = 'OBV trend is flat';
+    if (latestObv?.OBV && prevObv?.OBV) {
+        if (parseFloat(latestObv.OBV) > parseFloat(prevObv.OBV)) {
+            obvState = 'OBV is rising, confirming buying pressure';
+        } else if (parseFloat(latestObv.OBV) < parseFloat(prevObv.OBV)) {
+            obvState = 'OBV is falling, indicating selling pressure';
+        }
+    }
+    
+    // CMF
+    const latestCmf = cmf[0];
+    let cmfState = 'Money flow is neutral';
+    if (latestCmf?.CMF) {
+        const cmfVal = parseFloat(latestCmf.CMF);
+        if (cmfVal > 0.05) cmfState = 'CMF is positive, indicating accumulation';
+        else if (cmfVal < -0.05) cmfState = 'CMF is negative, indicating distribution';
+    }
+
 
     return {
       rsi: rsiState,
       macd: macdState,
       bollingerBands: bbandsState,
       trends: trendsState,
-      volume: volumeState
+      volume: volumeState,
+      stochastic: stochasticState,
+      obv: obvState,
+      cmf: cmfState,
     };
   }, [marketData, indicatorData]);
 
