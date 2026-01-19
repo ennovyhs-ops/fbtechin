@@ -282,7 +282,16 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 <div className="flex items-baseline gap-2">
                     <p className="font-bold text-xl text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                     {prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
-                        <p className="font-semibold text-sm text-muted-foreground">(was {prevMomentumAnalysis.totalScore.toFixed(2)})</p>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <p className="font-semibold text-sm text-muted-foreground cursor-help">(was {prevMomentumAnalysis.totalScore.toFixed(2)})</p>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Previous day's score</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     )}
                 </div>
                 
@@ -302,7 +311,6 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent className="space-y-1">
-                                <p>Previous Score: {prevMomentumAnalysis.totalScore.toFixed(3)}</p>
                                 <p>Change vs. previous day: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
                             </TooltipContent>
                         </Tooltip>
@@ -362,6 +370,17 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             </div>
         </div>
         
+        <div className="p-3 rounded-lg border-dashed border bg-orange-500/10 border-orange-500/20 text-center">
+            <div className="flex items-center justify-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-orange-400" />
+                <h4 className="font-semibold text-sm text-orange-400">Alternative Outlook: Mean Reversion</h4>
+            </div>
+            <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
+                The analysis above is based on technical momentum. However, always consider the possibility of mean reversion, where extreme price moves are often followed by a return toward a historical average. This model does not account for fundamental catalysts (like earnings surprises or news events) that can override technical trends.
+            </p>
+        </div>
+
+
         {pivots && (
             <div className="space-y-4">
                  <TooltipProvider>
