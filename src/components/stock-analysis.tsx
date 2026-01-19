@@ -279,7 +279,12 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     </Tooltip>
                 </TooltipProvider>
 
-                <p className="font-bold text-base text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                <div className="flex items-baseline gap-2">
+                    <p className="font-bold text-xl text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                    {prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
+                        <p className="font-semibold text-sm text-muted-foreground">(was {prevMomentumAnalysis.totalScore.toFixed(2)})</p>
+                    )}
+                </div>
                 
                 {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
                     <TooltipProvider>
