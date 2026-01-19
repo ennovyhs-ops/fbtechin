@@ -648,7 +648,7 @@ export const calculateCMF = (
         if (
             isNaN(high) || isNaN(low) || isNaN(close) || isNaN(volume) || high === low
         ) {
-            moneyFlowVolumes.push(0);
+            moneyFlowVolumes.push(NaN);
         } else {
             const moneyFlowMultiplier = ((close - low) - (high - close)) / (high - low);
             moneyFlowVolumes.push(moneyFlowMultiplier * volume);
