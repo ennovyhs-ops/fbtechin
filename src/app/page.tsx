@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useTransition, useCallback, useMemo, useEffect } from 'react';
@@ -401,7 +402,7 @@ export default function Home() {
     // Create a new Date object from the date string's parts to avoid timezone issues.
     // Assumes YYYY-MM-DD format.
     const dateParts = latest.date.split('-').map(Number);
-    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+    const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
 
     const oneYearData = marketData.slice(0, 252);
     let high52 = -Infinity;
@@ -418,7 +419,7 @@ export default function Home() {
     return {
       latestData: latest,
       fiftyTwoWeek: marketData.length >= 252 ? { high: high52, low: low52 } : null,
-      displayDate: date.toDateString(),
+      displayDate: date.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' }),
     };
   }, [marketData]);
 
@@ -656,6 +657,7 @@ export default function Home() {
                     periods={indicatorPeriods}
                     onPeriodsChange={onPeriodsChange}
                     latestClose={parseFloat(latestData.close)}
+                    marketData={marketData}
                 />
                 <MarketCorrelation 
                   baseTicker={submittedTicker}

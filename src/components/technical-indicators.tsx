@@ -1,13 +1,14 @@
 
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown, ChevronsUp, ChevronsDown } from 'lucide-react';
-import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
+import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown, ChevronsUp, ChevronsDown, Info } from 'lucide-react';
+import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData, EmaData, MarketData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from './ui/separator';
@@ -32,6 +33,7 @@ interface TechnicalIndicatorsProps {
     periods: IndicatorPeriods;
     onPeriodsChange: (periods: IndicatorPeriods) => void;
     latestClose: number | null;
+    marketData: MarketData[] | null;
 }
 
 const EmaDisplay = ({ label, value, position, currency }: { label: string, value: string | null, position: 'Above' | 'Below' | null, currency: string | null }) => (
@@ -47,8 +49,15 @@ const EmaDisplay = ({ label, value, position, currency }: { label: string, value
 );
 
 
-export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange, latestClose }: TechnicalIndicatorsProps) {
+export function TechnicalIndicators({ ticker, data, loading, error, currency, periods, onPeriodsChange, latestClose, marketData }: TechnicalIndicatorsProps) {
     const [localPeriods, setLocalPeriods] = useState(periods);
+    
+    const isSynthesizedData = useMemo(() => {
+        if (!marketData || marketData.length === 0) return false;
+        // Check a sample of recent data to avoid iterating over a huge array
+        const sample = marketData.slice(0, 20);
+        return sample.every(d => d.high === d.low);
+    }, [marketData]);
 
     const handlePeriodChange = (indicator: keyof Omit<IndicatorPeriods, 'macd' | 'bbands' | 'stochastic' | 'cmf'>, value: string) => {
         const numValue = parseInt(value, 10);
@@ -252,7 +261,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                                 {longTermTrend !== null && (
                                     <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md mt-1 ${longTermTrend ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                                        {longTermTrend ? <ChevronsUp className="h-3 w-3" /> : <ChevronsDown className="h-3 w-3" />}
+                                        {longTermCross ? (longTermCross === 'Golden Cross' ? <ChevronsUp className="h-3 w-3" /> : <ChevronsDown className="h-3 w-3" />) : (longTermTrend ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />) }
                                         {longTermCross ? longTermCross : (longTermTrend ? 'EMA(50) > EMA(200)' : 'EMA(50) < EMA(200)')}
                                     </div>
                                 )}
@@ -385,55 +394,65 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         </div>
                     </div>
                      {/* Stochastic Oscillator */}
-                    <div className="p-3 border rounded-lg space-y-2">
-                        <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">STOCHASTIC OSCILLATOR</h3>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs p-3 space-y-2">
-                                    <div>
-                                        <p className="font-bold text-foreground">What is the Stochastic Oscillator?</p>
-                                        <p>It's a momentum indicator that compares a security's closing price to its price range over a specific period. It is designed to show overbought and oversold conditions on a scale of 0 to 100.</p>
+                    {isSynthesizedData ? (
+                        <div className="p-3 border rounded-lg space-y-2 bg-muted/50 border-dashed">
+                             <h3 className="font-semibold text-xs text-muted-foreground">STOCHASTIC OSCILLATOR</h3>
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Info className="h-4 w-4" />
+                                <p>Not applicable. This indicator requires distinct high and low price data for calculation.</p>
+                             </div>
+                        </div>
+                    ) : (
+                        <div className="p-3 border rounded-lg space-y-2">
+                            <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">STOCHASTIC OSCILLATOR</h3>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs p-3 space-y-2">
+                                        <div>
+                                            <p className="font-bold text-foreground">What is the Stochastic Oscillator?</p>
+                                            <p>It's a momentum indicator that compares a security's closing price to its price range over a specific period. It is designed to show overbought and oversold conditions on a scale of 0 to 100.</p>
+                                        </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground">How to Interpret It:</p>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                <li><span className="text-red-400 font-semibold">Overbought:</span> Readings above 80 suggest the asset might be due for a pullback.</li>
+                                                <li><span className="text-green-400 font-semibold">Oversold:</span> Readings below 20 suggest the asset might be due for a bounce.</li>
+                                                <li><span className="font-semibold">Crossovers:</span> A bullish signal can occur when the %K line crosses above the %D line, especially in oversold territory.</li>
+                                            </ul>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                                    <div className="flex items-center gap-1">
+                                        <label htmlFor="stoch-k" className="text-xs font-medium text-muted-foreground">P:</label>
+                                        <Input id="stoch-k" type="number" value={localPeriods.stochastic.kPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'kPeriod', e.target.value)} className="w-12 h-7 text-sm" />
                                     </div>
-                                    <Separator />
-                                    <div>
-                                        <p className="font-bold text-foreground">How to Interpret It:</p>
-                                        <ul className="list-disc list-inside mt-1 space-y-1">
-                                            <li><span className="text-red-400 font-semibold">Overbought:</span> Readings above 80 suggest the asset might be due for a pullback.</li>
-                                            <li><span className="text-green-400 font-semibold">Oversold:</span> Readings below 20 suggest the asset might be due for a bounce.</li>
-                                            <li><span className="font-semibold">Crossovers:</span> A bullish signal can occur when the %K line crosses above the %D line, especially in oversold territory.</li>
-                                        </ul>
+                                    <div className="flex items-center gap-1">
+                                        <label htmlFor="stoch-d" className="text-xs font-medium text-muted-foreground">K%:</label>
+                                        <Input id="stoch-d" type="number" value={localPeriods.stochastic.kSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'kSlowing', e.target.value)} className="w-12 h-7 text-sm" />
                                     </div>
-                                </TooltipContent>
-                            </Tooltip>
-                            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
-                                <div className="flex items-center gap-1">
-                                    <label htmlFor="stoch-k" className="text-xs font-medium text-muted-foreground">P:</label>
-                                    <Input id="stoch-k" type="number" value={localPeriods.stochastic.kPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'kPeriod', e.target.value)} className="w-12 h-7 text-sm" />
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <label htmlFor="stoch-d" className="text-xs font-medium text-muted-foreground">K%:</label>
-                                    <Input id="stoch-d" type="number" value={localPeriods.stochastic.kSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'kSlowing', e.target.value)} className="w-12 h-7 text-sm" />
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <label htmlFor="stoch-slowing" className="text-xs font-medium text-muted-foreground">D%:</label>
-                                    <Input id="stoch-slowing" type="number" value={localPeriods.stochastic.dSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'dSlowing', e.target.value)} className="w-12 h-7 text-sm" />
+                                    <div className="flex items-center gap-1">
+                                        <label htmlFor="stoch-slowing" className="text-xs font-medium text-muted-foreground">D%:</label>
+                                        <Input id="stoch-slowing" type="number" value={localPeriods.stochastic.dSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'dSlowing', e.target.value)} className="w-12 h-7 text-sm" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                            <div className="grid grid-cols-2 gap-x-4">
-                                <div><p className="text-xs text-muted-foreground">%K Line</p><p className="font-semibold text-sm">{latestStochastic?.k ?? 'N/A'}</p></div>
-                                <div><p className="text-xs text-muted-foreground">%D Line</p><p className="font-semibold text-sm">{latestStochastic?.d ?? 'N/A'}</p></div>
+                            <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                                <div className="grid grid-cols-2 gap-x-4">
+                                    <div><p className="text-xs text-muted-foreground">%K Line</p><p className="font-semibold text-sm">{latestStochastic?.k ?? 'N/A'}</p></div>
+                                    <div><p className="text-xs text-muted-foreground">%D Line</p><p className="font-semibold text-sm">{latestStochastic?.d ?? 'N/A'}</p></div>
+                                </div>
+                                <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
+                                    stochasticStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
+                                    stochasticStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
+                                    'bg-muted text-muted-foreground'
+                                }`}>{stochasticStatus}</p>
                             </div>
-                            <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
-                                stochasticStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
-                                stochasticStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
-                                'bg-muted text-muted-foreground'
-                            }`}>{stochasticStatus}</p>
                         </div>
-                    </div>
+                    )}
                      {/* Volume */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
@@ -584,5 +603,3 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         </TooltipProvider>
     );
 }
-
-    
