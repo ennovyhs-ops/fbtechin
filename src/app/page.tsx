@@ -430,6 +430,12 @@ export default function Home() {
     return calculateVolatility(marketData.map(d => parseFloat(d.close)).reverse(), 30);
   }, [marketData]);
 
+  const meanReversionTarget = useMemo(() => {
+    if (!indicatorData?.bbands?.[0]?.['Real Middle Band']) return null;
+    const middleBandValue = parseFloat(indicatorData.bbands[0]['Real Middle Band']);
+    return isNaN(middleBandValue) ? null : middleBandValue;
+  }, [indicatorData]);
+
   return (
     <main className="container mx-auto px-4 py-8">
       <Header className="no-print" />
@@ -590,6 +596,7 @@ export default function Home() {
                             currency={currency}
                             marketData={marketData}
                             loading={showAnalysisSkeleton}
+                            meanReversionTarget={meanReversionTarget}
                         />
                         <MonteCarloSimulation 
                             monteCarloResult={monteCarloResult}

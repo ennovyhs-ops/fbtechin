@@ -19,6 +19,7 @@ interface StockAnalysisProps {
   analysisResult: CombinedAnalysisResult | null;
   currency: string | null;
   loading: boolean;
+  meanReversionTarget: number | null;
 }
 
 const getSignalInfo = (signal: string): { icon: React.ReactNode, color: string } => {
@@ -88,7 +89,7 @@ const FibonacciDisplay = ({ label, value, currency, highlight }: { label: string
 );
 
 
-export function StockAnalysis({ ticker, marketData, analysisResult, currency, loading }: StockAnalysisProps) {
+export function StockAnalysis({ ticker, marketData, analysisResult, currency, loading, meanReversionTarget }: StockAnalysisProps) {
 
   if (loading) {
     return (
@@ -310,7 +311,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                     <span>{momentumChange}</span>
                                 </div>
                             </TooltipTrigger>
-                            <TooltipContent className="space-y-1">
+                            <TooltipContent>
                                 <p>Change vs. previous day: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
                             </TooltipContent>
                         </Tooltip>
@@ -375,9 +376,22 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 <AlertTriangle className="h-4 w-4 text-orange-400" />
                 <h4 className="font-semibold text-sm text-orange-400">Alternative Outlook: Mean Reversion</h4>
             </div>
-            <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                The analysis above is based on technical momentum. However, always consider the possibility of mean reversion, where extreme price moves are often followed by a return toward a historical average. This model does not account for fundamental catalysts (like earnings surprises or news events) that can override technical trends.
-            </p>
+            {meanReversionTarget ? (
+                <>
+                    <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
+                        While momentum is strong, a return to the mean is always possible. A potential short-term target if the trend reverses is the 20-day moving average.
+                    </p>
+                    <div className="mt-3">
+                        <p className="text-xs font-semibold text-orange-400/90">Potential Mean Reversion Target</p>
+                        <p className="font-bold text-lg text-orange-400/90">{formatCurrency(meanReversionTarget, currency)}</p>
+                        <p className="text-xs text-orange-400/80">(Current 20-Day SMA)</p>
+                    </div>
+                </>
+            ) : (
+                <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
+                    The analysis above is based on technical momentum. However, always consider the possibility of mean reversion, where extreme price moves are often followed by a return toward a historical average. This model does not account for fundamental catalysts (like earnings surprises or news events) that can override technical trends.
+                </p>
+            )}
         </div>
 
 
