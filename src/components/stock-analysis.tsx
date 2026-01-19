@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar, HelpCircle, ArrowRight } from 'lucide-react';
+import { Zap, Loader2, AlertCircle, TrendingUp, TrendingDown, Rocket, ShieldAlert, Scale, Hand, AlertTriangle, Info, Target, Gauge, Clock, Calendar, HelpCircle, ArrowRight, Minus } from 'lucide-react';
 import type { CombinedAnalysisResult } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -136,6 +136,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
   }
   
   const momentumAnalysis = analysisResult.analysis;
+  const prevMomentumAnalysis = analysisResult.prevAnalysis;
   const prediction = analysisResult.prediction;
   
   if (!momentumAnalysis) return null; // Should not happen if error is handled, but for type safety
@@ -147,6 +148,18 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
   const pivots = (prediction && 'pivots' in prediction && prediction.pivots) ? prediction.pivots : null;
   const fibonacci = (prediction && 'fibonacci' in prediction && prediction.fibonacci) ? prediction.fibonacci : null;
 
+  let momentumChange: 'Increasing' | 'Decreasing' | 'Stable' | null = null;
+  let momentumDiff = 0;
+  if (momentumAnalysis && prevMomentumAnalysis && 'totalScore' in momentumAnalysis && 'totalScore' in prevMomentumAnalysis) {
+      momentumDiff = momentumAnalysis.totalScore - prevMomentumAnalysis.totalScore;
+      if (Math.abs(momentumDiff) < 0.01) {
+          momentumChange = 'Stable';
+      } else if (momentumDiff > 0) {
+          momentumChange = 'Increasing';
+      } else {
+          momentumChange = 'Decreasing';
+      }
+  }
 
   const PriceTargetContent = ({ targetType, icon: Icon }: { targetType: 'shortTerm' | 'longTerm', icon: React.ElementType }) => {
     if (loading) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/></div>;
@@ -266,6 +279,29 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 </TooltipProvider>
 
                 <p className="font-bold text-base text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
+                
+                {momentumChange && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className={`flex items-center gap-1 text-xs font-semibold cursor-help ${
+                                    momentumChange === 'Increasing' ? 'text-green-400' :
+                                    momentumChange === 'Decreasing' ? 'text-red-400' :
+                                    'text-muted-foreground'
+                                }`}>
+                                    {momentumChange === 'Increasing' ? <TrendingUp className="h-3 w-3" /> :
+                                    momentumChange === 'Decreasing' ? <TrendingDown className="h-3 w-3" /> :
+                                    <Minus className="h-3 w-3" />}
+                                    <span>{momentumChange}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Change vs. previous day: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
+
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -424,5 +460,3 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
-
-    

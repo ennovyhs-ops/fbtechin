@@ -9,7 +9,7 @@ import * as XLSX from 'xlsx';
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF, ema } from '@/lib/technical-analysis';
-import { analyzeStockMomentum } from '@/ai/flows/analyze-stock-momentum';
+import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 
 import { Button } from '@/components/ui/button';
@@ -187,13 +187,20 @@ export default function Home() {
     try {
         // Momentum & Price Target Analysis
         const momentumResult = await analyzeStockMomentum(submittedTicker, marketData);
-        let combinedResult: CombinedAnalysisResult = { analysis: null, prediction: null };
+        let prevMomentumResult: Awaited<ReturnType<typeof analyzeStockMomentum>> | null = null;
+        if (marketData.length > 50) { // Ensure enough data for previous day's calculation
+            const prevMarketData = marketData.slice(1);
+            prevMomentumResult = await analyzeStockMomentum(submittedTicker, prevMarketData);
+        }
+        
+        let combinedResult: CombinedAnalysisResult = { analysis: null, prediction: null, prevAnalysis: null };
 
         if (momentumResult && !momentumResult.error) {
             const predictionResult = await predictPriceTarget(submittedTicker, marketData, momentumResult);
             combinedResult = {
                 analysis: momentumResult,
                 prediction: predictionResult.error ? { error: predictionResult.error } : predictionResult,
+                prevAnalysis: (prevMomentumResult && !prevMomentumResult.error) ? prevMomentumResult : null,
             };
         } else {
             combinedResult.error = momentumResult.error || 'An unknown analysis error occurred.';
@@ -298,6 +305,10 @@ export default function Home() {
                     const closeValue = row[headerMap.close];
                     const dateValue = row[headerMap.date];
                     
+                    if (dateValue === undefined || dateValue === null || closeValue === undefined || closeValue === null) {
+                        return null; // Skip rows with no date or close
+                    }
+                    
                     let formattedDate: string;
                     if (typeof dateValue === 'number' && dateValue > 25569) { // Excel serial date check (day 1 is 1900-01-01, 25569 is 1970-01-01)
                          const utc_days  = Math.floor(dateValue - 25569);
@@ -308,7 +319,10 @@ export default function Home() {
                         try {
                             const parsedDate = new Date(dateValue);
                             if (isNaN(parsedDate.getTime())) throw new Error();
-                            formattedDate = parsedDate.toISOString().split('T')[0];
+                            // Correct for timezone offset to prevent date shifts
+                            const tzOffset = parsedDate.getTimezoneOffset() * 60000;
+                            const localDate = new Date(parsedDate.valueOf() + tzOffset);
+                            formattedDate = localDate.toISOString().split('T')[0];
                         } catch {
                             console.warn(`Skipping row ${index + 2} due to invalid date format: ${dateValue}`);
                             return null;
@@ -323,7 +337,7 @@ export default function Home() {
                         high: headerMap.high !== -1 && row[headerMap.high] ? String(row[headerMap.high]) : String(closeValue ?? ''),
                         low: headerMap.low !== -1 && row[headerMap.low] ? String(row[headerMap.low]) : String(closeValue ?? ''),
                     };
-                }).filter((row): row is MarketData => row !== null && !!row.date && !!row.close);
+                }).filter((row): row is MarketData => row !== null);
 
                 if(data.length === 0) throw new Error('Uploaded file is empty or contains no valid data rows.');
                 
@@ -384,9 +398,10 @@ export default function Home() {
     }
     const latest = marketData[0];
     
+    // Create a new Date object from the date string's parts to avoid timezone issues.
+    // Assumes YYYY-MM-DD format.
     const dateParts = latest.date.split('-').map(Number);
-    // Important: Create date as UTC to avoid timezone shifts in `toDateString`
-    const localDate = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
+    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
     const oneYearData = marketData.slice(0, 252);
     let high52 = -Infinity;
@@ -403,7 +418,7 @@ export default function Home() {
     return {
       latestData: latest,
       fiftyTwoWeek: marketData.length >= 252 ? { high: high52, low: low52 } : null,
-      displayDate: localDate.toDateString(),
+      displayDate: date.toDateString(),
     };
   }, [marketData]);
 
