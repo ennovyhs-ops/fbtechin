@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -280,7 +281,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
 
                 <p className="font-bold text-base text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
                 
-                {momentumChange && (
+                {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -295,7 +296,8 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                     <span>{momentumChange}</span>
                                 </div>
                             </TooltipTrigger>
-                            <TooltipContent>
+                            <TooltipContent className="space-y-1">
+                                <p>Previous Score: {prevMomentumAnalysis.totalScore.toFixed(3)}</p>
                                 <p>Change vs. previous day: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
                             </TooltipContent>
                         </Tooltip>
