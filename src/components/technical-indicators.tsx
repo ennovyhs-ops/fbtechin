@@ -99,7 +99,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         return (
             <>
                 <Icon className={`h-4 w-4 shrink-0 ${color}`} />
-                <span className="text-xs text-muted-foreground shrink-0">({displayVal})</span>
+                <span className="text-xs text-muted-foreground shrink-0">(was {displayVal})</span>
             </>
         );
     };
