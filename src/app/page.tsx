@@ -4,7 +4,7 @@
 
 import { useState, useTransition, useCallback, useMemo, useEffect } from 'react';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart, Edit } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData } from '@/lib/types';
@@ -31,6 +31,7 @@ import { SynthesizedTradeIdea } from '@/components/synthesized-trade-idea';
 import { TechnicalSummary } from '@/components/technical-summary';
 import { DataInputForm } from '@/components/data-input-form';
 import { HistoricalPriceChart } from '@/components/historical-price-chart';
+import { Input } from '@/components/ui/input';
 
 const FormSchema = z.object({
   ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.'),
@@ -68,6 +69,7 @@ export default function Home() {
   
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [showPriceChart, setShowPriceChart] = useState(false);
+  const [editablePrice, setEditablePrice] = useState<string | null>(null);
 
   const calculateIndicators = useCallback((data: MarketData[], periods: IndicatorPeriods) => {
     setIndicatorsLoading(true);
@@ -146,6 +148,7 @@ export default function Home() {
     setUploadedFileName(null);
     setIsAnalyzing(false);
     setShowPriceChart(false);
+    setEditablePrice(null);
   };
   
   const handleDataResult = (result: FetchResult, ticker: string) => {
@@ -153,6 +156,7 @@ export default function Home() {
         setMarketData(result.data);
         setCurrency(result.currency || null);
         setRegion(result.region || null);
+        setEditablePrice(result.data[0].close);
         
         const isForexOrCrypto = isCurrencyPair(ticker) || isCryptoPair(ticker);
         if (!isForexOrCrypto) {
@@ -383,6 +387,46 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
+  const handlePriceUpdate = () => {
+    if (!marketData || editablePrice === null) return;
+    const newPriceStr = editablePrice;
+    const newPrice = parseFloat(newPriceStr);
+
+    if (isNaN(newPrice)) {
+        setError({ message: 'Invalid price format.' });
+        return;
+    }
+    
+    setError(null);
+    setInfo('Updating analysis with adjusted price...');
+
+    startTransition(() => {
+        const oldFirstDay = marketData[0];
+        // Check if the data for the first day looks synthesized (o,h,l are same as c)
+        const isSynthesized = oldFirstDay.open === oldFirstDay.close && oldFirstDay.high === oldFirstDay.close && oldFirstDay.low === oldFirstDay.close;
+
+        const newFirstDay = { ...oldFirstDay, close: newPriceStr };
+        
+        if (isSynthesized) {
+            // If synthesized, update all to match the new close price
+            newFirstDay.open = newPriceStr;
+            newFirstDay.high = newPriceStr;
+            newFirstDay.low = newPriceStr;
+        } else {
+            // Otherwise, just adjust high/low if the new price is outside the old range
+            if (newPrice > parseFloat(oldFirstDay.high)) {
+                newFirstDay.high = newPriceStr;
+            }
+            if (newPrice < parseFloat(oldFirstDay.low)) {
+                newFirstDay.low = newPriceStr;
+            }
+        }
+        
+        const updatedMarketData = [newFirstDay, ...marketData.slice(1)];
+        setMarketData(updatedMarketData);
+    });
+};
+
   const { latestData, fiftyTwoWeek, displayDate } = useMemo(() => {
     if (!marketData || marketData.length === 0) {
       return { latestData: null, fiftyTwoWeek: null, displayDate: null };
@@ -504,9 +548,26 @@ export default function Home() {
              </CardHeader>
              <CardContent>
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-end sm:gap-2">
-                      <p className="text-lg font-bold text-foreground">{formatCurrency(latestData.close, currency)}</p>
-                  </div>
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+                        <div className="relative flex-grow sm:flex-grow-0">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                {currency === 'USD' ? '$' : (currency || '$')}
+                            </span>
+                            <Input
+                                type="number"
+                                aria-label="Latest price"
+                                step="0.01"
+                                value={editablePrice ?? ''}
+                                onChange={(e) => setEditablePrice(e.target.value)}
+                                className="pl-7 text-lg font-bold text-foreground h-auto py-1"
+                                style={{ width: '150px' }}
+                            />
+                        </div>
+                        <Button onClick={handlePriceUpdate} variant="outline" size="sm" disabled={isPending || isAnalyzing}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Update Analysis
+                        </Button>
+                    </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div className="flex items-center gap-2">
                         <Minus className="text-muted-foreground h-5 w-5" />
