@@ -1,11 +1,11 @@
-
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
 import type { MarketData, BbandsData, RsiData } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
+import { Button } from './ui/button';
 
 const chartConfig = {
     price: {
@@ -37,6 +37,7 @@ interface HistoricalPriceChartProps {
 }
 
 export function HistoricalPriceChart({ marketData, indicatorData, currency, ticker }: HistoricalPriceChartProps) {
+  const [zoom, setZoom] = useState('1y');
 
   const chartData = useMemo(() => {
     if (!marketData || !indicatorData) return [];
@@ -45,7 +46,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     const chronologicalBbands = [...indicatorData.bbands].reverse();
     const chronologicalRsi = [...indicatorData.rsi].reverse();
 
-    return chronologicalData.map((data, index) => {
+    const allData = chronologicalData.map((data, index) => {
         const bbands = chronologicalBbands[index];
         const rsi = chronologicalRsi[index];
         return {
@@ -58,7 +59,23 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
         }
     });
 
-  }, [marketData, indicatorData]);
+    const TRADING_DAYS_3M = 63;
+    const TRADING_DAYS_6M = 126;
+    const TRADING_DAYS_1Y = 252;
+
+    switch(zoom) {
+        case '3m':
+            return allData.slice(-TRADING_DAYS_3M);
+        case '6m':
+            return allData.slice(-TRADING_DAYS_6M);
+        case '1y':
+            return allData.slice(-TRADING_DAYS_1Y);
+        case 'all':
+        default:
+            return allData;
+    }
+
+  }, [marketData, indicatorData, zoom]);
 
   if (!chartData || chartData.length === 0) {
       return null;
@@ -73,10 +90,20 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
   return (
     <Card className="animate-in fade-in-50 duration-500">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Price Chart for {ticker}</CardTitle>
-        <CardDescription>
-            Historical price shown with Bollinger Bands and RSI overlays.
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <CardTitle className="font-headline text-2xl">Price Chart for {ticker}</CardTitle>
+                <CardDescription>
+                    Historical price shown with Bollinger Bands and RSI overlays.
+                </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button size="sm" onClick={() => setZoom('3m')} variant={zoom === '3m' ? 'default' : 'outline'} disabled={marketData.length < 63}>3M</Button>
+                <Button size="sm" onClick={() => setZoom('6m')} variant={zoom === '6m' ? 'default' : 'outline'} disabled={marketData.length < 126}>6M</Button>
+                <Button size="sm" onClick={() => setZoom('1y')} variant={zoom === '1y' ? 'default' : 'outline'} disabled={marketData.length < 252}>1Y</Button>
+                <Button size="sm" onClick={() => setZoom('all')} variant={zoom === 'all' ? 'default' : 'outline'}>All</Button>
+            </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-8">
          {/* Price Chart with Bollinger Bands */}
