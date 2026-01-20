@@ -65,7 +65,7 @@ interface HistoricalPriceChartProps {
 }
 
 export function HistoricalPriceChart({ marketData, indicatorData, currency, ticker, analysisResult, monteCarloResult }: HistoricalPriceChartProps) {
-  const [zoom, setZoom] = useState('1y');
+  const [zoom, setZoom] = useState('3m');
 
   const chartData = useMemo(() => {
     if (!marketData || !indicatorData) return [];
