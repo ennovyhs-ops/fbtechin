@@ -217,13 +217,20 @@ export default function Home() {
   }, [marketData, submittedTicker]);
 
   useEffect(() => {
-    if(marketData && submittedTicker) {
-        const timer = setTimeout(() => {
-            handleAnalysis();
-        }, 50); // Use a short timeout to allow the initial data state to render
-        return () => clearTimeout(timer);
+    if (marketData && submittedTicker) {
+      const timer = setTimeout(() => {
+        // First, recalculate the base technical indicators
+        const isForexOrCrypto = isCurrencyPair(submittedTicker) || isCryptoPair(submittedTicker);
+        if (!isForexOrCrypto) {
+            calculateIndicators(marketData, indicatorPeriods);
+        }
+        
+        // Then, run the more complex AI and deterministic analyses
+        handleAnalysis();
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [marketData, submittedTicker, handleAnalysis]);
+  }, [marketData, submittedTicker, handleAnalysis, calculateIndicators, indicatorPeriods]);
 
 
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
