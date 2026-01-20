@@ -131,11 +131,19 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     const allValues = [...priceValues, ...targetValues];
     if (allValues.length === 0) return ['auto', 'auto'];
 
-    const min = Math.min(...allValues);
-    const max = Math.max(...allValues);
-    const padding = (max - min) * 0.05;
+    const minVal = Math.min(...allValues);
+    const maxVal = Math.max(...allValues);
 
-    return [min - padding, max + padding];
+    if (minVal === maxVal) {
+        // If all values are the same, create a small range around the value
+        const padding = Math.abs(minVal * 0.05) || 1; // Use 5% of the value or 1 as fallback
+        return [minVal - padding, maxVal + padding];
+    }
+
+    // Add 5% padding to the top and bottom
+    const padding = (maxVal - minVal) * 0.05;
+
+    return [minVal - padding, maxVal + padding];
   }, [chartData, shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper, mcAverage]);
 
 
