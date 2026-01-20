@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -371,28 +370,56 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             </div>
         </div>
         
-        <div className="p-3 rounded-lg border-dashed border bg-orange-500/10 border-orange-500/20 text-center">
-            <div className="flex items-center justify-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-orange-400" />
-                <h4 className="font-semibold text-sm text-orange-400">Alternative Outlook: Mean Reversion</h4>
-            </div>
-            {meanReversionTarget ? (
-                <>
-                    <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                        While momentum is strong, a return to the mean is always possible. A potential short-term target if the trend reverses is the 20-day moving average.
-                    </p>
-                    <div className="mt-3">
-                        <p className="text-xs font-semibold text-orange-400/90">Potential Mean Reversion Target</p>
-                        <p className="font-bold text-lg text-orange-400/90">{formatCurrency(meanReversionTarget, currency)}</p>
-                        <p className="text-xs text-orange-400/80">(Current 20-Day SMA)</p>
-                    </div>
-                </>
-            ) : (
-                <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                    The analysis above is based on technical momentum. However, always consider the possibility of mean reversion, where extreme price moves are often followed by a return toward a historical average. This model does not account for fundamental catalysts (like earnings surprises or news events) that can override technical trends.
+        {momentumAnalysis.signal === '⚖️ NEUTRAL' ? (
+             <div className="p-3 rounded-lg border-dashed border bg-blue-500/10 border-blue-500/20 text-center">
+                <div className="flex items-center justify-center gap-2">
+                    <Target className="h-4 w-4 text-blue-400" />
+                    <h4 className="font-semibold text-sm text-blue-400">Alternative Outlook: Breakout Potential</h4>
+                </div>
+                <p className="text-xs text-blue-400/90 mt-2 max-w-xl mx-auto">
+                    Neutral momentum often precedes a breakout. A move above the R1 pivot could signal a new uptrend, while a drop below S1 could indicate a new downtrend. These are the key levels to watch.
                 </p>
-            )}
-        </div>
+                {pivots ? (
+                    <div className="mt-3 flex justify-center items-center gap-8">
+                        <div className="text-center">
+                            <p className="text-xs font-semibold text-blue-400/90">Bullish Breakout Target</p>
+                            <p className="font-bold text-lg text-blue-400/90">{formatCurrency(pivots.r1, currency)}</p>
+                            <p className="text-xs text-blue-400/80">(R1 Pivot)</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-xs font-semibold text-blue-400/90">Bearish Breakdown Target</p>
+                            <p className="font-bold text-lg text-blue-400/90">{formatCurrency(pivots.s1, currency)}</p>
+                            <p className="text-xs text-blue-400/80">(S1 Pivot)</p>
+                        </div>
+                    </div>
+                ) : (
+                     <p className="text-xs text-blue-400/90 mt-2">Pivot points are not available for breakout analysis.</p>
+                )}
+            </div>
+        ) : (
+            <div className="p-3 rounded-lg border-dashed border bg-orange-500/10 border-orange-500/20 text-center">
+                <div className="flex items-center justify-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    <h4 className="font-semibold text-sm text-orange-400">Alternative Outlook: Mean Reversion</h4>
+                </div>
+                {meanReversionTarget ? (
+                    <>
+                        <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
+                            While momentum is strong, a return to the mean is always possible. A potential short-term target if the trend reverses is the 20-day moving average.
+                        </p>
+                        <div className="mt-3">
+                            <p className="text-xs font-semibold text-orange-400/90">Potential Mean Reversion Target</p>
+                            <p className="font-bold text-lg text-orange-400/90">{formatCurrency(meanReversionTarget, currency)}</p>
+                            <p className="text-xs text-orange-400/80">(Current 20-Day SMA)</p>
+                        </div>
+                    </>
+                ) : (
+                    <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
+                        This analysis is based on technical momentum. However, always consider the possibility of mean reversion, where extreme price moves are often followed by a return toward a historical average. This model does not account for fundamental catalysts (like earnings surprises or news events) that can override technical trends.
+                    </p>
+                )}
+            </div>
+        )}
 
 
         {pivots && (
@@ -500,3 +527,5 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
+
+    
