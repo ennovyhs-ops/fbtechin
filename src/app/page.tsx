@@ -529,13 +529,13 @@ export default function Home() {
              <Card className="card">
              <CardHeader>
                <CardTitle className="font-headline text-2xl">
-                 Latest Price for {submittedTicker}
+                 Data for {submittedTicker} &amp; Live Price Simulation
                </CardTitle>
                 <div className="space-y-2 text-sm text-muted-foreground pt-1">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                        <div className="flex items-center gap-2">
                          <Calendar className="h-4 w-4" />
-                         <span>As of {displayDate} Close</span>
+                         <span>Official Close: {displayDate}</span>
                        </div>
                        {region && (
                           <div className="flex items-center gap-2">
@@ -544,28 +544,33 @@ export default function Home() {
                           </div>
                        )}
                     </div>
+                    <p className="text-xs">You can enter a different price below to run a "what-if" analysis.</p>
                 </div>
              </CardHeader>
              <CardContent>
                 <div className="flex flex-col gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-2">
-                        <div className="relative flex-grow sm:flex-grow-0">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                {currency === 'USD' ? '$' : (currency || '$')}
-                            </span>
-                            <Input
-                                type="number"
-                                aria-label="Latest price"
-                                step="0.01"
-                                value={editablePrice ?? ''}
-                                onChange={(e) => setEditablePrice(e.target.value)}
-                                className="pl-7 text-lg font-bold text-foreground h-auto py-1"
-                                style={{ width: '150px' }}
-                            />
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                        <div className="flex-grow sm:flex-grow-0">
+                            <label htmlFor="live-price-input" className="text-xs font-medium text-muted-foreground">Live / Adjusted Price</label>
+                            <div className="relative mt-1">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                    {currency === 'USD' ? '$' : (currency || '$')}
+                                </span>
+                                <Input
+                                    id="live-price-input"
+                                    type="number"
+                                    aria-label="Live or Adjusted Price"
+                                    step="0.01"
+                                    value={editablePrice ?? ''}
+                                    onChange={(e) => setEditablePrice(e.target.value)}
+                                    className="pl-7 text-lg font-bold text-foreground h-auto py-1"
+                                    style={{ width: '150px' }}
+                                />
+                            </div>
                         </div>
                         <Button onClick={handlePriceUpdate} variant="outline" size="sm" disabled={isPending || isAnalyzing}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Update Analysis
+                            <Zap className="mr-2 h-4 w-4" />
+                            Recalculate Analysis
                         </Button>
                     </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
