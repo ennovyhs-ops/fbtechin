@@ -67,11 +67,14 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     const allData = chronologicalData.map((data, index) => {
         const bbands = chronologicalBbands[index];
         const rsi = chronologicalRsi[index];
+        const lower = bbands?.['Real Lower Band'] ? parseFloat(bbands['Real Lower Band']) : null;
+        const upper = bbands?.['Real Upper Band'] ? parseFloat(bbands['Real Upper Band']) : null;
         return {
             date: data.date,
             price: parseFloat(data.close),
-            upperBand: bbands?.['Real Upper Band'] ? parseFloat(bbands['Real Upper Band']) : null,
-            lowerBand: bbands?.['Real Lower Band'] ? parseFloat(bbands['Real Lower Band']) : null,
+            upperBand: upper,
+            lowerBand: lower,
+            bb_area: (lower !== null && upper !== null) ? upper - lower : null,
             middleBand: bbands?.['Real Middle Band'] ? parseFloat(bbands['Real Middle Band']) : null,
             rsi: rsi?.RSI ? parseFloat(rsi.RSI) : null,
         }
@@ -189,10 +192,24 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                             borderColor: 'hsl(var(--border))'
                         }}
                         labelFormatter={(label) => new Date(label).toLocaleDateString()}
-                        formatter={(value: number, name: string) => {
-                             if(name === 'Bollinger Bands') return null;
-                             const formattedValue = name === 'price' ? formatCurrency(value, currency) : value.toFixed(2);
-                             return [formattedValue, name === 'price' ? 'Price' : name];
+                        formatter={(value: number, name: string, item: any) => {
+                            if (name === 'Bollinger Bands') {
+                                const { payload } = item;
+                                if (payload?.lowerBand && payload?.upperBand) {
+                                    return [`${formatCurrency(payload.lowerBand, currency)} - ${formatCurrency(payload.upperBand, currency)}`, 'Bollinger Bands'];
+                                }
+                                return null;
+                            }
+
+                            if (name === 'Price' || name === '20D SMA') {
+                                return [formatCurrency(value, currency), name];
+                            }
+                            
+                            if (name === 'RSI') {
+                                return [value.toFixed(2), 'RSI'];
+                            }
+
+                            return [value, name];
                         }}
                     />
                     <Legend />
@@ -255,26 +272,30 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         />
                     )}
 
-                    <Area 
+                    <Area
                         yAxisId="left"
-                        dataKey="upperBand"
-                        stackId="bollinger"
-                        strokeWidth={0}
-                        fill="hsl(var(--muted))"
-                        name="Bollinger Bands"
-                        activeDot={false}
-                        legendType="none"
-                    />
-                     <Area 
-                        yAxisId="left"
+                        type="monotone"
                         dataKey="lowerBand"
                         stackId="bollinger"
                         strokeWidth={0}
-                        fill="hsl(var(--card))"
-                        name="Bollinger Bands"
+                        fill="transparent"
                         activeDot={false}
                         legendType="none"
                     />
+                    <Area
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="bb_area"
+                        stackId="bollinger"
+                        name="Bollinger Bands"
+                        stroke={chartConfig.upperBand.color}
+                        fill={chartConfig.upperBand.color}
+                        strokeWidth={1}
+                        strokeOpacity={0.3}
+                        fillOpacity={0.1}
+                        activeDot={false}
+                    />
+
                     <Line 
                         yAxisId="left"
                         type="monotone" 
