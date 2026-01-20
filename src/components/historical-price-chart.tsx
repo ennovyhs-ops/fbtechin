@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart, ReferenceArea } from 'recharts';
-import type { MarketData, BbandsData, RsiData, CombinedAnalysisResult, MonteCarloResult, EmaData } from '@/lib/types';
+import type { MarketData, BbandsData, RsiData, CombinedAnalysisResult, MonteCarloResult } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from './ui/button';
 
@@ -12,14 +13,6 @@ const chartConfig = {
     price: {
         label: 'Price',
         color: 'hsl(var(--primary))',
-    },
-    ema50: {
-        label: 'EMA(50)',
-        color: 'hsl(var(--accent))',
-    },
-    ema200: {
-        label: 'EMA(200)',
-        color: 'hsl(var(--chart-1))',
     },
     upperBand: {
         label: 'Upper Band',
@@ -56,7 +49,6 @@ interface HistoricalPriceChartProps {
   indicatorData: {
     bbands: BbandsData[];
     rsi: RsiData[];
-    ema: EmaData[];
   } | null;
   currency: string | null;
   ticker: string;
@@ -73,12 +65,10 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     const chronologicalData = [...marketData].reverse();
     const chronologicalBbands = [...indicatorData.bbands].reverse();
     const chronologicalRsi = [...indicatorData.rsi].reverse();
-    const chronologicalEma = [...indicatorData.ema].reverse();
 
     const allData = chronologicalData.map((data, index) => {
         const bbands = chronologicalBbands[index];
         const rsi = chronologicalRsi[index];
-        const ema = chronologicalEma[index];
         const lower = bbands?.['Real Lower Band'] ? parseFloat(bbands['Real Lower Band']) : null;
         const upper = bbands?.['Real Upper Band'] ? parseFloat(bbands['Real Upper Band']) : null;
         return {
@@ -89,8 +79,6 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             bb_area: (lower !== null && upper !== null) ? upper - lower : null,
             middleBand: bbands?.['Real Middle Band'] ? parseFloat(bbands['Real Middle Band']) : null,
             rsi: rsi?.RSI ? parseFloat(rsi.RSI) : null,
-            ema50: ema?.EMA50 ? parseFloat(ema.EMA50) : null,
-            ema200: ema?.EMA200 ? parseFloat(ema.EMA200) : null,
         }
     });
 
@@ -137,7 +125,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
   }, [monteCarloResult]);
 
   const yDomainPrice = useMemo(() => {
-    const priceValues = chartData.flatMap(d => [d.upperBand, d.lowerBand, d.price, d.ema50, d.ema200]).filter(v => v !== null && !isNaN(v)) as number[];
+    const priceValues = chartData.flatMap(d => [d.upperBand, d.lowerBand, d.price]).filter(v => v !== null && !isNaN(v)) as number[];
     const targetValues = [shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper, mcAverage].filter(v => v !== undefined && v !== null) as number[];
     
     const allValues = [...priceValues, ...targetValues];
@@ -215,7 +203,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                                 return null;
                             }
                             
-                            if (name === 'Price' || name === '20D SMA' || name === 'EMA(50)' || name === 'EMA(200)') {
+                            if (name === 'Price' || name === '20D SMA') {
                                 return [formatCurrency(value, currency), name];
                             }
                             
@@ -320,24 +308,6 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         dot={false}
                         name="Price"
                     />
-                     <Line 
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="ema50"
-                        stroke={chartConfig.ema50.color}
-                        strokeWidth={2}
-                        dot={false}
-                        name="EMA(50)"
-                     />
-                     <Line 
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="ema200"
-                        stroke={chartConfig.ema200.color}
-                        strokeWidth={2}
-                        dot={false}
-                        name="EMA(200)"
-                     />
                      <Line 
                         yAxisId="left"
                         type="monotone"

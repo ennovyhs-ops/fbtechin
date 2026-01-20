@@ -39,14 +39,6 @@ export type MacdData = {
   MACD: string | null;
 }
 
-export type EmaData = {
-  date: string;
-  EMA12: string | null;
-  EMA26: string | null;
-  EMA50: string | null;
-  EMA200: string | null;
-}
-
 export type BbandsData = {
     date: string;
     'Real Upper Band': string | null;

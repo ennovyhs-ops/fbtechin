@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF, ema } from '@/lib/technical-analysis';
 import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
@@ -57,7 +57,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], ema: EmaData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -86,12 +86,6 @@ export default function Home() {
         const obv = calculateOBV(closePrices, volumes);
         const stochastic = calculateStochastic(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close) })), periods.stochastic.kPeriod, periods.stochastic.kSlowing, periods.stochastic.dSlowing);
         const cmf = calculateCMF(chronologicalData.map(d => ({ high: parseFloat(d.high), low: parseFloat(d.low), close: parseFloat(d.close), volume: parseFloat(d.volume) })), periods.cmf);
-
-        const ema12 = ema(closePrices, 12);
-        const ema26 = ema(closePrices, 26);
-        const ema50 = ema(closePrices, 50);
-        const ema200 = ema(closePrices, 200);
-
 
         const formatNumber = (num: number | null | undefined, precision: number = 2): string | null => {
             if (num === null || num === undefined || isNaN(num)) return null;
@@ -129,13 +123,6 @@ export default function Home() {
                 d: formatNumber(val.d) 
             })),
             cmf: cmf.reverse().map((val, i) => ({ date: dates[i], CMF: formatNumber(val, 3) })),
-            ema: dates.map((date, i) => ({
-                date,
-                EMA12: formatNumber(ema12.reverse()[i]),
-                EMA26: formatNumber(ema26.reverse()[i]),
-                EMA50: formatNumber(ema50.reverse()[i]),
-                EMA200: formatNumber(ema200.reverse()[i]),
-            })),
         });
     } catch (e: any) {
         setIndicatorsError(e.message || 'Failed to calculate indicators.');
@@ -171,7 +158,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], ema: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [] });
         }
       } else {
         setMarketData(null);
@@ -242,7 +229,7 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
       
-      const marketResult = await fetchMarketData(ticker, 'compact');
+      const marketResult = await fetchMarketData(ticker, 'full');
       
       handleDataResult(marketResult, ticker);
     });
