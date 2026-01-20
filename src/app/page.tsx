@@ -589,6 +589,8 @@ export default function Home() {
                 marketData={marketData}
                 indicatorData={indicatorData}
                 currency={currency}
+                analysisResult={analysisResult}
+                monteCarloResult={monteCarloResult}
             />
           )}
 

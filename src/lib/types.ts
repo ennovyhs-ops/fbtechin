@@ -142,7 +142,7 @@ export type PredictPriceTargetOutput = PredictPriceTargetOutputFlow;
 export type CombinedAnalysisResult = {
   analysis: AnalyzeStockMomentumOutput | null;
   prediction: PredictPriceTargetOutput | { error: string } | null;
-  prevAnalysis?: AnalyzeStockMomentumOutput | null;
+  prevAnalysis?: (AnalyzeStockMomentumOutput | {error: string}) | null;
   error?: string;
 }
 

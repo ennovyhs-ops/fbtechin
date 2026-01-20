@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
-import type { MarketData, BbandsData, RsiData } from '@/lib/types';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart, ReferenceArea } from 'recharts';
+import type { MarketData, BbandsData, RsiData, CombinedAnalysisResult, MonteCarloResult } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from './ui/button';
 
@@ -24,6 +24,22 @@ const chartConfig = {
         label: 'RSI',
         color: 'hsl(var(--chart-3))',
     },
+    shortTermTarget: {
+        label: 'Momentum Target',
+        color: 'hsl(var(--chart-4))',
+    },
+    monteCarlo: {
+        label: 'Monte Carlo Range',
+        color: 'hsl(var(--chart-5))',
+    },
+    breakout: {
+        label: 'Breakout Target (R1)',
+        color: 'hsl(var(--chart-1))',
+    },
+    breakdown: {
+        label: 'Breakdown Target (S1)',
+        color: 'hsl(var(--destructive))',
+    }
 };
 
 interface HistoricalPriceChartProps {
@@ -34,9 +50,11 @@ interface HistoricalPriceChartProps {
   } | null;
   currency: string | null;
   ticker: string;
+  analysisResult: CombinedAnalysisResult | null;
+  monteCarloResult: MonteCarloResult | null;
 }
 
-export function HistoricalPriceChart({ marketData, indicatorData, currency, ticker }: HistoricalPriceChartProps) {
+export function HistoricalPriceChart({ marketData, indicatorData, currency, ticker, analysisResult, monteCarloResult }: HistoricalPriceChartProps) {
   const [zoom, setZoom] = useState('1y');
 
   const chartData = useMemo(() => {
@@ -76,16 +94,49 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     }
 
   }, [marketData, indicatorData, zoom]);
+  
+  const { 
+    shortTermTarget, 
+    breakoutTarget, 
+    breakdownTarget 
+  } = useMemo(() => {
+    const prediction = analysisResult?.prediction;
+    if (!prediction || 'error' in prediction) return {};
+
+    return {
+        shortTermTarget: prediction.shortTerm?.priceTarget,
+        breakoutTarget: prediction.pivots?.r1,
+        breakdownTarget: prediction.pivots?.s1,
+    }
+  }, [analysisResult]);
+
+  const { mcLower, mcUpper, mcAverage } = useMemo(() => {
+    if (!monteCarloResult) return {};
+    return {
+        mcLower: monteCarloResult.probableRange.lower,
+        mcUpper: monteCarloResult.probableRange.upper,
+        mcAverage: monteCarloResult.averageTarget,
+    }
+  }, [monteCarloResult]);
+
+  const yDomainPrice = useMemo(() => {
+    const priceValues = chartData.flatMap(d => [d.upperBand, d.lowerBand, d.price]).filter(v => v !== null && !isNaN(v)) as number[];
+    const targetValues = [shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper, mcAverage].filter(v => v !== undefined && v !== null) as number[];
+    
+    const allValues = [...priceValues, ...targetValues];
+    if (allValues.length === 0) return ['auto', 'auto'];
+
+    const min = Math.min(...allValues);
+    const max = Math.max(...allValues);
+    const padding = (max - min) * 0.05;
+
+    return [min - padding, max + padding];
+  }, [chartData, shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper, mcAverage]);
+
 
   if (!chartData || chartData.length === 0) {
       return null;
   }
-  
-  const yDomainPrice = [
-      Math.min(...chartData.map(d => d.lowerBand ?? Infinity)) * 0.98,
-      Math.max(...chartData.map(d => d.upperBand ?? -Infinity)) * 1.02
-  ];
-
 
   return (
     <Card className="animate-in fade-in-50 duration-500">
@@ -94,7 +145,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             <div>
                 <CardTitle className="font-headline text-2xl">Price Chart for {ticker}</CardTitle>
                 <CardDescription>
-                    Historical price shown with Bollinger Bands and RSI overlays.
+                    Historical price shown with key indicator and model target overlays.
                 </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -145,6 +196,65 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         }}
                     />
                     <Legend />
+
+                     {/* Monte Carlo Range Area */}
+                    {mcLower && mcUpper && (
+                        <ReferenceArea 
+                            yAxisId="left" 
+                            y1={mcLower} 
+                            y2={mcUpper} 
+                            stroke={chartConfig.monteCarlo.color} 
+                            strokeOpacity={0.3} 
+                            fill={chartConfig.monteCarlo.color} 
+                            fillOpacity={0.08}
+                            label={{ value: "MC Range", position: "insideTopRight", fill: chartConfig.monteCarlo.color, fontSize: 10, fillOpacity: 0.6 }}
+                        />
+                    )}
+
+                    {/* Monte Carlo Average */}
+                    {mcAverage && (
+                        <ReferenceLine 
+                            yAxisId="left" 
+                            y={mcAverage} 
+                            label={{ value: "MC Avg", position: 'right', fill: chartConfig.monteCarlo.color, fontSize: 10 }}
+                            stroke={chartConfig.monteCarlo.color}
+                            strokeDasharray="3 3" 
+                        />
+                    )}
+
+                    {/* Momentum Target */}
+                    {shortTermTarget && (
+                        <ReferenceLine 
+                            yAxisId="left" 
+                            y={shortTermTarget} 
+                            label={{ value: "Momentum Tgt", position: 'right', fill: chartConfig.shortTermTarget.color, fontSize: 10 }}
+                            stroke={chartConfig.shortTermTarget.color}
+                            strokeDasharray="3 3" 
+                        />
+                    )}
+
+                    {/* Breakout Target (R1) - only show if momentum is neutral */}
+                    {analysisResult?.analysis?.signal === '⚖️ NEUTRAL' && breakoutTarget && (
+                        <ReferenceLine 
+                            yAxisId="left" 
+                            y={breakoutTarget} 
+                            label={{ value: "Breakout (R1)", position: 'right', fill: chartConfig.breakout.color, fontSize: 10 }}
+                            stroke={chartConfig.breakout.color}
+                            strokeDasharray="5 5" 
+                        />
+                    )}
+
+                    {/* Breakdown Target (S1) - only show if momentum is neutral */}
+                    {analysisResult?.analysis?.signal === '⚖️ NEUTRAL' && breakdownTarget && (
+                        <ReferenceLine 
+                            yAxisId="left" 
+                            y={breakdownTarget} 
+                            label={{ value: "Breakdown (S1)", position: 'right', fill: chartConfig.breakdown.color, fontSize: 10 }}
+                            stroke={chartConfig.breakdown.color}
+                            strokeDasharray="5 5" 
+                        />
+                    )}
+
                     <Area 
                         yAxisId="left"
                         dataKey="upperBand"
