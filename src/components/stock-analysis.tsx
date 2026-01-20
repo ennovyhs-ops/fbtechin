@@ -405,7 +405,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 {meanReversionTarget ? (
                     <>
                         <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                            While momentum is strong, a return to the mean is always possible. A potential short-term target if the trend reverses is the 20-day moving average.
+                           If the current trend stalls, prices may revert to the 20-day moving average, a common technical level for a pullback.
                         </p>
                         <div className="mt-3">
                             <p className="text-xs font-semibold text-orange-400/90">Potential Mean Reversion Target</p>
@@ -415,7 +415,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     </>
                 ) : (
                     <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                        This analysis is based on technical momentum. However, always consider the possibility of mean reversion, where extreme price moves are often followed by a return toward a historical average. This model does not account for fundamental catalysts (like earnings surprises or news events) that can override technical trends.
+                        This analysis is purely technical. Always consider that prices can revert to their historical average and that fundamental news (like earnings) can override technical trends.
                     </p>
                 )}
             </div>
@@ -527,5 +527,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
+
+    
 
     
