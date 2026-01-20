@@ -236,6 +236,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <li><span className="font-semibold text-red-400">Long-Term Trend:</span> When the faster EMA (50) is above the slower EMA (200), it indicates a long-term uptrend (a "Golden Cross"). The opposite is a "Death Cross."</li>
                                 </ul>
                                 </div>
+                                <Separator />
+                                <div>
+                                    <p className="font-bold text-foreground mb-1">Common Settings</p>
+                                    <p>12-day and 26-day EMAs are standard for analyzing short-term trends. 50-day and 200-day EMAs are used for long-term trends.</p>
+                                </div>
                             </TooltipContent>
                         </Tooltip>
                         <div className="flex flex-col sm:flex-row justify-around items-start sm:items-center gap-4 pt-1">
@@ -288,6 +293,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                             <li><span className="font-semibold">Divergence:</span> When the stock price makes a new high/low but the MACD does not, it can signal a potential reversal.</li>
                                         </ul>
                                     </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Setting</p>
+                                        <p>The standard parameters are a 12-period fast EMA, a 26-period slow EMA, and a 9-period signal line EMA.</p>
+                                    </div>
                                 </TooltipContent>
                             </Tooltip>
                             <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
@@ -339,6 +349,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         <li><span className="font-semibold text-red-400">Negative Values:</span> Indicate downward selling pressure. A cross below the zero line can signal the start of a downtrend.</li>
                                     </ul>
                                     </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Settings</p>
+                                        <p>Commonly used periods are between 10 and 20. A 22-day period is often used to approximate monthly momentum.</p>
+                                    </div>
                                 </TooltipContent>
                             </Tooltip>
                             <div className="flex items-center gap-1">
@@ -376,6 +391,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         <li><span className="font-semibold text-green-400">Oversold (Below 30):</span> Suggests the asset may be undervalued and could be due for a bounce.</li>
                                         <li><span className="font-semibold text-primary">Centerline (50):</span> RSI movements above 50 generally indicate a bullish trend, while movements below 50 indicate a bearish trend.</li>
                                     </ul>
+                                    </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Setting</p>
+                                        <p>The standard and most widely used period for RSI is 14.</p>
                                     </div>
                                 </TooltipContent>
                             </Tooltip>
@@ -423,6 +443,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                                 <li><span className="font-semibold">Crossovers:</span> A bullish signal can occur when the %K line crosses above the %D line, especially in oversold territory.</li>
                                             </ul>
                                         </div>
+                                        <Separator />
+                                        <div>
+                                            <p className="font-bold text-foreground mb-1">Common Setting</p>
+                                            <p>The most common parameters are a 14-period lookback for %K, with a 3-period smoothing for both the %K and %D lines.</p>
+                                        </div>
                                     </TooltipContent>
                                 </Tooltip>
                                 <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
@@ -460,7 +485,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <TooltipTrigger asChild>
                                     <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">VOLUME VS. AVG</h3>
                                 </TooltipTrigger>
-                                <TooltipContent className="max-w-xs"><p>Compares the most recent trading volume to its moving average. A significant spike in volume can indicate strong conviction behind a price move.</p></TooltipContent>
+                                <TooltipContent className="max-w-xs p-3 space-y-2">
+                                    <p>Compares the most recent trading volume to its moving average. A significant spike in volume can indicate strong conviction behind a price move.</p>
+                                    <Separator/>
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Setting</p>
+                                        <p>A 50-day moving average is standard for volume analysis.</p>
+                                    </div>
+                                </TooltipContent>
                             </Tooltip>
                             <div className="flex items-center gap-1">
                                 <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">P:</label>
@@ -499,6 +531,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                             <li><span className="font-semibold text-primary">Price vs. VWMA:</span> When the price is above the VWMA, it's a bullish sign. When it's below, it's bearish. Crossovers can signal a change in trend.</li>
                                         </ul>
                                     </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Setting</p>
+                                        <p>A 20-period VWMA is a commonly used baseline for short- to medium-term analysis.</p>
+                                    </div>
                                 </TooltipContent>
                             </Tooltip>
                             <div className="flex items-center gap-1">
@@ -533,6 +570,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <p className="font-bold text-foreground">How to Interpret It:</p>
                                     <p>The <span className="font-semibold text-primary">trend of OBV is key</span>; the absolute numeric value is not important. A rising OBV reflects positive buying pressure, which can confirm an uptrend. A falling OBV suggests selling pressure.</p>
                                     </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Note on Parameters</p>
+                                        <p>OBV is a cumulative indicator and does not have a user-defined period setting.</p>
+                                    </div>
                                 </TooltipContent>
                             </Tooltip>
                         </div>
@@ -565,6 +607,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                             <li>A CMF value <span className="text-green-400 font-semibold">above 0</span> indicates buying pressure (Accumulation).</li>
                                             <li>A CMF value <span className="text-red-400 font-semibold">below 0</span> indicates selling pressure (Distribution).</li>
                                         </ul>
+                                    </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Setting</p>
+                                        <p>A 20 or 21-period lookback is standard for Chaikin Money Flow.</p>
                                     </div>
                                 </TooltipContent>
                             </Tooltip>
