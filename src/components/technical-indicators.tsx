@@ -86,26 +86,21 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         
         const displayVal = formatter ? formatter(prevVal) : prevVal.toFixed(precision);
 
+        let Icon, color;
         if (Math.abs(diff) < 1e-5) {
-            return (
-                <Tooltip>
-                    <TooltipTrigger asChild><div className="cursor-help"><Minus className="h-4 w-4 text-muted-foreground" /></div></TooltipTrigger>
-                    <TooltipContent><p>Previous: {displayVal}</p></TooltipContent>
-                </Tooltip>
-            );
+            Icon = Minus;
+            color = 'text-muted-foreground';
+        } else {
+            const isUp = diff > 0;
+            Icon = isUp ? TrendingUp : TrendingDown;
+            color = isUp ? 'text-green-400' : 'text-red-400';
         }
 
-        const isUp = diff > 0;
-        const Icon = isUp ? TrendingUp : TrendingDown;
-        const color = isUp ? 'text-green-400' : 'text-red-400';
-
         return (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="cursor-help"><Icon className={`h-4 w-4 ${color}`} /></div>
-                </TooltipTrigger>
-                <TooltipContent><p>Previous: {displayVal}</p></TooltipContent>
-            </Tooltip>
+            <>
+                <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                <span className="text-xs text-muted-foreground shrink-0">({displayVal})</span>
+            </>
         );
     };
     
