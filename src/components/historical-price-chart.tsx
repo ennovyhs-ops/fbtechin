@@ -15,7 +15,7 @@ const chartConfig = {
     },
     ema50: {
         label: 'EMA(50)',
-        color: 'hsl(var(--chart-4))',
+        color: 'hsl(var(--accent))',
     },
     ema200: {
         label: 'EMA(200)',
@@ -43,7 +43,7 @@ const chartConfig = {
     },
     breakout: {
         label: 'Breakout Target (R1)',
-        color: 'hsl(var(--chart-1))',
+        color: 'hsl(var(--chart-5))',
     },
     breakdown: {
         label: 'Breakdown Target (S1)',
@@ -325,7 +325,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         type="monotone"
                         dataKey="ema50"
                         stroke={chartConfig.ema50.color}
-                        strokeWidth={1.5}
+                        strokeWidth={2}
                         dot={false}
                         name="EMA(50)"
                      />
@@ -334,7 +334,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         type="monotone"
                         dataKey="ema200"
                         stroke={chartConfig.ema200.color}
-                        strokeWidth={1.5}
+                        strokeWidth={2}
                         dot={false}
                         name="EMA(200)"
                      />
