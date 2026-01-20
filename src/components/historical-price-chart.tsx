@@ -215,10 +215,6 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                                 return null;
                             }
                             
-                            if(name === 'lowerBand') {
-                                return null;
-                            }
-
                             if (name === 'Price' || name === '20D SMA' || name === 'EMA(50)' || name === 'EMA(200)') {
                                 return [formatCurrency(value, currency), name];
                             }
@@ -299,6 +295,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         fill="transparent"
                         activeDot={false}
                         legendType="none"
+                        tooltipType="none"
                     />
                     <Area
                         yAxisId="left"
@@ -385,7 +382,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                     />
                     <Legend />
                     <ReferenceLine y={70} label={{ value: "Overbought", position: 'insideTopLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                    <ReferenceLine y={30} label={{ value: "Oversold", position: 'insideBottomLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} stroke="hsl(var(--chart-2))" strokeDasharray="3 3" />
+                    <ReferenceLine y={30} label={{ value: "Oversold", position: 'insideBottomLeft', fontSize: 10, fill: 'hsl(var(--chart-2))' }} stroke="hsl(var(--chart-2))" strokeDasharray="3 3" />
                     <Line type="monotone" dataKey="rsi" stroke={chartConfig.rsi.color} strokeWidth={2} dot={false} name="RSI" />
                 </LineChart>
             </ResponsiveContainer>
