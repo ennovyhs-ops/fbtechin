@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -211,6 +212,10 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                                 if (payload?.lowerBand && payload?.upperBand) {
                                     return [`${formatCurrency(payload.lowerBand, currency)} - ${formatCurrency(payload.upperBand, currency)}`, 'Bollinger Bands'];
                                 }
+                                return null;
+                            }
+                            
+                            if(name === 'lowerBand') {
                                 return null;
                             }
 
