@@ -4,7 +4,7 @@
 
 import { useState, useTransition, useCallback, useMemo, useEffect } from 'react';
 import { z } from 'zod';
-import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
@@ -30,6 +30,7 @@ import { MonteCarloSimulation } from '@/components/monte-carlo-simulation';
 import { SynthesizedTradeIdea } from '@/components/synthesized-trade-idea';
 import { TechnicalSummary } from '@/components/technical-summary';
 import { DataInputForm } from '@/components/data-input-form';
+import { HistoricalPriceChart } from '@/components/historical-price-chart';
 
 const FormSchema = z.object({
   ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.'),
@@ -66,6 +67,7 @@ export default function Home() {
   const [indicatorPeriods, setIndicatorPeriods] = useState<IndicatorPeriods>(defaultPeriods);
   
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [showPriceChart, setShowPriceChart] = useState(false);
 
   const calculateIndicators = useCallback((data: MarketData[], periods: IndicatorPeriods) => {
     setIndicatorsLoading(true);
@@ -156,6 +158,7 @@ export default function Home() {
     setIndicatorPeriods(defaultPeriods);
     setUploadedFileName(null);
     setIsAnalyzing(false);
+    setShowPriceChart(false);
   };
   
   const handleDataResult = (result: FetchResult, ticker: string) => {
@@ -572,8 +575,21 @@ export default function Home() {
                     <Download className="mr-2 h-4 w-4" />
                     Download as CSV
                 </Button>
+                <Button variant="outline" onClick={() => setShowPriceChart(prev => !prev)}>
+                    <AreaChart className="mr-2 h-4 w-4" />
+                    {showPriceChart ? 'Hide Price Chart' : 'Show Price Chart'}
+                </Button>
              </CardFooter>
            </Card>
+          )}
+
+          {showPriceChart && submittedTicker && marketData && indicatorData && (
+            <HistoricalPriceChart
+                ticker={submittedTicker}
+                marketData={marketData}
+                indicatorData={indicatorData}
+                currency={currency}
+            />
           )}
 
           {analysisResult?.analysis && 'totalScore' in analysisResult.analysis && analysisResult.prediction && !('error' in analysisResult.prediction) && latestData && thirtyDayVolatility && (

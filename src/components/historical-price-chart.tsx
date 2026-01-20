@@ -1,0 +1,202 @@
+
+'use client';
+
+import { useMemo } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
+import type { MarketData, BbandsData, RsiData } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
+
+const chartConfig = {
+    price: {
+        label: 'Price',
+        color: 'hsl(var(--primary))',
+    },
+    upperBand: {
+        label: 'Upper Band',
+        color: 'hsl(var(--chart-2))',
+    },
+    lowerBand: {
+        label: 'Lower Band',
+        color: 'hsl(var(--chart-2))',
+    },
+    rsi: {
+        label: 'RSI',
+        color: 'hsl(var(--chart-3))',
+    },
+};
+
+interface HistoricalPriceChartProps {
+  marketData: MarketData[];
+  indicatorData: {
+    bbands: BbandsData[];
+    rsi: RsiData[];
+  } | null;
+  currency: string | null;
+  ticker: string;
+}
+
+export function HistoricalPriceChart({ marketData, indicatorData, currency, ticker }: HistoricalPriceChartProps) {
+
+  const chartData = useMemo(() => {
+    if (!marketData || !indicatorData) return [];
+    
+    const chronologicalData = [...marketData].reverse();
+    const chronologicalBbands = [...indicatorData.bbands].reverse();
+    const chronologicalRsi = [...indicatorData.rsi].reverse();
+
+    return chronologicalData.map((data, index) => {
+        const bbands = chronologicalBbands[index];
+        const rsi = chronologicalRsi[index];
+        return {
+            date: data.date,
+            price: parseFloat(data.close),
+            upperBand: bbands?.['Real Upper Band'] ? parseFloat(bbands['Real Upper Band']) : null,
+            lowerBand: bbands?.['Real Lower Band'] ? parseFloat(bbands['Real Lower Band']) : null,
+            middleBand: bbands?.['Real Middle Band'] ? parseFloat(bbands['Real Middle Band']) : null,
+            rsi: rsi?.RSI ? parseFloat(rsi.RSI) : null,
+        }
+    });
+
+  }, [marketData, indicatorData]);
+
+  if (!chartData || chartData.length === 0) {
+      return null;
+  }
+  
+  const yDomainPrice = [
+      Math.min(...chartData.map(d => d.lowerBand ?? Infinity)) * 0.98,
+      Math.max(...chartData.map(d => d.upperBand ?? -Infinity)) * 1.02
+  ];
+
+
+  return (
+    <Card className="animate-in fade-in-50 duration-500">
+      <CardHeader>
+        <CardTitle className="font-headline text-2xl">Price Chart for {ticker}</CardTitle>
+        <CardDescription>
+            Historical price shown with Bollinger Bands and RSI overlays.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-8">
+         {/* Price Chart with Bollinger Bands */}
+         <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                 <ComposedChart
+                    data={chartData}
+                    margin={{
+                        top: 5,
+                        right: 20,
+                        left: -10,
+                        bottom: 5,
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                        tickCount={6}
+                    />
+                    <YAxis 
+                        yAxisId="left"
+                        domain={yDomainPrice}
+                        tickFormatter={(value) => formatCurrency(value, currency).replace(/\.00$/, '')}
+                        tick={{ fontSize: 12 }}
+                    />
+                     <Tooltip
+                        contentStyle={{
+                            backgroundColor: 'hsl(var(--background))',
+                            borderColor: 'hsl(var(--border))'
+                        }}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                        formatter={(value: number, name: string) => {
+                             if(name === 'Bollinger Bands') return null;
+                             const formattedValue = name === 'price' ? formatCurrency(value, currency) : value.toFixed(2);
+                             return [formattedValue, name === 'price' ? 'Price' : name];
+                        }}
+                    />
+                    <Legend />
+                    <Area 
+                        yAxisId="left"
+                        dataKey="upperBand"
+                        stackId="bollinger"
+                        strokeWidth={0}
+                        fill="hsl(var(--muted))"
+                        name="Bollinger Bands"
+                        activeDot={false}
+                        legendType="none"
+                    />
+                     <Area 
+                        yAxisId="left"
+                        dataKey="lowerBand"
+                        stackId="bollinger"
+                        strokeWidth={0}
+                        fill="hsl(var(--card))"
+                        name="Bollinger Bands"
+                        activeDot={false}
+                        legendType="none"
+                    />
+                    <Line 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="price" 
+                        stroke={chartConfig.price.color} 
+                        strokeWidth={2} 
+                        dot={false}
+                        name="Price"
+                    />
+                     <Line 
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="middleBand"
+                        stroke="hsl(var(--muted-foreground))"
+                        strokeWidth={1}
+                        strokeDasharray="5 5"
+                        dot={false}
+                        name="20D SMA"
+                     />
+                </ComposedChart>
+            </ResponsiveContainer>
+         </div>
+         {/* RSI Chart */}
+         <div className="h-40 w-full">
+             <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                    data={chartData}
+                     margin={{
+                        top: 5,
+                        right: 20,
+                        left: -10,
+                        bottom: 5,
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                        tickCount={6}
+                    />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                     <Tooltip
+                        contentStyle={{
+                            backgroundColor: 'hsl(var(--background))',
+                            borderColor: 'hsl(var(--border))'
+                        }}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                        formatter={(value: number) => [value.toFixed(2), 'RSI']}
+                    />
+                    <Legend />
+                    <ReferenceLine y={70} label={{ value: "Overbought", position: 'insideTopLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <ReferenceLine y={30} label={{ value: "Oversold", position: 'insideBottomLeft', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} stroke="hsl(var(--chart-2))" strokeDasharray="3 3" />
+                    <Line type="monotone" dataKey="rsi" stroke={chartConfig.rsi.color} strokeWidth={2} dot={false} name="RSI" />
+                </LineChart>
+            </ResponsiveContainer>
+         </div>
+      </CardContent>
+    </Card>
+  );
+}
