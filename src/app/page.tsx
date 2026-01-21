@@ -279,7 +279,7 @@ export default function Home() {
 
                 if (jsonData.length < 2) throw new Error('File must contain a header and at least one data row.');
                 
-                const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/[\s_-]/g, ''));
+                const headerLine = jsonData[0].map((h:any) => String(h).toLowerCase().trim().replace(/[\s_.-]/g, ''));
                 
                 const findHeaderIndex = (aliases: string[]): number => {
                     for (const alias of aliases) {
@@ -371,7 +371,10 @@ export default function Home() {
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
     if (submittedTicker && marketData) {
-      calculateIndicators(marketData, newPeriods);
+        // Debounce or delay this call slightly
+        startTransition(() => {
+            calculateIndicators(marketData, newPeriods);
+        });
     }
   };
 
