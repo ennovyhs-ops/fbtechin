@@ -230,7 +230,7 @@ export default function Home() {
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [marketData, submittedTicker, handleAnalysis, calculateIndicators, indicatorPeriods]);
+  }, [marketData, submittedTicker, calculateIndicators, indicatorPeriods]);
 
 
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
@@ -244,7 +244,7 @@ export default function Home() {
       
       handleDataResult(marketResult, ticker);
     });
-  }, []);
+  }, [calculateIndicators, handleAnalysis]);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -283,14 +283,14 @@ export default function Home() {
                 
                 const findHeaderIndex = (aliases: string[]): number => {
                     for (const alias of aliases) {
-                        const index = headerLine.indexOf(alias.toLowerCase().replace(/[\s_-]/g, ''));
+                        const index = headerLine.indexOf(alias.toLowerCase().replace(/[\s_.-]/g, ''));
                         if (index !== -1) return index;
                     }
                     return -1;
                 };
 
                 const headerMap = {
-                    date: findHeaderIndex(['date', 'time', 'datetime', 'timestamp', 'trade_date', 'tradedate']),
+                    date: findHeaderIndex(['date', 'day', 'time', 'datetime', 'timestamp', 'trade_date', 'tradedate']),
                     open: findHeaderIndex(['open', 'open_price', 'openprice']),
                     high: findHeaderIndex(['high', 'high_price', 'highprice', 'max']),
                     low: findHeaderIndex(['low', 'low_price', 'lowprice', 'min']),
@@ -366,7 +366,7 @@ export default function Home() {
     if (event.target) {
         event.target.value = '';
     }
-  }, []);
+  }, [calculateIndicators, handleAnalysis]);
   
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
