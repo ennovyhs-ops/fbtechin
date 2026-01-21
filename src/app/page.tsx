@@ -319,12 +319,14 @@ export default function Home() {
                          formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
                     } else {
                         try {
-                            const parsedDate = new Date(dateValue);
-                            if (isNaN(parsedDate.getTime())) throw new Error();
-                            // Correct for timezone offset to prevent date shifts
-                            const tzOffset = parsedDate.getTimezoneOffset() * 60000;
-                            const localDate = new Date(parsedDate.valueOf() + tzOffset);
-                            formattedDate = localDate.toISOString().split('T')[0];
+                            // To avoid timezone issues where "YYYY-MM-DD" is parsed as UTC midnight
+                            // and can roll back to the previous day in some timezones, we force UTC interpretation.
+                            const dateString = String(dateValue).split('T')[0];
+                            const utcDate = new Date(`${dateString}T00:00:00Z`);
+                            
+                            if (isNaN(utcDate.getTime())) throw new Error('Invalid date format');
+
+                            formattedDate = utcDate.toISOString().split('T')[0];
                         } catch {
                             console.warn(`Skipping row ${index + 2} due to invalid date format: ${dateValue}`);
                             return null;
