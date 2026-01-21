@@ -230,7 +230,7 @@ export default function Home() {
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [marketData, submittedTicker, calculateIndicators, indicatorPeriods]);
+  }, [marketData, submittedTicker, handleAnalysis, indicatorPeriods]);
 
 
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
@@ -244,7 +244,7 @@ export default function Home() {
       
       handleDataResult(marketResult, ticker);
     });
-  }, [calculateIndicators, handleAnalysis]);
+  }, [handleAnalysis]);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -294,7 +294,7 @@ export default function Home() {
                     open: findHeaderIndex(['open', 'open_price', 'openprice']),
                     high: findHeaderIndex(['high', 'high_price', 'highprice', 'max']),
                     low: findHeaderIndex(['low', 'low_price', 'lowprice', 'min']),
-                    close: findHeaderIndex(['close', 'closed', 'closed_price', 'close_price', 'last', 'last_price', 'price', 'adj_close', 'adjusted_close', 'lasttrade']),
+                    close: findHeaderIndex(['close', 'closed', 'closing', 'close_price', 'closed_price', 'price', 'adj_close', 'adjusted_close', 'adjclose', 'last', 'last_price', 'lasttrade']),
                     volume: findHeaderIndex(['volume', 'vol', 'qty', 'quantity', 'trade_volume']),
                 };
                 
@@ -366,7 +366,7 @@ export default function Home() {
     if (event.target) {
         event.target.value = '';
     }
-  }, [calculateIndicators, handleAnalysis]);
+  }, [handleAnalysis]);
   
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
