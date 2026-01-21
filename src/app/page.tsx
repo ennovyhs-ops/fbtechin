@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useTransition, useCallback, useMemo, useEffect } from 'react';
@@ -230,7 +229,7 @@ export default function Home() {
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [marketData, submittedTicker, handleAnalysis, indicatorPeriods]);
+  }, [marketData, submittedTicker, calculateIndicators, handleAnalysis, indicatorPeriods]);
 
 
   const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>) => {
@@ -319,16 +318,24 @@ export default function Home() {
                          formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
                     } else {
                         try {
-                            // To avoid timezone issues where "YYYY-MM-DD" is parsed as UTC midnight
-                            // and can roll back to the previous day in some timezones, we force UTC interpretation.
-                            const dateString = String(dateValue).split('T')[0];
+                            let dateString = String(dateValue).split('T')[0].trim();
+                            
+                            // Check for MM/DD/YYYY or MM-DD-YYYY and convert to YYYY-MM-DD
+                            const mmddyyyy = dateString.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+                            if (mmddyyyy) {
+                                dateString = `${mmddyyyy[3]}-${String(mmddyyyy[1]).padStart(2, '0')}-${String(mmddyyyy[2]).padStart(2, '0')}`;
+                            }
+
+                            // The rest of the logic expects a YYYY-MM-DD string to correctly create a UTC date.
                             const utcDate = new Date(`${dateString}T00:00:00Z`);
                             
-                            if (isNaN(utcDate.getTime())) throw new Error('Invalid date format');
+                            if (isNaN(utcDate.getTime())) {
+                                throw new Error(`Could not parse date. Expected YYYY-MM-DD or MM/DD/YYYY. Got: "${dateValue}"`);
+                            }
 
                             formattedDate = utcDate.toISOString().split('T')[0];
-                        } catch {
-                            console.warn(`Skipping row ${index + 2} due to invalid date format: ${dateValue}`);
+                        } catch (err: any) {
+                            console.warn(`Skipping row ${index + 2}: ${err.message}`);
                             return null;
                         }
                     }
