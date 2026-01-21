@@ -306,38 +306,34 @@ export default function Home() {
                     const closeValue = row[headerMap.close];
                     const dateValue = row[headerMap.date];
                     
-                    if (dateValue === undefined || dateValue === null || closeValue === undefined || closeValue === null) {
+                    if (dateValue === undefined || dateValue === null || String(dateValue).trim() === '' || closeValue === undefined || closeValue === null || String(closeValue).trim() === '') {
                         return null; // Skip rows with no date or close
                     }
                     
                     let formattedDate: string;
-                    if (typeof dateValue === 'number' && dateValue > 25569) { // Excel serial date check (day 1 is 1900-01-01, 25569 is 1970-01-01)
-                         const utc_days  = Math.floor(dateValue - 25569);
-                         const utc_value = utc_days * 86400;                                        
-                         const date_info = new Date(utc_value * 1000);
-                         formattedDate = `${date_info.getUTCFullYear()}-${String(date_info.getUTCMonth() + 1).padStart(2, '0')}-${String(date_info.getUTCDate()).padStart(2, '0')}`;
-                    } else {
-                        try {
-                            let dateString = String(dateValue).split('T')[0].trim();
-                            
-                            // Check for MM/DD/YYYY or MM-DD-YYYY and convert to YYYY-MM-DD
-                            const mmddyyyy = dateString.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-                            if (mmddyyyy) {
-                                dateString = `${mmddyyyy[3]}-${String(mmddyyyy[1]).padStart(2, '0')}-${String(mmddyyyy[2]).padStart(2, '0')}`;
-                            }
-
-                            // The rest of the logic expects a YYYY-MM-DD string to correctly create a UTC date.
-                            const utcDate = new Date(`${dateString}T00:00:00Z`);
-                            
-                            if (isNaN(utcDate.getTime())) {
-                                throw new Error(`Could not parse date. Expected YYYY-MM-DD or MM/DD/YYYY. Got: "${dateValue}"`);
-                            }
-
-                            formattedDate = utcDate.toISOString().split('T')[0];
-                        } catch (err: any) {
-                            console.warn(`Skipping row ${index + 2}: ${err.message}`);
-                            return null;
+                    try {
+                        let parsedDate: Date;
+                        // Attempt to handle Excel serial dates first
+                        if (typeof dateValue === 'number' && dateValue > 25569) {
+                            const utc_days = Math.floor(dateValue - 25569);
+                            const utc_value = utc_days * 86400;
+                            parsedDate = new Date(utc_value * 1000);
+                        } else {
+                            // For strings, try to create a date object.
+                            // The Date constructor is surprisingly flexible. Appending ' UTC' helps avoid timezone shifts.
+                            let dateString = String(dateValue).trim();
+                            parsedDate = new Date(dateString + ' UTC');
                         }
+
+                        if (isNaN(parsedDate.getTime())) {
+                            throw new Error(`Could not parse date. Got: "${dateValue}"`);
+                        }
+
+                        // Format the valid date into YYYY-MM-DD for consistency
+                        formattedDate = parsedDate.toISOString().split('T')[0];
+                    } catch (err: any) {
+                        console.warn(`Skipping row ${index + 2}: ${err.message}`);
+                        return null;
                     }
                     
                     return {
