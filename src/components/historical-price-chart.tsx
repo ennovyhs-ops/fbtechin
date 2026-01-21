@@ -4,7 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart, ReferenceArea } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart, ReferenceArea, ReferenceDot } from 'recharts';
 import type { MarketData, BbandsData, RsiData, CombinedAnalysisResult, MonteCarloResult } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -99,6 +99,11 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     }
 
   }, [marketData, indicatorData, zoom]);
+
+  const lastDataPoint = useMemo(() => {
+    if (!chartData || chartData.length === 0) return null;
+    return chartData[chartData.length - 1];
+  }, [chartData]);
   
   const { 
     shortTermTarget, 
@@ -176,7 +181,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                  <ComposedChart
                     data={chartData}
                     margin={{
-                        top: 5,
+                        top: 20,
                         right: 20,
                         left: -10,
                         bottom: 5,
@@ -316,6 +321,25 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         dot={false}
                         name="Price"
                     />
+                     {lastDataPoint && (
+                        <ReferenceDot
+                            yAxisId="left"
+                            x={lastDataPoint.date}
+                            y={lastDataPoint.price}
+                            r={5}
+                            fill={chartConfig.price.color}
+                            stroke="hsl(var(--background))"
+                            strokeWidth={2}
+                            label={{ 
+                                value: formatCurrency(lastDataPoint.price, currency), 
+                                position: 'top', 
+                                dy: -10, 
+                                fill: 'hsl(var(--foreground))', 
+                                fontSize: 12, 
+                                fontWeight: 'bold' 
+                            }}
+                        />
+                    )}
                      <Line 
                         yAxisId="left"
                         type="monotone"
