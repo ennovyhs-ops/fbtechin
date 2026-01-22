@@ -57,6 +57,11 @@ export type VwmaData = {
     VWMA: string | null;
 }
 
+export type EmaData = {
+  date: string;
+  EMA: string | null;
+}
+
 export type ObvData = {
     date: string;
     OBV: string | null;
@@ -102,6 +107,7 @@ export type NewsAnalysis = {
 }
 
 export type IndicatorPeriods = {
+  ema: number;
   roc: number;
   rsi: number;
   macd: {

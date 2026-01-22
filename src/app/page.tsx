@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart, Edit } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF, ema } from '@/lib/technical-analysis';
 import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
@@ -37,6 +37,7 @@ const FormSchema = z.object({
 });
 
 const defaultPeriods: IndicatorPeriods = {
+  ema: 20,
   roc: 22,
   rsi: 14,
   macd: { fast: 12, slow: 26, signal: 9 },
@@ -57,7 +58,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], ema: EmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -78,6 +79,7 @@ export default function Home() {
         const closePrices = chronologicalData.map(d => parseFloat(d.close));
         const volumes = chronologicalData.map(d => parseFloat(d.volume));
         
+        const emaResult = ema(closePrices, periods.ema);
         const rsi = calculateRSI(closePrices, periods.rsi);
         const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal);
         const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev);
@@ -97,6 +99,7 @@ export default function Home() {
         const dates = data.map(d => d.date);
         
         setIndicatorData({
+            ema: emaResult.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
             rsi: rsi.reverse().map((val, i) => ({ date: dates[i], RSI: formatNumber(val) })),
             macd: macd.reverse().map((val, i) => ({ 
                 date: dates[i],
@@ -161,7 +164,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], ema: [] });
         }
       } else {
         setMarketData(null);
@@ -243,7 +246,7 @@ export default function Home() {
       
       handleDataResult(marketResult, ticker);
     });
-  }, [handleAnalysis]);
+  }, []);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -293,7 +296,7 @@ export default function Home() {
                     open: findHeaderIndex(['open', 'open_price', 'openprice']),
                     high: findHeaderIndex(['high', 'high_price', 'highprice', 'max']),
                     low: findHeaderIndex(['low', 'low_price', 'lowprice', 'min']),
-                    close: findHeaderIndex(['close', 'closed', 'closing', 'close_price', 'closed_price', 'price', 'adj_close', 'adjusted_close', 'adjclose', 'last', 'last_price', 'lasttrade', 'closed price']),
+                    close: findHeaderIndex(['close', 'closed', 'closing', 'close_price', 'closed_price', 'price', 'adj_close', 'adjusted_close', 'adjclose', 'last', 'last_price', 'lasttrade', 'closedprice']),
                     volume: findHeaderIndex(['volume', 'vol', 'qty', 'quantity', 'trade_volume']),
                 };
                 
@@ -313,23 +316,25 @@ export default function Home() {
                     let formattedDate: string;
                     try {
                         let parsedDate: Date;
-                        // Attempt to handle Excel serial dates first
-                        if (typeof dateValue === 'number' && dateValue > 25569) {
+                        
+                        if (typeof dateValue === 'number' && dateValue > 25569) { // Excel serial date
                             const utc_days = Math.floor(dateValue - 25569);
                             const utc_value = utc_days * 86400;
                             parsedDate = new Date(utc_value * 1000);
                         } else {
-                            // For strings, try to create a date object.
-                            // The Date constructor is surprisingly flexible. Appending ' UTC' helps avoid timezone shifts.
-                            let dateString = String(dateValue).trim();
-                            parsedDate = new Date(dateString + ' UTC');
+                            // The Date constructor is surprisingly flexible. We help it by replacing `-` with `/` and appending ` UTC`
+                            // This helps avoid timezone shifts from local time and correctly parses MM/DD/YYYY and YYYY/MM/DD
+                            let dateString = String(dateValue).trim().replace(/-/g, '/');
+                            if (!dateString.includes('UTC')) {
+                                dateString += ' UTC';
+                            }
+                            parsedDate = new Date(dateString);
                         }
 
                         if (isNaN(parsedDate.getTime())) {
                             throw new Error(`Could not parse date. Got: "${dateValue}"`);
                         }
-
-                        // Format the valid date into YYYY-MM-DD for consistency
+                        
                         formattedDate = parsedDate.toISOString().split('T')[0];
                     } catch (err: any) {
                         console.warn(`Skipping row ${index + 2}: ${err.message}`);
@@ -369,7 +374,7 @@ export default function Home() {
     if (event.target) {
         event.target.value = '';
     }
-  }, [handleAnalysis]);
+  }, []);
   
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
