@@ -37,8 +37,10 @@ const FormSchema = z.object({
 });
 
 const defaultPeriods: IndicatorPeriods = {
-  emaShort: 20,
-  emaLong: 50,
+  emaShort1: 12,
+  emaShort2: 26,
+  emaLong1: 50,
+  emaLong2: 200,
   roc: 22,
   rsi: 14,
   macd: { fast: 12, slow: 26, signal: 9 },
@@ -59,7 +61,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort: EmaData[], emaLong: EmaData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort1: EmaData[], emaShort2: EmaData[], emaLong1: EmaData[], emaLong2: EmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -80,8 +82,10 @@ export default function Home() {
         const closePrices = chronologicalData.map(d => parseFloat(d.close));
         const volumes = chronologicalData.map(d => parseFloat(d.volume));
         
-        const emaShortResult = ema(closePrices, periods.emaShort);
-        const emaLongResult = ema(closePrices, periods.emaLong);
+        const emaShort1Result = ema(closePrices, periods.emaShort1);
+        const emaShort2Result = ema(closePrices, periods.emaShort2);
+        const emaLong1Result = ema(closePrices, periods.emaLong1);
+        const emaLong2Result = ema(closePrices, periods.emaLong2);
         const rsi = calculateRSI(closePrices, periods.rsi);
         const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal);
         const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev);
@@ -101,8 +105,10 @@ export default function Home() {
         const dates = data.map(d => d.date);
         
         setIndicatorData({
-            emaShort: emaShortResult.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
-            emaLong: emaLongResult.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaShort1: emaShort1Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaShort2: emaShort2Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaLong1: emaLong1Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaLong2: emaLong2Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
             rsi: rsi.reverse().map((val, i) => ({ date: dates[i], RSI: formatNumber(val) })),
             macd: macd.reverse().map((val, i) => ({ 
                 date: dates[i],
@@ -167,7 +173,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort: [], emaLong: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort1: [], emaShort2: [], emaLong1: [], emaLong2: [] });
         }
       } else {
         setMarketData(null);
@@ -224,13 +230,10 @@ export default function Home() {
   useEffect(() => {
     if (marketData && submittedTicker) {
       const timer = setTimeout(() => {
-        // First, recalculate the base technical indicators
         const isForexOrCrypto = isCurrencyPair(submittedTicker) || isCryptoPair(submittedTicker);
         if (!isForexOrCrypto) {
             calculateIndicators(marketData, indicatorPeriods);
         }
-        
-        // Then, run the more complex AI and deterministic analyses
         handleAnalysis();
       }, 50);
       return () => clearTimeout(timer);
@@ -325,15 +328,23 @@ export default function Home() {
                             const utc_value = utc_days * 86400;
                             parsedDate = new Date(utc_value * 1000);
                         } else {
-                            let dateString = String(dateValue).trim().replace(/-/g, '/');
-                            if (!/Z|GMT|UTC|[+-]\d{2}:\d{2}/.test(dateString)) {
-                                dateString += ' UTC';
+                            let dateString = String(dateValue).trim();
+                            // If dateString contains slashes, it might be MM/DD/YYYY or DD/MM/YYYY
+                            if (dateString.includes('/')) {
+                                const parts = dateString.split(' ')[0].split('/');
+                                if (parts.length === 3) {
+                                     // Assume MM/DD/YYYY for US context if ambiguous
+                                    parsedDate = new Date(`${parts[2]}-${parts[0]}-${parts[1]}T00:00:00Z`);
+                                } else {
+                                     parsedDate = new Date(dateString.replace(/-/g, '/') + ' UTC');
+                                }
+                            } else {
+                                parsedDate = new Date(dateString.replace(/-/g, '/') + ' UTC');
                             }
-                            parsedDate = new Date(dateString);
                         }
 
                         if (isNaN(parsedDate.getTime())) {
-                            throw new Error(`Could not parse date. Got: "${dateValue}"`);
+                             throw new Error(`Could not parse date. Got: "${dateValue}"`);
                         }
                         
                         formattedDate = parsedDate.toISOString().split('T')[0];
@@ -395,7 +406,7 @@ export default function Home() {
         ...marketData.map(row => headers.map(header => row[header as keyof MarketData]).join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf--8;' });
     const link = document.createElement('a');
     if (link.href) {
         URL.revokeObjectURL(link.href);
@@ -453,8 +464,6 @@ export default function Home() {
     }
     const latest = marketData[0];
     
-    // Create a new Date object from the date string's parts to avoid timezone issues.
-    // Assumes YYYY-MM-DD format.
     const dateParts = latest.date.split('-').map(Number);
     const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
 
