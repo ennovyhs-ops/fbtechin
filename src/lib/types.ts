@@ -107,7 +107,8 @@ export type NewsAnalysis = {
 }
 
 export type IndicatorPeriods = {
-  ema: number;
+  emaShort: number;
+  emaLong: number;
   roc: number;
   rsi: number;
   macd: {

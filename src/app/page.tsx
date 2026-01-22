@@ -37,7 +37,8 @@ const FormSchema = z.object({
 });
 
 const defaultPeriods: IndicatorPeriods = {
-  ema: 20,
+  emaShort: 20,
+  emaLong: 50,
   roc: 22,
   rsi: 14,
   macd: { fast: 12, slow: 26, signal: 9 },
@@ -58,7 +59,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], ema: EmaData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort: EmaData[], emaLong: EmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -79,7 +80,8 @@ export default function Home() {
         const closePrices = chronologicalData.map(d => parseFloat(d.close));
         const volumes = chronologicalData.map(d => parseFloat(d.volume));
         
-        const emaResult = ema(closePrices, periods.ema);
+        const emaShortResult = ema(closePrices, periods.emaShort);
+        const emaLongResult = ema(closePrices, periods.emaLong);
         const rsi = calculateRSI(closePrices, periods.rsi);
         const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal);
         const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev);
@@ -99,7 +101,8 @@ export default function Home() {
         const dates = data.map(d => d.date);
         
         setIndicatorData({
-            ema: emaResult.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaShort: emaShortResult.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaLong: emaLongResult.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
             rsi: rsi.reverse().map((val, i) => ({ date: dates[i], RSI: formatNumber(val) })),
             macd: macd.reverse().map((val, i) => ({ 
                 date: dates[i],
@@ -164,7 +167,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], ema: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort: [], emaLong: [] });
         }
       } else {
         setMarketData(null);
@@ -296,7 +299,7 @@ export default function Home() {
                     open: findHeaderIndex(['open', 'open_price', 'openprice']),
                     high: findHeaderIndex(['high', 'high_price', 'highprice', 'max']),
                     low: findHeaderIndex(['low', 'low_price', 'lowprice', 'min']),
-                    close: findHeaderIndex(['close', 'closed', 'closing', 'close_price', 'closed_price', 'price', 'adj_close', 'adjusted_close', 'adjclose', 'last', 'last_price', 'lasttrade', 'closedprice']),
+                    close: findHeaderIndex(['close', 'closed', 'closing', 'close_price', 'closed_price', 'closedprice', 'price', 'adj_close', 'adjusted_close', 'adjclose', 'last', 'last_price', 'lasttrade']),
                     volume: findHeaderIndex(['volume', 'vol', 'qty', 'quantity', 'trade_volume']),
                 };
                 
@@ -322,10 +325,8 @@ export default function Home() {
                             const utc_value = utc_days * 86400;
                             parsedDate = new Date(utc_value * 1000);
                         } else {
-                            // The Date constructor is surprisingly flexible. We help it by replacing `-` with `/` and appending ` UTC`
-                            // This helps avoid timezone shifts from local time and correctly parses MM/DD/YYYY and YYYY/MM/DD
                             let dateString = String(dateValue).trim().replace(/-/g, '/');
-                            if (!dateString.includes('UTC')) {
+                            if (!/Z|GMT|UTC|[+-]\d{2}:\d{2}/.test(dateString)) {
                                 dateString += ' UTC';
                             }
                             parsedDate = new Date(dateString);
@@ -379,7 +380,6 @@ export default function Home() {
   const onPeriodsChange = (newPeriods: IndicatorPeriods) => {
     setIndicatorPeriods(newPeriods);
     if (submittedTicker && marketData) {
-        // Debounce or delay this call slightly
         startTransition(() => {
             calculateIndicators(marketData, newPeriods);
         });

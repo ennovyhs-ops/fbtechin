@@ -25,7 +25,8 @@ interface TechnicalIndicatorsProps {
         obv: ObvData[];
         stochastic: StochasticData[];
         cmf: CmfData[];
-        ema: EmaData[];
+        emaShort: EmaData[];
+        emaLong: EmaData[];
     } | null;
     loading: boolean;
     error: string | null;
@@ -152,8 +153,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const prevMaVol = data?.maVol?.[1];
     const latestVwma = data?.vwma?.[0];
     const prevVwma = data?.vwma?.[1];
-    const latestEma = data?.ema?.[0];
-    const prevEma = data?.ema?.[1];
+    const latestEmaShort = data?.emaShort?.[0];
+    const prevEmaShort = data?.emaShort?.[1];
+    const latestEmaLong = data?.emaLong?.[0];
+    const prevEmaLong = data?.emaLong?.[1];
     const latestObv = data?.obv?.[0];
     const prevObv = data?.obv?.[1];
     const latestStochastic = data?.stochastic?.[0];
@@ -186,17 +189,30 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const bbandsContext = {
         middle: latestBbands?.['Real Middle Band'] ? parseFloat(latestBbands['Real Middle Band']) : null,
     };
-    const bbandsPosition = latestClose && bbandsContext.middle
-        ? latestClose > bbandsContext.middle ? 'Bullish' : 'Bearish'
-        : null;
-
+    
     const vwmaPosition = latestVwma?.VWMA && latestClose && parseFloat(latestVwma.VWMA)
         ? latestClose > parseFloat(latestVwma.VWMA) ? 'Bullish' : 'Bearish'
         : null;
         
-    const emaPosition = latestEma?.EMA && latestClose && parseFloat(latestEma.EMA)
-        ? latestClose > parseFloat(latestEma.EMA) ? 'Bullish' : 'Bearish'
-        : null;
+    let crossStatus: 'Golden Cross' | 'Death Cross' | 'Bullish' | 'Bearish' | null = null;
+    if (latestEmaShort?.EMA && latestEmaLong?.EMA && prevEmaShort?.EMA && prevEmaLong?.EMA) {
+        const latestShort = parseFloat(latestEmaShort.EMA);
+        const latestLong = parseFloat(latestEmaLong.EMA);
+        const prevShort = parseFloat(prevEmaShort.EMA);
+        const prevLong = parseFloat(prevEmaLong.EMA);
+
+        if (!isNaN(latestShort) && !isNaN(latestLong) && !isNaN(prevShort) && !isNaN(prevLong)) {
+            if (prevShort <= prevLong && latestShort > latestLong) {
+                crossStatus = 'Golden Cross';
+            } else if (prevShort >= prevLong && latestShort < latestLong) {
+                crossStatus = 'Death Cross';
+            } else if (latestShort > latestLong) {
+                crossStatus = 'Bullish';
+            } else {
+                crossStatus = 'Bearish';
+            }
+        }
+    }
         
     const rocValue = latestRoc?.ROC ? parseFloat(latestRoc.ROC) : null;
     const rocPosition = rocValue !== null ? (rocValue > 0 ? 'Bullish' : 'Bearish') : null;
@@ -466,6 +482,81 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                     )}
+                    {/* EMA Crossover */}
+                    <div className="p-3 border rounded-lg space-y-3">
+                        <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">EMA CROSSOVER ANALYSIS</h3>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs p-3 space-y-2">
+                                    <div>
+                                        <p className="font-bold text-foreground">What is EMA Crossover?</p>
+                                        <p>This analysis compares a short-term Exponential Moving Average (EMA) with a long-term one. Crossovers between these two lines are often used as trading signals.</p>
+                                    </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground">How to Interpret It:</p>
+                                        <ul className="list-disc list-inside mt-1 space-y-1">
+                                            <li><span className="text-green-400 font-semibold">Golden Cross:</span> When the short-term EMA crosses ABOVE the long-term EMA, it's a bullish signal, suggesting upward momentum is building.</li>
+                                            <li><span className="text-red-400 font-semibold">Death Cross:</span> When the short-term EMA crosses BELOW the long-term EMA, it's a bearish signal, suggesting downward momentum is building.</li>
+                                        </ul>
+                                    </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground mb-1">Common Settings</p>
+                                        <p>Common pairs are 12/26 for short-term signals, and 50/200 for long-term trend changes.</p>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                    <label htmlFor="ema-short" className="text-xs font-medium text-muted-foreground">Short:</label>
+                                    <Input id="ema-short" type="number" value={localPeriods.emaShort} onChange={(e) => handlePeriodChange('emaShort', e.target.value)} className="w-16 h-7 text-sm" />
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <label htmlFor="ema-long" className="text-xs font-medium text-muted-foreground">Long:</label>
+                                    <Input id="ema-long" type="number" value={localPeriods.emaLong} onChange={(e) => handlePeriodChange('emaLong', e.target.value)} className="w-16 h-7 text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                <p className="text-xs text-muted-foreground">Short ({localPeriods.emaShort}-day)</p>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-sm">{formatCurrency(latestEmaShort?.EMA, currency) ?? 'N/A'}</p>
+                                    <TrendIcon current={latestEmaShort?.EMA} previous={prevEmaShort?.EMA} precision={2} />
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                <p className="text-xs text-muted-foreground">Long ({localPeriods.emaLong}-day)</p>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-sm">{formatCurrency(latestEmaLong?.EMA, currency) ?? 'N/A'}</p>
+                                    <TrendIcon current={latestEmaLong?.EMA} previous={prevEmaLong?.EMA} precision={2} />
+                                </div>
+                            </div>
+                        </div>
+                        {crossStatus && (
+                            <div className="flex items-center justify-center pt-2">
+                                <div className={`flex items-center gap-1.5 font-semibold text-xs px-2 py-1 rounded-md ${
+                                    crossStatus === 'Golden Cross' ? 'bg-green-500/20 text-green-400' : 
+                                    crossStatus === 'Death Cross' ? 'bg-red-500/20 text-red-400' :
+                                    crossStatus === 'Bullish' ? 'bg-green-500/10 text-green-400/80' :
+                                    'bg-red-500/10 text-red-400/80'
+                                }`}>
+                                    {crossStatus === 'Golden Cross' ? <ChevronsUp className="h-4 w-4" /> : 
+                                    crossStatus === 'Death Cross' ? <ChevronsDown className="h-4 w-4" /> :
+                                    crossStatus === 'Bullish' ? <TrendingUp className="h-3 w-3" /> :
+                                    <TrendingDown className="h-3 w-3" />}
+                                    <span>
+                                        {crossStatus === 'Bullish' ? `Short > Long` :
+                                        crossStatus === 'Bearish' ? `Short < Long` :
+                                        crossStatus}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                      {/* Volume */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
@@ -543,51 +634,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {vwmaPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {vwmaPosition === 'Bullish' ? 'Price Above' : 'Price Below'}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                     {/* EMA */}
-                    <div className="p-3 border rounded-lg space-y-2">
-                        <div className="flex flex-wrap justify-between items-center gap-2">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">EXPONENTIAL MOVING AVG (EMA)</h3>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs p-3 space-y-2">
-                                    <div>
-                                        <p className="font-bold text-foreground">What is EMA?</p>
-                                        <p>The Exponential Moving Average is a type of moving average that places a greater weight and significance on the most recent data points. It reacts more quickly to recent price changes than a Simple Moving Average (SMA).</p>
-                                    </div>
-                                    <Separator />
-                                    <div>
-                                        <p className="font-bold text-foreground">How to Interpret It:</p>
-                                        <ul className="list-disc list-inside mt-1 space-y-1">
-                                            <li><span className="font-semibold text-primary">Price vs. EMA:</span> When the price is above the EMA, it's generally considered a bullish signal. When it's below, it's bearish.</li>
-                                            <li><span className="font-semibold text-primary">Crossovers:</span> A shorter-term EMA crossing above a longer-term EMA is a common bullish signal (a "golden cross"). The reverse is a bearish signal (a "death cross").</li>
-                                        </ul>
-                                    </div>
-                                    <Separator />
-                                    <div>
-                                        <p className="font-bold text-foreground mb-1">Common Settings</p>
-                                        <p>Commonly used periods include 9, 12, 20, 26, 50, 100, and 200 days, depending on the trading strategy.</p>
-                                    </div>
-                                </TooltipContent>
-                            </Tooltip>
-                            <div className="flex items-center gap-1">
-                                <label htmlFor="ema-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                <Input id="ema-period" type="number" value={localPeriods.ema} onChange={(e) => handlePeriodChange('ema', e.target.value)} className="w-16 h-7 text-sm" />
-                            </div>
-                        </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                            <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm">{formatCurrency(latestEma?.EMA, currency) ?? 'N/A'}</p>
-                                <TrendIcon current={latestEma?.EMA} previous={prevEma?.EMA} precision={2} />
-                            </div>
-                            {emaPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${emaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                                    {emaPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                    {emaPosition === 'Bullish' ? 'Price Above' : 'Price Below'}
                                 </div>
                             )}
                         </div>
