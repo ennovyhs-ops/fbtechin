@@ -247,7 +247,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
         <div className="flex flex-col items-center gap-1">
             <div className="flex items-center gap-2">
-                <label htmlFor={`ema-${period}`} className="text-sm text-muted-foreground">{`EMA`}</label>
+                <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
                 <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-16 h-7 text-sm text-center" />
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -276,7 +276,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         <h3 className="font-semibold text-xs text-muted-foreground text-center tracking-wider">EXPONENTIAL MOVING AVERAGES (EMA)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             <div className="space-y-4">
-                                <h4 className="font-semibold text-center text-primary text-sm">Short-Term Trend</h4>
+                                <h4 className="font-semibold text-center text-primary text-xs">Short-Term Trend</h4>
                                 <div className="grid grid-cols-2 gap-2 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaShort1} value={latestEmaShort1?.EMA} previousValue={prevEmaShort1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaShort2} value={latestEmaShort2?.EMA} previousValue={prevEmaShort2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort2', val)} />
@@ -290,7 +290,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Separator orientation="horizontal" className="w-full md:hidden my-4"/>
                             </div>
                             <div className="space-y-4">
-                                <h4 className="font-semibold text-center text-primary text-sm">Long-Term Trend</h4>
+                                <h4 className="font-semibold text-center text-primary text-xs">Long-Term Trend</h4>
                                  <div className="grid grid-cols-2 gap-2 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaLong2} value={latestEmaLong2?.EMA} previousValue={prevEmaLong2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong2', val)} />
