@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown, ChevronsUp, ChevronsDown, Info, Minus } from 'lucide-react';
+import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown, ChevronsUp, ChevronsDown, Info, Minus, HelpCircle } from 'lucide-react';
 import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData, MarketData, EmaData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
@@ -224,7 +224,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
         
         return (
-            <div className={`inline-flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${color}`}>
+            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
                 <Icon className="h-3 w-3" />
                 <span>{`EMA(${label1}) ${isBullish ? '>' : '<'} EMA(${label2})`}</span>
             </div>
