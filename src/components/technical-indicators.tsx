@@ -273,8 +273,26 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 <CardContent className="space-y-4">
                      {/* EMA Section */}
                     <div className="p-3 border rounded-lg space-y-3">
-                        <h3 className="font-semibold text-xs text-muted-foreground text-center tracking-wider">EXPONENTIAL MOVING AVERAGES (EMA)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">EXPONENTIAL MOVING AVERAGES (EMA)</h3>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs p-3 space-y-2">
+                                <div>
+                                    <p className="font-bold text-foreground">What are EMAs?</p>
+                                    <p>Exponential Moving Averages (EMAs) are trend-following indicators that give more weight to recent prices, making them more responsive to new information than Simple Moving Averages (SMAs).</p>
+                                </div>
+                                <Separator />
+                                <div>
+                                    <p className="font-bold text-foreground">How to Interpret Them:</p>
+                                    <ul className="list-disc list-inside mt-1 space-y-1">
+                                        <li><span className="font-semibold text-primary">Crossovers:</span> A "Golden Cross" (short-term EMA crosses above long-term EMA) is bullish. A "Death Cross" (short-term crosses below long-term) is bearish.</li>
+                                        <li><span className="font-semibold text-primary">Price vs. EMA:</span> If the price is consistently above an EMA, it can be seen as a support level in an uptrend. If below, it can act as resistance in a downtrend.</li>
+                                    </ul>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-4">
                                 <h4 className="font-semibold text-center text-primary text-xs">Short-Term Trend</h4>
                                 <div className="grid grid-cols-2 gap-2 items-start">
