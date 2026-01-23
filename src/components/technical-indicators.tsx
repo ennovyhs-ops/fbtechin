@@ -80,7 +80,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         onPeriodsChange(localPeriods);
     };
     
-    const TrendIcon = ({ current, previous, precision = 3, formatter }: { current: string | null | undefined, previous: string | null | undefined, precision?: number, formatter?: (val: number) => string }) => {
+    const TrendChangeIcon = ({ current, previous }: { current: string | null | undefined, previous: string | null | undefined }) => {
         if (current === null || previous === null || current === undefined || previous === undefined) return null;
         const currentVal = parseFloat(current);
         const prevVal = parseFloat(previous);
@@ -88,8 +88,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
         const diff = currentVal - prevVal;
         
-        const displayVal = formatter ? formatter(prevVal) : prevVal.toFixed(precision);
-
         let Icon, color;
         if (Math.abs(diff) < 1e-5) {
             Icon = Minus;
@@ -100,12 +98,17 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             color = isUp ? 'text-green-400' : 'text-red-400';
         }
 
-        return (
-            <>
-                <Icon className={`h-4 w-4 shrink-0 ${color}`} />
-                <span className="text-xs text-muted-foreground shrink-0">(was {displayVal})</span>
-            </>
-        );
+        return <Icon className={`h-4 w-4 shrink-0 ${color}`} />;
+    };
+
+    const WasValue = ({ previous, precision = 3, formatter }: { previous: string | null | undefined, precision?: number, formatter?: (val: number) => string }) => {
+        if (previous === null || previous === undefined) return null;
+        const prevVal = parseFloat(previous);
+        if (isNaN(prevVal)) return null;
+
+        const displayVal = formatter ? formatter(prevVal) : prevVal.toFixed(precision);
+
+        return <p className="text-xs text-muted-foreground leading-tight">(was {displayVal})</p>;
     };
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
@@ -245,14 +248,17 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     };
 
     const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
-        <div className="flex flex-col items-start gap-1">
+        <div className="flex flex-col items-start">
             <div className="flex items-center gap-2">
                 <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
                 <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
             </div>
-            <div className="flex items-baseline gap-1.5">
-                <p className="font-semibold text-xs text-primary">{formatCurrency(value, currency)}</p>
-                <TrendIcon current={value} previous={previousValue} precision={2} />
+            <div>
+                <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-xs text-primary">{formatCurrency(value, currency)}</p>
+                    <TrendChangeIcon current={value} previous={previousValue} />
+                </div>
+                <WasValue previous={previousValue} formatter={(val) => formatCurrency(val, currency)} />
             </div>
             <PriceVsEmaText ema={value} />
         </div>
@@ -367,22 +373,25 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <p className="text-xs text-muted-foreground">MACD</p>
                                     <div className="flex items-center gap-1.5">
                                         <p className="font-semibold text-xs">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p>
-                                        <TrendIcon current={latestMacd?.MACD} previous={prevMacd?.MACD} />
+                                        <TrendChangeIcon current={latestMacd?.MACD} previous={prevMacd?.MACD} />
                                     </div>
+                                    <WasValue previous={prevMacd?.MACD} />
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Signal</p>
                                     <div className="flex items-center gap-1.5">
                                         <p className="font-semibold text-xs">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p>
-                                        <TrendIcon current={latestMacd?.MACD_Signal} previous={prevMacd?.MACD_Signal} />
+                                        <TrendChangeIcon current={latestMacd?.MACD_Signal} previous={prevMacd?.MACD_Signal} />
                                     </div>
+                                    <WasValue previous={prevMacd?.MACD_Signal} />
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Hist</p>
                                     <div className="flex items-center gap-1.5">
                                         <p className="font-semibold text-xs">{latestMacd?.MACD_Hist ? parseFloat(latestMacd.MACD_Hist).toFixed(3) : 'N/A'}</p>
-                                        <TrendIcon current={latestMacd?.MACD_Hist} previous={prevMacd?.MACD_Hist} />
+                                        <TrendChangeIcon current={latestMacd?.MACD_Hist} previous={prevMacd?.MACD_Hist} />
                                     </div>
+                                    <WasValue previous={prevMacd?.MACD_Hist} />
                                 </div>
                             </div>
                             {macdPosition && (
@@ -426,9 +435,12 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                            <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-xs">{latestRoc?.ROC ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
-                                <TrendIcon current={latestRoc?.ROC} previous={prevRoc?.ROC} precision={2} />
+                            <div>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-xs">{latestRoc?.ROC ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
+                                    <TrendChangeIcon current={latestRoc?.ROC} previous={prevRoc?.ROC} />
+                                </div>
+                                <WasValue previous={prevRoc?.ROC} precision={2} formatter={(val) => `${val.toFixed(2)}%`} />
                             </div>
                             {rocPosition && (
                                 <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -472,9 +484,12 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                            <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-xs">{latestRsi?.RSI ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
-                                <TrendIcon current={latestRsi?.RSI} previous={prevRsi?.RSI} precision={2} />
+                            <div>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-xs">{latestRsi?.RSI ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
+                                    <TrendChangeIcon current={latestRsi?.RSI} previous={prevRsi?.RSI} />
+                                </div>
+                                <WasValue previous={prevRsi?.RSI} precision={2} />
                             </div>
                             <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
                                 rsiStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
@@ -541,15 +556,17 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         <p className="text-xs text-muted-foreground">%K Line</p>
                                         <div className="flex items-center gap-1.5">
                                             <p className="font-semibold text-xs">{latestStochastic?.k ? parseFloat(latestStochastic.k).toFixed(2) : 'N/A'}</p>
-                                            <TrendIcon current={latestStochastic?.k} previous={prevStochastic?.k} precision={2} />
+                                            <TrendChangeIcon current={latestStochastic?.k} previous={prevStochastic?.k} />
                                         </div>
+                                        <WasValue previous={prevStochastic?.k} precision={2} />
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">%D Line</p>
                                         <div className="flex items-center gap-1.5">
                                             <p className="font-semibold text-xs">{latestStochastic?.d ? parseFloat(latestStochastic.d).toFixed(2) : 'N/A'}</p>
-                                            <TrendIcon current={latestStochastic?.d} previous={prevStochastic?.d} precision={2} />
+                                            <TrendChangeIcon current={latestStochastic?.d} previous={prevStochastic?.d} />
                                         </div>
+                                        <WasValue previous={prevStochastic?.d} precision={2} />
                                     </div>
                                 </div>
                                 <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
@@ -582,12 +599,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                             <div className="flex items-baseline gap-2 flex-wrap">
-                                 <div className="flex items-center gap-1.5">
-                                    <p className="font-semibold text-xs">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
-                                    <TrendIcon current={latestMaVol?.volume} previous={prevMaVol?.volume} precision={0} formatter={(v) => v.toLocaleString()} />
-                                 </div>
-                                <p className="text-xs text-muted-foreground">/ avg: {latestMaVol?.MAVol ? Number(parseFloat(latestMaVol.MAVol).toFixed(0)).toLocaleString() : 'N/A'}</p>
+                            <div className="flex items-baseline gap-4">
+                                <div>
+                                    <div className="flex items-center gap-1.5">
+                                        <p className="font-semibold text-xs">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
+                                        <TrendChangeIcon current={latestMaVol?.volume} previous={prevMaVol?.volume} />
+                                    </div>
+                                    <WasValue previous={prevMaVol?.volume} precision={0} formatter={(v) => v.toLocaleString()} />
+                                </div>
+                                <p className="text-xs text-muted-foreground self-end">/ avg: {latestMaVol?.MAVol ? Number(parseFloat(latestMaVol.MAVol).toFixed(0)).toLocaleString() : 'N/A'}</p>
                             </div>
                             {isVolumeSpike && (
                                 <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs px-2 py-0.5 rounded-md bg-orange-500/20">
@@ -629,9 +649,12 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                          <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                            <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-xs">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
-                                <TrendIcon current={latestVwma?.VWMA} previous={prevVwma?.VWMA} precision={2} />
+                            <div>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-xs">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
+                                    <TrendChangeIcon current={latestVwma?.VWMA} previous={prevVwma?.VWMA} />
+                                </div>
+                                <WasValue previous={prevVwma?.VWMA} formatter={(val) => formatCurrency(val, currency)} />
                             </div>
                             {vwmaPosition && (
                                 <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -667,9 +690,12 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </Tooltip>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                             <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-xs">{latestObv?.OBV ? Number(parseFloat(latestObv.OBV).toFixed(0)).toLocaleString() : 'N/A'}</p>
-                                <TrendIcon current={latestObv?.OBV} previous={prevObv?.OBV} precision={0} formatter={(v) => v.toLocaleString()} />
+                            <div>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-xs">{latestObv?.OBV ? Number(parseFloat(latestObv.OBV).toFixed(0)).toLocaleString() : 'N/A'}</p>
+                                    <TrendChangeIcon current={latestObv?.OBV} previous={prevObv?.OBV} />
+                                </div>
+                                <WasValue previous={prevObv?.OBV} precision={0} formatter={(v) => v.toLocaleString()} />
                             </div>
                             {obvTrend && (
                                 <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -712,9 +738,12 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
-                            <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-xs">{latestCmf?.CMF ? parseFloat(latestCmf.CMF).toFixed(3) : 'N/A'}</p>
-                                <TrendIcon current={latestCmf?.CMF} previous={prevCmf?.CMF} />
+                            <div>
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-semibold text-xs">{latestCmf?.CMF ? parseFloat(latestCmf.CMF).toFixed(3) : 'N/A'}</p>
+                                    <TrendChangeIcon current={latestCmf?.CMF} previous={prevCmf?.CMF} />
+                                </div>
+                                <WasValue previous={prevCmf?.CMF} />
                             </div>
                             {cmfPosition && (
                                 <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
