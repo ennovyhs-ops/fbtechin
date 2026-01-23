@@ -220,7 +220,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
         
         return (
-            <div className={`inline-flex items-center gap-1.5 font-semibold text-xs px-2 py-1 rounded-md ${color}`}>
+            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
                 <Icon className="h-3 w-3" />
                 <span>{`EMA(${label1}) ${isBullish ? '>' : '<'} EMA(${label2})`}</span>
             </div>
