@@ -248,10 +248,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-2">
                 <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
-                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-16 h-7 text-sm" />
+                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
             </div>
             <div className="flex items-baseline gap-1.5">
-                <p className="font-semibold text-sm text-primary">{formatCurrency(value, currency)}</p>
+                <p className="font-semibold text-xs text-primary">{formatCurrency(value, currency)}</p>
                 <TrendIcon current={value} previous={previousValue} precision={2} />
             </div>
             <PriceVsEmaText ema={value} />
@@ -349,15 +349,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
                                 <div className="flex items-center gap-1">
                                     <label htmlFor="macd-fast" className="text-xs font-medium text-muted-foreground">F:</label>
-                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-16 h-7 text-sm" />
+                                    <Input id="macd-fast" type="number" value={localPeriods.macd.fast} onChange={(e) => handleComplexPeriodChange('macd', 'fast', e.target.value)} className="w-14 h-6 text-xs" />
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <label htmlFor="macd-slow" className="text-xs font-medium text-muted-foreground">S:</label>
-                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-16 h-7 text-sm" />
+                                    <Input id="macd-slow" type="number" value={localPeriods.macd.slow} onChange={(e) => handleComplexPeriodChange('macd', 'slow', e.target.value)} className="w-14 h-6 text-xs" />
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <label htmlFor="macd-signal" className="text-xs font-medium text-muted-foreground">Sig:</label>
-                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-16 h-7 text-sm" />
+                                    <Input id="macd-signal" type="number" value={localPeriods.macd.signal} onChange={(e) => handleComplexPeriodChange('macd', 'signal', e.target.value)} className="w-14 h-6 text-xs" />
                                 </div>
                             </div>
                         </div>
@@ -366,27 +366,27 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <div>
                                     <p className="text-xs text-muted-foreground">MACD</p>
                                     <div className="flex items-center gap-1.5">
-                                        <p className="font-semibold text-sm">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p>
+                                        <p className="font-semibold text-xs">{latestMacd?.MACD ? parseFloat(latestMacd.MACD).toFixed(3) : 'N/A'}</p>
                                         <TrendIcon current={latestMacd?.MACD} previous={prevMacd?.MACD} />
                                     </div>
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Signal</p>
                                     <div className="flex items-center gap-1.5">
-                                        <p className="font-semibold text-sm">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p>
+                                        <p className="font-semibold text-xs">{latestMacd?.MACD_Signal ? parseFloat(latestMacd.MACD_Signal).toFixed(3) : 'N/A'}</p>
                                         <TrendIcon current={latestMacd?.MACD_Signal} previous={prevMacd?.MACD_Signal} />
                                     </div>
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Hist</p>
                                     <div className="flex items-center gap-1.5">
-                                        <p className="font-semibold text-sm">{latestMacd?.MACD_Hist ? parseFloat(latestMacd.MACD_Hist).toFixed(3) : 'N/A'}</p>
+                                        <p className="font-semibold text-xs">{latestMacd?.MACD_Hist ? parseFloat(latestMacd.MACD_Hist).toFixed(3) : 'N/A'}</p>
                                         <TrendIcon current={latestMacd?.MACD_Hist} previous={prevMacd?.MACD_Hist} />
                                     </div>
                                 </div>
                             </div>
                             {macdPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {macdPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {macdPosition === 'Bullish' ? 'Above Signal' : 'Below Signal'}
                                 </div>
@@ -422,16 +422,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </Tooltip>
                             <div className="flex items-center gap-1">
                                 <label htmlFor="roc-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-16 h-7 text-sm" />
+                                <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                             <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm">{latestRoc?.ROC ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
+                                <p className="font-semibold text-xs">{latestRoc?.ROC ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
                                 <TrendIcon current={latestRoc?.ROC} previous={prevRoc?.ROC} precision={2} />
                             </div>
                             {rocPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {rocPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {rocPosition === 'Bullish' ? 'Positive' : 'Negative'}
                                 </div>
@@ -468,15 +468,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </Tooltip>
                             <div className="flex items-center gap-1">
                                 <label htmlFor="rsi-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-16 h-7 text-sm" />
+                                <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                             <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm">{latestRsi?.RSI ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
+                                <p className="font-semibold text-xs">{latestRsi?.RSI ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
                                 <TrendIcon current={latestRsi?.RSI} previous={prevRsi?.RSI} precision={2} />
                             </div>
-                            <p className={`font-semibold px-2 py-1 rounded-md text-sm ${
+                            <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
                                 rsiStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
                                 rsiStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
                                 'bg-muted text-muted-foreground'
@@ -487,7 +487,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                     {isSynthesizedData ? (
                         <div className="p-3 border rounded-lg space-y-2 bg-muted/50 border-dashed">
                              <h3 className="font-semibold text-xs text-muted-foreground">STOCHASTIC OSCILLATOR</h3>
-                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Info className="h-4 w-4" />
                                 <p>Not applicable. This indicator requires distinct high and low price data for calculation.</p>
                              </div>
@@ -523,15 +523,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
                                     <div className="flex items-center gap-1">
                                         <label htmlFor="stoch-k" className="text-xs font-medium text-muted-foreground">P:</label>
-                                        <Input id="stoch-k" type="number" value={localPeriods.stochastic.kPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'kPeriod', e.target.value)} className="w-12 h-7 text-sm" />
+                                        <Input id="stoch-k" type="number" value={localPeriods.stochastic.kPeriod} onChange={(e) => handleComplexPeriodChange('stochastic', 'kPeriod', e.target.value)} className="w-12 h-6 text-xs" />
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <label htmlFor="stoch-d" className="text-xs font-medium text-muted-foreground">K%:</label>
-                                        <Input id="stoch-d" type="number" value={localPeriods.stochastic.kSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'kSlowing', e.target.value)} className="w-12 h-7 text-sm" />
+                                        <Input id="stoch-d" type="number" value={localPeriods.stochastic.kSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'kSlowing', e.target.value)} className="w-12 h-6 text-xs" />
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <label htmlFor="stoch-slowing" className="text-xs font-medium text-muted-foreground">D%:</label>
-                                        <Input id="stoch-slowing" type="number" value={localPeriods.stochastic.dSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'dSlowing', e.target.value)} className="w-12 h-7 text-sm" />
+                                        <Input id="stoch-slowing" type="number" value={localPeriods.stochastic.dSlowing} onChange={(e) => handleComplexPeriodChange('stochastic', 'dSlowing', e.target.value)} className="w-12 h-6 text-xs" />
                                     </div>
                                 </div>
                             </div>
@@ -540,19 +540,19 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                      <div>
                                         <p className="text-xs text-muted-foreground">%K Line</p>
                                         <div className="flex items-center gap-1.5">
-                                            <p className="font-semibold text-sm">{latestStochastic?.k ? parseFloat(latestStochastic.k).toFixed(2) : 'N/A'}</p>
+                                            <p className="font-semibold text-xs">{latestStochastic?.k ? parseFloat(latestStochastic.k).toFixed(2) : 'N/A'}</p>
                                             <TrendIcon current={latestStochastic?.k} previous={prevStochastic?.k} precision={2} />
                                         </div>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">%D Line</p>
                                         <div className="flex items-center gap-1.5">
-                                            <p className="font-semibold text-sm">{latestStochastic?.d ? parseFloat(latestStochastic.d).toFixed(2) : 'N/A'}</p>
+                                            <p className="font-semibold text-xs">{latestStochastic?.d ? parseFloat(latestStochastic.d).toFixed(2) : 'N/A'}</p>
                                             <TrendIcon current={latestStochastic?.d} previous={prevStochastic?.d} precision={2} />
                                         </div>
                                     </div>
                                 </div>
-                                <p className={`font-semibold px-2 py-1 rounded-md text-sm ${
+                                <p className={`font-semibold px-2 py-1 rounded-md text-xs ${
                                     stochasticStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
                                     stochasticStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
                                     'bg-muted text-muted-foreground'
@@ -578,19 +578,19 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </Tooltip>
                             <div className="flex items-center gap-1">
                                 <label htmlFor="mavol-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-16 h-7 text-sm" />
+                                <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                              <div className="flex items-baseline gap-2 flex-wrap">
                                  <div className="flex items-center gap-1.5">
-                                    <p className="font-semibold text-sm">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
+                                    <p className="font-semibold text-xs">{latestMaVol?.volume ? Number(latestMaVol.volume).toLocaleString() : 'N/A'}</p>
                                     <TrendIcon current={latestMaVol?.volume} previous={prevMaVol?.volume} precision={0} formatter={(v) => v.toLocaleString()} />
                                  </div>
                                 <p className="text-xs text-muted-foreground">/ avg: {latestMaVol?.MAVol ? Number(parseFloat(latestMaVol.MAVol).toFixed(0)).toLocaleString() : 'N/A'}</p>
                             </div>
                             {isVolumeSpike && (
-                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-sm px-2 py-1 rounded-md bg-orange-500/20">
+                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs px-2 py-0.5 rounded-md bg-orange-500/20">
                                     <Zap className="h-3 w-3" />
                                     Spike
                                 </div>
@@ -625,16 +625,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </Tooltip>
                             <div className="flex items-center gap-1">
                                 <label htmlFor="vwma-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-16 h-7 text-sm" />
+                                <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
                          <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                             <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
+                                <p className="font-semibold text-xs">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
                                 <TrendIcon current={latestVwma?.VWMA} previous={prevVwma?.VWMA} precision={2} />
                             </div>
                             {vwmaPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {vwmaPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {vwmaPosition === 'Bullish' ? 'Price Above' : 'Price Below'}
                                 </div>
@@ -668,11 +668,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                              <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm">{latestObv?.OBV ? Number(parseFloat(latestObv.OBV).toFixed(0)).toLocaleString() : 'N/A'}</p>
+                                <p className="font-semibold text-xs">{latestObv?.OBV ? Number(parseFloat(latestObv.OBV).toFixed(0)).toLocaleString() : 'N/A'}</p>
                                 <TrendIcon current={latestObv?.OBV} previous={prevObv?.OBV} precision={0} formatter={(v) => v.toLocaleString()} />
                             </div>
                             {obvTrend && (
-                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {obvTrend === 'Rising' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {obvTrend}
                                 </div>
@@ -708,16 +708,16 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </Tooltip>
                             <div className="flex items-center gap-1">
                                 <label htmlFor="cmf-period" className="text-xs font-medium text-muted-foreground">P:</label>
-                                <Input id="cmf-period" type="number" value={localPeriods.cmf} onChange={(e) => handleCmfPeriodChange('cmf', e.target.value)} className="w-16 h-7 text-sm" />
+                                <Input id="cmf-period" type="number" value={localPeriods.cmf} onChange={(e) => handleCmfPeriodChange('cmf', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
                             <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm">{latestCmf?.CMF ? parseFloat(latestCmf.CMF).toFixed(3) : 'N/A'}</p>
+                                <p className="font-semibold text-xs">{latestCmf?.CMF ? parseFloat(latestCmf.CMF).toFixed(3) : 'N/A'}</p>
                                 <TrendIcon current={latestCmf?.CMF} previous={prevCmf?.CMF} />
                             </div>
                             {cmfPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {cmfPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {cmfPosition === 'Bullish' ? 'Buying Pressure' : 'Selling Pressure'}
                                 </div>
