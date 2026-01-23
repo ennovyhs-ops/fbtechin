@@ -322,24 +322,53 @@ export default function Home() {
                     let formattedDate: string;
                     try {
                         let parsedDate: Date;
-                        
+
                         if (typeof dateValue === 'number' && dateValue > 25569) { // Excel serial date
+                            // Converts Excel serial date number to a JS Date object, assuming it's UTC.
                             const utc_days = Math.floor(dateValue - 25569);
                             const utc_value = utc_days * 86400;
                             parsedDate = new Date(utc_value * 1000);
                         } else {
                             let dateString = String(dateValue).trim();
-                            // If dateString contains slashes, it might be MM/DD/YYYY or DD/MM/YYYY
-                            if (dateString.includes('/')) {
-                                const parts = dateString.split(' ')[0].split('/');
+                            // Date.parse is good with ISO 8601 and RFC2822 formats (e.g., "2024-05-20", "20 May 2024")
+                            let timestamp = Date.parse(dateString);
+
+                            // Fallback for ambiguous formats like M/D/Y or D/M/Y
+                            if (isNaN(timestamp)) {
+                                const parts = dateString.split(' ')[0].split(/[-/]/);
                                 if (parts.length === 3) {
-                                     // Assume MM/DD/YYYY for US context if ambiguous
-                                    parsedDate = new Date(`${parts[2]}-${parts[0]}-${parts[1]}T00:00:00Z`);
+                                    let year, month, day;
+                                    
+                                    // YYYY/MM/DD
+                                    if (parts[0].length === 4) {
+                                        year = parseInt(parts[0], 10);
+                                        month = parseInt(parts[1], 10);
+                                        day = parseInt(parts[2], 10);
+                                    } 
+                                    // DD/MM/YYYY (heuristic: if first part > 12, it must be the day)
+                                    else if (parseInt(parts[0], 10) > 12) {
+                                        day = parseInt(parts[0], 10);
+                                        month = parseInt(parts[1], 10);
+                                        year = parseInt(parts[2], 10);
+                                    }
+                                    // MM/DD/YYYY (default assumption)
+                                    else {
+                                        month = parseInt(parts[0], 10);
+                                        day = parseInt(parts[1], 10);
+                                        year = parseInt(parts[2], 10);
+                                    }
+
+                                    if (year < 100) { // Handle 2-digit years
+                                        year += (year > 50 ? 1900 : 2000);
+                                    }
+
+                                    // Construct date using Date.UTC to avoid local timezone issues
+                                    parsedDate = new Date(Date.UTC(year, month - 1, day));
                                 } else {
-                                     parsedDate = new Date(dateString.replace(/-/g, '/') + ' UTC');
+                                    parsedDate = new Date(NaN); // Could not parse
                                 }
                             } else {
-                                parsedDate = new Date(dateString.replace(/-/g, '/') + ' UTC');
+                                parsedDate = new Date(timestamp);
                             }
                         }
 
@@ -347,6 +376,7 @@ export default function Home() {
                              throw new Error(`Could not parse date. Got: "${dateValue}"`);
                         }
                         
+                        // toISOString() returns UTC, which is what we want.
                         formattedDate = parsedDate.toISOString().split('T')[0];
                     } catch (err: any) {
                         console.warn(`Skipping row ${index + 2}: ${err.message}`);
