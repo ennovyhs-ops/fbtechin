@@ -246,7 +246,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 <label htmlFor={`ema-${period}`} className="text-sm text-muted-foreground">{`EMA`}</label>
                 <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-16 h-7 text-sm text-center" />
             </div>
-            <p className="font-bold text-lg text-primary">{formatCurrency(value, currency)}</p>
+            <p className="font-semibold text-sm text-primary">{formatCurrency(value, currency)}</p>
             <PriceVsEmaText ema={value} />
         </div>
     );
