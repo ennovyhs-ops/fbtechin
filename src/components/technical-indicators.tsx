@@ -224,7 +224,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
         
         return (
-            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
+            <div className={`inline-flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${color}`}>
                 <Icon className="h-3 w-3" />
                 <span>{`EMA(${label1}) ${isBullish ? '>' : '<'} EMA(${label2})`}</span>
             </div>
@@ -245,10 +245,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     };
 
     const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-2">
                 <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
-                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-16 h-7 text-sm text-center" />
+                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-16 h-7 text-sm" />
             </div>
             <div className="flex items-baseline gap-1.5">
                 <p className="font-semibold text-sm text-primary">{formatCurrency(value, currency)}</p>
@@ -293,13 +293,13 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </TooltipContent>
                         </Tooltip>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-4">
-                                <h4 className="font-semibold text-center text-primary text-xs">Short-Term Trend</h4>
-                                <div className="grid grid-cols-2 gap-2 items-start">
+                            <div className="space-y-2">
+                                <h4 className="font-semibold text-primary text-xs">Short-Term Trend</h4>
+                                <div className="flex flex-row gap-4 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaShort1} value={latestEmaShort1?.EMA} previousValue={prevEmaShort1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaShort2} value={latestEmaShort2?.EMA} previousValue={prevEmaShort2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort2', val)} />
                                 </div>
-                                <div className="text-center">
+                                <div className="text-left pt-1">
                                     <EmaComparisonBadge value1={latestEmaShort1?.EMA} value2={latestEmaShort2?.EMA} label1={String(localPeriods.emaShort1)} label2={String(localPeriods.emaShort2)} />
                                 </div>
                             </div>
@@ -307,13 +307,13 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Separator orientation="vertical" className="absolute left-1/2 -translate-x-1/2 top-0 h-full hidden md:block" />
                                 <Separator orientation="horizontal" className="w-full md:hidden my-4"/>
                             </div>
-                            <div className="space-y-4">
-                                <h4 className="font-semibold text-center text-primary text-xs">Long-Term Trend</h4>
-                                 <div className="grid grid-cols-2 gap-2 items-start">
+                            <div className="space-y-2">
+                                <h4 className="font-semibold text-primary text-xs">Long-Term Trend</h4>
+                                 <div className="flex flex-row gap-4 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaLong2} value={latestEmaLong2?.EMA} previousValue={prevEmaLong2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong2', val)} />
                                 </div>
-                                <div className="text-center">
+                                <div className="text-left pt-1">
                                      <EmaComparisonBadge value1={latestEmaLong1?.EMA} value2={latestEmaLong2?.EMA} label1={String(localPeriods.emaLong1)} label2={String(localPeriods.emaLong2)} />
                                 </div>
                             </div>
@@ -386,7 +386,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             {macdPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {macdPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {macdPosition === 'Bullish' ? 'Above Signal' : 'Below Signal'}
                                 </div>
@@ -431,7 +431,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <TrendIcon current={latestRoc?.ROC} previous={prevRoc?.ROC} precision={2} />
                             </div>
                             {rocPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {rocPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {rocPosition === 'Bullish' ? 'Positive' : 'Negative'}
                                 </div>
@@ -476,7 +476,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <p className="font-semibold text-sm">{latestRsi?.RSI ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
                                 <TrendIcon current={latestRsi?.RSI} previous={prevRsi?.RSI} precision={2} />
                             </div>
-                            <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
+                            <p className={`font-semibold px-2 py-1 rounded-md text-sm ${
                                 rsiStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
                                 rsiStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
                                 'bg-muted text-muted-foreground'
@@ -552,7 +552,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                         </div>
                                     </div>
                                 </div>
-                                <p className={`font-semibold px-2 py-0.5 rounded-md text-xs ${
+                                <p className={`font-semibold px-2 py-1 rounded-md text-sm ${
                                     stochasticStatus === 'Overbought' ? 'bg-red-500/20 text-red-400' : 
                                     stochasticStatus === 'Oversold' ? 'bg-green-500/20 text-green-400' : 
                                     'bg-muted text-muted-foreground'
@@ -590,7 +590,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <p className="text-xs text-muted-foreground">/ avg: {latestMaVol?.MAVol ? Number(parseFloat(latestMaVol.MAVol).toFixed(0)).toLocaleString() : 'N/A'}</p>
                             </div>
                             {isVolumeSpike && (
-                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs bg-orange-500/20 px-2 py-0.5 rounded-md">
+                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-sm px-2 py-1 rounded-md bg-orange-500/20">
                                     <Zap className="h-3 w-3" />
                                     Spike
                                 </div>
@@ -634,7 +634,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <TrendIcon current={latestVwma?.VWMA} previous={prevVwma?.VWMA} precision={2} />
                             </div>
                             {vwmaPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {vwmaPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {vwmaPosition === 'Bullish' ? 'Price Above' : 'Price Below'}
                                 </div>
@@ -672,7 +672,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <TrendIcon current={latestObv?.OBV} previous={prevObv?.OBV} precision={0} formatter={(v) => v.toLocaleString()} />
                             </div>
                             {obvTrend && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {obvTrend === 'Rising' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {obvTrend}
                                 </div>
@@ -717,7 +717,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <TrendIcon current={latestCmf?.CMF} previous={prevCmf?.CMF} />
                             </div>
                             {cmfPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-sm px-2 py-1 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {cmfPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {cmfPosition === 'Bullish' ? 'Buying Pressure' : 'Selling Pressure'}
                                 </div>
