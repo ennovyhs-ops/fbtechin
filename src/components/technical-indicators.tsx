@@ -110,6 +110,36 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
 
         return <p className="text-xs text-muted-foreground leading-tight">(was {displayVal})</p>;
     };
+
+    const PriceVsEmaText = ({ ema }: { ema?: string|null }) => {
+        if (latestClose === null || !ema) return null;
+        const emaVal = parseFloat(ema);
+        if (isNaN(emaVal)) return null;
+
+        const isAbove = latestClose > emaVal;
+        return (
+            <p className={`text-xs font-semibold ${isAbove ? 'text-green-400' : 'text-red-400'}`}>
+                (Price is {isAbove ? 'Above' : 'Below'})
+            </p>
+        );
+    };
+
+    const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
+        <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2">
+                <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
+                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
+            </div>
+            <div>
+                <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-sm text-primary">{formatCurrency(value, currency)}</p>
+                    <TrendChangeIcon current={value} previous={previousValue} />
+                </div>
+                <WasValue previous={previousValue} formatter={(val) => formatCurrency(val, currency)} />
+            </div>
+            <PriceVsEmaText ema={value} />
+        </div>
+    );
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
@@ -227,43 +257,13 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
         
         return (
-            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
+            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${color}`}>
                 <Icon className="h-3 w-3" />
                 <span>{`EMA(${label1}) ${isBullish ? '>' : '<'} EMA(${label2})`}</span>
             </div>
         );
     };
 
-    const PriceVsEmaText = ({ ema }: { ema?: string|null }) => {
-        if (latestClose === null || !ema) return null;
-        const emaVal = parseFloat(ema);
-        if (isNaN(emaVal)) return null;
-
-        const isAbove = latestClose > emaVal;
-        return (
-            <p className={`text-xs font-semibold ${isAbove ? 'text-green-400' : 'text-red-400'}`}>
-                (Price is {isAbove ? 'Above' : 'Below'})
-            </p>
-        );
-    };
-
-    const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
-        <div className="flex flex-col items-start">
-            <div className="flex items-center gap-2">
-                <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
-                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
-            </div>
-            <div>
-                <div className="flex items-center gap-1.5">
-                    <p className="font-semibold text-xs text-primary">{formatCurrency(value, currency)}</p>
-                    <TrendChangeIcon current={value} previous={previousValue} />
-                </div>
-                <WasValue previous={previousValue} formatter={(val) => formatCurrency(val, currency)} />
-            </div>
-            <PriceVsEmaText ema={value} />
-        </div>
-    );
-    
     return (
         <TooltipProvider>
             <Card className="animate-in fade-in-50 duration-500 delay-100">
@@ -298,7 +298,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </TooltipContent>
                         </Tooltip>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                             <div className="space-y-2">
                                 <h4 className="font-semibold text-primary text-xs">Short-Term Trend</h4>
                                 <div className="flex flex-row gap-4 items-start">
@@ -309,18 +309,14 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <EmaComparisonBadge value1={latestEmaShort1?.EMA} value2={latestEmaShort2?.EMA} label1={String(localPeriods.emaShort1)} label2={String(localPeriods.emaShort2)} />
                                 </div>
                             </div>
-                             <div className="relative">
-                                <Separator orientation="vertical" className="absolute left-1/2 -translate-x-1/2 top-0 h-full hidden md:block" />
-                                <Separator orientation="horizontal" className="w-full md:hidden my-4"/>
-                            </div>
                             <div className="space-y-2">
                                 <h4 className="font-semibold text-primary text-xs">Long-Term Trend</h4>
-                                 <div className="flex flex-row gap-4 items-start">
+                                <div className="flex flex-row gap-4 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaLong2} value={latestEmaLong2?.EMA} previousValue={prevEmaLong2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong2', val)} />
                                 </div>
                                 <div className="text-left pt-1">
-                                     <EmaComparisonBadge value1={latestEmaLong1?.EMA} value2={latestEmaLong2?.EMA} label1={String(localPeriods.emaLong1)} label2={String(localPeriods.emaLong2)} />
+                                    <EmaComparisonBadge value1={latestEmaLong1?.EMA} value2={latestEmaLong2?.EMA} label1={String(localPeriods.emaLong1)} label2={String(localPeriods.emaLong2)} />
                                 </div>
                             </div>
                         </div>
@@ -395,7 +391,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             {macdPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {macdPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {macdPosition === 'Bullish' ? 'Above Signal' : 'Below Signal'}
                                 </div>
@@ -443,7 +439,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <WasValue previous={prevRoc?.ROC} precision={2} formatter={(val) => `${val.toFixed(2)}%`} />
                             </div>
                             {rocPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${rocPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {rocPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {rocPosition === 'Bullish' ? 'Positive' : 'Negative'}
                                 </div>
@@ -610,7 +606,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <p className="text-xs text-muted-foreground self-end">/ avg: {latestMaVol?.MAVol ? Number(parseFloat(latestMaVol.MAVol).toFixed(0)).toLocaleString() : 'N/A'}</p>
                             </div>
                             {isVolumeSpike && (
-                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs px-2 py-0.5 rounded-md bg-orange-500/20">
+                                <div className="flex items-center gap-1 text-orange-400 font-semibold text-xs px-2 py-1 rounded-md bg-orange-500/20">
                                     <Zap className="h-3 w-3" />
                                     Spike
                                 </div>
@@ -657,7 +653,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <WasValue previous={prevVwma?.VWMA} formatter={(val) => formatCurrency(val, currency)} />
                             </div>
                             {vwmaPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${vwmaPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {vwmaPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {vwmaPosition === 'Bullish' ? 'Price Above' : 'Price Below'}
                                 </div>
@@ -698,7 +694,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <WasValue previous={prevObv?.OBV} precision={0} formatter={(v) => v.toLocaleString()} />
                             </div>
                             {obvTrend && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${obvTrend === 'Rising' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {obvTrend === 'Rising' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {obvTrend}
                                 </div>
@@ -746,7 +742,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <WasValue previous={prevCmf?.CMF} />
                             </div>
                             {cmfPosition && (
-                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${cmfPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {cmfPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {cmfPosition === 'Bullish' ? 'Buying Pressure' : 'Selling Pressure'}
                                 </div>
