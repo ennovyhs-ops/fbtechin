@@ -68,15 +68,22 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
                     <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs space-y-2">
+                    <TooltipContent className="max-w-xs p-3 space-y-2">
                         <div>
                             <p className="font-bold text-foreground">What is Historical Volatility?</p>
-                            <p>Annualized historical volatility measures how much a stock's price has fluctuated. It is calculated from the standard deviation of daily logarithmic returns, then scaled to a yearly figure.</p>
+                            <p>
+                                It measures <strong className="text-primary">how much a stock's price fluctuates</strong> around its average over a period. It is a measure of price stability, not the difference between high and low prices.
+                            </p>
                         </div>
                         <Separator />
                         <div>
-                            <p><span className="font-semibold text-foreground">Higher percentages</span> indicate a more volatile, riskier stock.</p>
-                            <p><span className="font-semibold text-foreground">Lower percentages</span> suggest more price stability.</p>
+                            <p><span className="font-semibold text-foreground">Higher percentages</span> indicate more price swings and higher risk.</p>
+                            <p><span className="font-semibold text-foreground">Lower percentages</span> suggest more price stability and lower risk.</p>
+                        </div>
+                        <Separator />
+                        <div>
+                            <p className="font-semibold text-foreground text-xs">How It's Calculated</p>
+                            <p className="text-xs">It is the annualized standard deviation of daily price returns.</p>
                         </div>
                     </TooltipContent>
                 </Tooltip>
@@ -93,5 +100,3 @@ export function HistoricalVolatility({ marketData }: HistoricalVolatilityProps) 
     </Card>
   );
 }
-
-    
