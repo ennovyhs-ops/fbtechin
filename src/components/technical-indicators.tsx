@@ -132,7 +132,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             </div>
             <div>
                 <div className="flex items-center gap-1.5">
-                    <p className="font-semibold text-sm text-primary">{formatCurrency(value, currency)}</p>
+                    <p className="font-semibold text-xs text-primary">{formatCurrency(value, currency)}</p>
                     <TrendChangeIcon current={value} previous={previousValue} />
                 </div>
                 <WasValue previous={previousValue} formatter={(val) => formatCurrency(val, currency)} />
@@ -182,6 +182,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const latestMacd = data?.macd?.[0];
     const prevMacd = data?.macd?.[1];
     const latestBbands = data?.bbands?.[0];
+    const prevBbands = data?.bbands?.[1];
     const latestRoc = data?.roc?.[0];
     const prevRoc = data?.roc?.[1];
     const latestMaVol = data?.maVol?.[0];
@@ -223,11 +224,37 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const stochasticStatus = getStochasticStatus(latestStochastic?.k ?? null);
     
     const isVolumeSpike = latestMaVol?.volume && latestMaVol?.MAVol ? parseFloat(latestMaVol.volume) > parseFloat(latestMaVol.MAVol) * 1.5 : false;
-
+    
     const bbandsContext = {
+        upper: latestBbands?.['Real Upper Band'] ? parseFloat(latestBbands['Real Upper Band']) : null,
         middle: latestBbands?.['Real Middle Band'] ? parseFloat(latestBbands['Real Middle Band']) : null,
+        lower: latestBbands?.['Real Lower Band'] ? parseFloat(latestBbands['Real Lower Band']) : null,
     };
     
+    let bbandsPositionText: string | null = null;
+    let bbandsPositionIcon: React.ReactNode | null = null;
+    let bbandsPositionColor: string | null = null;
+
+    if (latestClose !== null && bbandsContext.upper !== null && bbandsContext.lower !== null && bbandsContext.middle !== null) {
+        if (latestClose > bbandsContext.upper) {
+            bbandsPositionText = 'Breaching Upper';
+            bbandsPositionIcon = <ChevronsUp className="h-3 w-3" />;
+            bbandsPositionColor = 'bg-green-500/20 text-green-400';
+        } else if (latestClose < bbandsContext.lower) {
+            bbandsPositionText = 'Breaching Lower';
+            bbandsPositionIcon = <ChevronsDown className="h-3 w-3" />;
+            bbandsPositionColor = 'bg-red-500/20 text-red-400';
+        } else if (latestClose > bbandsContext.middle) {
+            bbandsPositionText = 'Above Middle';
+            bbandsPositionIcon = <TrendingUp className="h-3 w-3" />;
+            bbandsPositionColor = 'bg-green-500/20 text-green-400';
+        } else {
+            bbandsPositionText = 'Below Middle';
+            bbandsPositionIcon = <TrendingDown className="h-3 w-3" />;
+            bbandsPositionColor = 'bg-red-500/20 text-red-400';
+        }
+    }
+        
     const vwmaPosition = latestVwma?.VWMA && latestClose && parseFloat(latestVwma.VWMA)
         ? latestClose > parseFloat(latestVwma.VWMA) ? 'Bullish' : 'Bearish'
         : null;
@@ -257,7 +284,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
         
         return (
-            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${color}`}>
+            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
                 <Icon className="h-3 w-3" />
                 <span>{`EMA(${label1}) ${isBullish ? '>' : '<'} EMA(${label2})`}</span>
             </div>
@@ -298,8 +325,8 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </TooltipContent>
                         </Tooltip>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-                            <div className="space-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div className="space-y-4">
                                 <h4 className="font-semibold text-primary text-xs">Short-Term Trend</h4>
                                 <div className="flex flex-row gap-4 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaShort1} value={latestEmaShort1?.EMA} previousValue={prevEmaShort1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort1', val)} />
@@ -309,7 +336,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <EmaComparisonBadge value1={latestEmaShort1?.EMA} value2={latestEmaShort2?.EMA} label1={String(localPeriods.emaShort1)} label2={String(localPeriods.emaShort2)} />
                                 </div>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <h4 className="font-semibold text-primary text-xs">Long-Term Trend</h4>
                                 <div className="flex flex-row gap-4 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} />
@@ -363,7 +390,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div className="grid grid-cols-3 gap-x-4">
                                 <div>
                                     <p className="text-xs text-muted-foreground">MACD</p>
@@ -394,6 +421,71 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${macdPosition === 'Bullish' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {macdPosition === 'Bullish' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {macdPosition === 'Bullish' ? 'Above Signal' : 'Below Signal'}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                     {/* Bollinger Bands */}
+                     <div className="p-3 border rounded-lg space-y-2">
+                        <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">BOLLINGER BANDS (BBANDS)</h3>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs p-3 space-y-2">
+                                    <div>
+                                        <p className="font-bold text-foreground">What are Bollinger Bands?</p>
+                                        <p>A volatility indicator consisting of a middle band (a simple moving average) and two outer bands that are a set number of standard deviations away from the middle band.</p>
+                                    </div>
+                                    <Separator />
+                                    <div>
+                                        <p className="font-bold text-foreground">How to Interpret Them:</p>
+                                        <ul className="list-disc list-inside mt-1 space-y-1">
+                                            <li><span className="font-semibold text-primary">Volatility:</span> The bands widen as volatility increases and narrow as it decreases. A "squeeze" (narrow bands) can signal a future breakout.</li>
+                                            <li><span className="font-semibold text-primary">Price Levels:</span> Prices are considered high when they touch the upper band and low when they touch the lower band.</li>
+                                        </ul>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                    <label htmlFor="bbands-period" className="text-xs font-medium text-muted-foreground">P:</label>
+                                    <Input id="bbands-period" type="number" value={localPeriods.bbands.period} onChange={(e) => handleComplexPeriodChange('bbands', 'period', e.target.value)} className="w-14 h-6 text-xs" />
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <label htmlFor="bbands-stddev" className="text-xs font-medium text-muted-foreground">StdDev:</label>
+                                    <Input id="bbands-stddev" type="number" step="0.1" value={localPeriods.bbands.stdDev} onChange={(e) => handleComplexPeriodChange('bbands', 'stdDev', e.target.value)} className="w-14 h-6 text-xs" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
+                            <div className="grid grid-cols-3 gap-x-4">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Upper</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <p className="font-semibold text-xs">{formatCurrency(latestBbands?.['Real Upper Band'], currency)}</p>
+                                    </div>
+                                    <WasValue previous={prevBbands?.['Real Upper Band']} formatter={(val) => formatCurrency(val, currency)} />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Middle</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <p className="font-semibold text-xs">{formatCurrency(latestBbands?.['Real Middle Band'], currency)}</p>
+                                    </div>
+                                    <WasValue previous={prevBbands?.['Real Middle Band']} formatter={(val) => formatCurrency(val, currency)} />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Lower</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <p className="font-semibold text-xs">{formatCurrency(latestBbands?.['Real Lower Band'], currency)}</p>
+                                    </div>
+                                    <WasValue previous={prevBbands?.['Real Lower Band']} formatter={(val) => formatCurrency(val, currency)} />
+                                </div>
+                            </div>
+                            {bbandsPositionText && (
+                                <div className={`flex items-center gap-1 font-semibold text-xs px-2 py-1 rounded-md ${bbandsPositionColor}`}>
+                                    {bbandsPositionIcon}
+                                    <span>{bbandsPositionText}</span>
                                 </div>
                             )}
                         </div>
@@ -430,7 +522,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Input id="roc-period" type="number" value={localPeriods.roc} onChange={(e) => handlePeriodChange('roc', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div>
                                 <div className="flex items-center gap-1.5">
                                     <p className="font-semibold text-xs">{latestRoc?.ROC ? `${parseFloat(latestRoc.ROC).toFixed(2)}%` : 'N/A'}</p>
@@ -479,7 +571,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Input id="rsi-period" type="number" value={localPeriods.rsi} onChange={(e) => handlePeriodChange('rsi', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div>
                                 <div className="flex items-center gap-1.5">
                                     <p className="font-semibold text-xs">{latestRsi?.RSI ? parseFloat(latestRsi.RSI).toFixed(2) : 'N/A'}</p>
@@ -546,7 +638,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                            <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                                 <div className="grid grid-cols-2 gap-x-4">
                                      <div>
                                         <p className="text-xs text-muted-foreground">%K Line</p>
@@ -594,7 +686,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Input id="mavol-period" type="number" value={localPeriods.maVol} onChange={(e) => handlePeriodChange('maVol', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div className="flex items-baseline gap-4">
                                 <div>
                                     <div className="flex items-center gap-1.5">
@@ -644,7 +736,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Input id="vwma-period" type="number" value={localPeriods.vwma} onChange={(e) => handlePeriodChange('vwma', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                         <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div>
                                 <div className="flex items-center gap-1.5">
                                     <p className="font-semibold text-xs">{formatCurrency(latestVwma?.VWMA, currency) ?? 'N/A'}</p>
@@ -685,7 +777,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </TooltipContent>
                             </Tooltip>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div>
                                 <div className="flex items-center gap-1.5">
                                     <p className="font-semibold text-xs">{latestObv?.OBV ? Number(parseFloat(latestObv.OBV).toFixed(0)).toLocaleString() : 'N/A'}</p>
@@ -733,7 +825,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 <Input id="cmf-period" type="number" value={localPeriods.cmf} onChange={(e) => handleCmfPeriodChange('cmf', e.target.value)} className="w-14 h-6 text-xs" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                        <div className="flex items-start justify-between flex-wrap gap-2 pt-1">
                             <div>
                                 <div className="flex items-center gap-1.5">
                                     <p className="font-semibold text-xs">{latestCmf?.CMF ? parseFloat(latestCmf.CMF).toFixed(3) : 'N/A'}</p>
