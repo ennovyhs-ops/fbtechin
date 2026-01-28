@@ -1,9 +1,7 @@
-diff --git a/node_modules/@genkit-ai/next/package.json b/node_modules/@genkit-ai/next/package.json
-index 524385e259b02a24f0141f6920155b5502c39e25..c8f8709b4563a3c261e5f8f877478065b7501b10 100644
 --- a/node_modules/@genkit-ai/next/package.json
 +++ b/node_modules/@genkit-ai/next/package.json
 @@ -37,7 +37,7 @@
-     "genkit": "1.17.0"
+     "build:clean": "rimraf dist"
    },
    "peerDependencies": {
 -    "next": "^15.0.0",
