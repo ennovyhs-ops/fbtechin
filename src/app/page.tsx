@@ -769,7 +769,7 @@ export default function Home() {
             />
           )}
 
-          <OptionPlayAnalyzer ticker={submittedTicker} />
+          {submittedTicker && <OptionPlayAnalyzer ticker={submittedTicker} />}
 
           {submittedTicker && (
             <NewsAnalysis 
