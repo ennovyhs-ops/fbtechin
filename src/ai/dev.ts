@@ -10,6 +10,4 @@ import '@/ai/flows/predict-price-target.ts';
 import '@/ai/flows/explain-momentum-signal.ts';
 import '@/ai/flows/synthesize-trade-idea.ts';
 import '@/ai/flows/summarize-technical-analysis.ts';
-import '@/ai/flows/analyze-user-option-play.ts';
-
-
+import '@/ai/flows/analyze-option-play.ts';

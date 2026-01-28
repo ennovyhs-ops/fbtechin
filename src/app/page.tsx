@@ -31,7 +31,7 @@ import { TechnicalSummary } from '@/components/technical-summary';
 import { DataInputForm } from '@/components/data-input-form';
 import { HistoricalPriceChart } from '@/components/historical-price-chart';
 import { Input } from '@/components/ui/input';
-import { UserOptionPlayAnalyzer } from '@/components/user-option-play-analyzer';
+import { OptionPlayAnalyzer } from '@/components/option-play-analyzer';
 
 const FormSchema = z.object({
   ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.'),
@@ -769,15 +769,6 @@ export default function Home() {
             />
           )}
 
-          {submittedTicker && analysisResult && marketData && latestData && (
-            <UserOptionPlayAnalyzer
-                ticker={submittedTicker}
-                analysisResult={analysisResult}
-                marketData={marketData}
-                latestClose={latestData.close}
-            />
-          )}
-
           {submittedTicker && (
             <NewsAnalysis 
                 ticker={submittedTicker}
@@ -812,6 +803,7 @@ export default function Home() {
             />
           )}
 
+          <OptionPlayAnalyzer />
 
           {showInitialSkeleton && (
             <div className="space-y-8 animate-pulse no-print">

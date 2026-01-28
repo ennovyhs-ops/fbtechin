@@ -150,3 +150,11 @@ export type CombinedAnalysisResult = {
 export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
 
 export type SummarizeTechnicalAnalysisOutput = SummarizeTechnicalAnalysisOutputFlow;
+
+export type AnalyzeOptionPlayInput = {
+    playDescription: string;
+};
+
+export type AnalyzeOptionPlayOutput = {
+    assessment: string;
+};
