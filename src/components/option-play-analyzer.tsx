@@ -1,14 +1,15 @@
-
 'use client';
 
 import { useState, useTransition } from 'react';
-import { BrainCircuit, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { BrainCircuit, Loader2, AlertCircle, Sparkles, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { analyzeOptionPlayAction } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import type { AnalyzeOptionPlayOutput, CombinedAnalysisResult } from '@/lib/types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Separator } from './ui/separator';
 
 interface OptionPlayAnalyzerProps {
   ticker: string | null;
@@ -64,9 +65,35 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
           <BrainCircuit className="h-6 w-6 text-accent" />
           <span>Option Play Sandbox (AI)</span>
         </CardTitle>
-        <CardDescription>
-          Describe an option play for {ticker ? <strong>{ticker}</strong> : 'the current stock'} to get a contextual assessment from the AI.
-        </CardDescription>
+        <div className="flex items-center gap-2">
+            <CardDescription>
+              Describe an option play for {ticker ? <strong>{ticker}</strong> : 'the current stock'} to get a contextual assessment from the AI.
+            </CardDescription>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs p-3 space-y-2">
+                  <div>
+                    <p className="font-bold text-foreground">How Does This Work?</p>
+                    <p>
+                      This AI sandbox provides a contextual "second opinion" on an option play you are considering. It does not give financial advice.
+                    </p>
+                  </div>
+                  <Separator />
+                  <div>
+                    <p className="font-bold text-foreground">The AI Considers:</p>
+                    <ul className="list-disc list-inside mt-1 space-y-1">
+                      <li><span className="font-semibold">Your Description:</span> The AI parses your text to understand your strategy's bias (bullish, bearish, neutral).</li>
+                      <li><span className="font-semibold">Momentum Signal:</span> It checks if your play aligns with the calculated momentum.</li>
+                      <li><span className="font-semibold">Volatility:</span> It considers whether the current volatility makes buying or selling options more or less attractive.</li>
+                    </ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <Textarea
