@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,6 +13,7 @@ import { ai } from '@/ai/index';
 import { z } from 'zod';
 
 const AnalyzeOptionPlayInputSchema = z.object({
+  ticker: z.string().describe('The stock ticker symbol for the option play.'),
   playDescription: z.string().describe('A user-written description of an options trade they are considering.'),
 });
 export type AnalyzeOptionPlayInput = z.infer<typeof AnalyzeOptionPlayInputSchema>;
@@ -31,7 +33,7 @@ const analyzeOptionPlayPrompt = ai.definePrompt({
   name: 'analyzeOptionPlayPrompt',
   input: { schema: AnalyzeOptionPlayInputSchema },
   output: { schema: AnalyzeOptionPlayOutputSchema },
-  prompt: `You are a financial analyst. A user is describing an option play.
+  prompt: `You are a financial analyst. A user is describing an option play on {{ticker}}.
 Based on their description, provide a single-word assessment that best characterizes the nature of the play.
 
 Choose from: 'Directional', 'Volatile', 'Income', 'Hedge', 'Speculative', 'Complex'.

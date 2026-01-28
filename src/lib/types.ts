@@ -1,5 +1,4 @@
 
-
 import type { AnalyzeStockMomentumOutput } from "@/ai/flows/analyze-stock-momentum";
 import type { PredictPriceTargetOutput as PredictPriceTargetOutputFlow } from "@/ai/flows/predict-price-target";
 import type { SynthesizeTradeIdeaOutput as SynthesizeTradeIdeaOutputFlow } from "@/ai/flows/synthesize-trade-idea";
@@ -152,6 +151,7 @@ export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
 export type SummarizeTechnicalAnalysisOutput = SummarizeTechnicalAnalysisOutputFlow;
 
 export type AnalyzeOptionPlayInput = {
+    ticker: string;
     playDescription: string;
 };
 

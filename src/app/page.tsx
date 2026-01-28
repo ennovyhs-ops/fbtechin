@@ -803,7 +803,7 @@ export default function Home() {
             />
           )}
 
-          <OptionPlayAnalyzer />
+          <OptionPlayAnalyzer ticker={submittedTicker} />
 
           {showInitialSkeleton && (
             <div className="space-y-8 animate-pulse no-print">
