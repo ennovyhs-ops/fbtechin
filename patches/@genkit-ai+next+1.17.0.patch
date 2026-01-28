@@ -1,0 +1,11 @@
+patch-package
+--- a/node_modules/@genkit-ai/next/package.json
++++ b/node_modules/@genkit-ai/next/package.json
+@@ -35,6 +35,6 @@
+     "typescript": "*"
+   },
+   "peerDependencies": {
+-    "next": "^15.0.0"
++    "next": "^14.0.0 || ^15.0.0"
+   }
+ }
