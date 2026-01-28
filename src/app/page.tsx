@@ -769,7 +769,13 @@ export default function Home() {
             />
           )}
 
-          {submittedTicker && <OptionPlayAnalyzer ticker={submittedTicker} />}
+          {submittedTicker && analysisResult?.analysis && 'totalScore' in analysisResult.analysis && thirtyDayVolatility !== null && (
+            <OptionPlayAnalyzer
+              ticker={submittedTicker}
+              analysisResult={analysisResult}
+              volatility={thirtyDayVolatility}
+            />
+          )}
 
           {submittedTicker && (
             <NewsAnalysis 

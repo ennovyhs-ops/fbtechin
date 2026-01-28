@@ -3,6 +3,7 @@ import type { AnalyzeStockMomentumOutput } from "@/ai/flows/analyze-stock-moment
 import type { PredictPriceTargetOutput as PredictPriceTargetOutputFlow } from "@/ai/flows/predict-price-target";
 import type { SynthesizeTradeIdeaOutput as SynthesizeTradeIdeaOutputFlow } from "@/ai/flows/synthesize-trade-idea";
 import type { SummarizeTechnicalAnalysisOutput as SummarizeTechnicalAnalysisOutputFlow } from "@/ai/flows/summarize-technical-analysis";
+import type { AnalyzeOptionPlayInput as AnalyzeOptionPlayInputFlow, AnalyzeOptionPlayOutput as AnalyzeOptionPlayOutputFlow } from '@/ai/flows/analyze-option-play';
 
 export type MarketData = {
   date: string;
@@ -150,11 +151,6 @@ export type SynthesizeTradeIdeaOutput = SynthesizeTradeIdeaOutputFlow;
 
 export type SummarizeTechnicalAnalysisOutput = SummarizeTechnicalAnalysisOutputFlow;
 
-export type AnalyzeOptionPlayInput = {
-    ticker: string;
-    playDescription: string;
-};
+export type AnalyzeOptionPlayInput = AnalyzeOptionPlayInputFlow;
 
-export type AnalyzeOptionPlayOutput = {
-    assessment: string;
-};
+export type AnalyzeOptionPlayOutput = AnalyzeOptionPlayOutputFlow;

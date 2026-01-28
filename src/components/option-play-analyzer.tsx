@@ -8,15 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { analyzeOptionPlayAction } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import type { AnalyzeOptionPlayOutput } from '@/lib/types';
+import type { AnalyzeOptionPlayOutput, CombinedAnalysisResult } from '@/lib/types';
 
-export function OptionPlayAnalyzer({ ticker }: { ticker: string | null }) {
+interface OptionPlayAnalyzerProps {
+  ticker: string | null;
+  analysisResult: CombinedAnalysisResult | null;
+  volatility: number | null;
+}
+
+export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: OptionPlayAnalyzerProps) {
   const [playDescription, setPlayDescription] = useState('');
   const [result, setResult] = useState<AnalyzeOptionPlayOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleAnalyze = () => {
+    const momentumSignal = analysisResult?.analysis?.signal;
+
     if (!ticker) {
       setError('Please search for or upload data for a stock first.');
       return;
@@ -25,13 +33,22 @@ export function OptionPlayAnalyzer({ ticker }: { ticker: string | null }) {
       setError('Please describe your option play.');
       return;
     }
+     if (!momentumSignal || typeof volatility !== 'number') {
+      setError('Analysis data is not yet available. Please wait for the initial analysis to complete.');
+      return;
+    }
 
     setError(null);
     setResult(null);
 
     startTransition(async () => {
       try {
-        const res = await analyzeOptionPlayAction({ ticker, playDescription });
+        const res = await analyzeOptionPlayAction({
+          ticker,
+          playDescription,
+          momentumSignal,
+          volatility,
+        });
         setResult(res);
       } catch (e: any) {
         console.error('Failed to analyze option play:', e);
@@ -48,7 +65,7 @@ export function OptionPlayAnalyzer({ ticker }: { ticker: string | null }) {
           <span>Option Play Sandbox (AI)</span>
         </CardTitle>
         <CardDescription>
-          Describe an option play for {ticker ? <strong>{ticker}</strong> : 'the current stock'} to get a simple assessment from the AI.
+          Describe an option play for {ticker ? <strong>{ticker}</strong> : 'the current stock'} to get a contextual assessment from the AI.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -75,9 +92,9 @@ export function OptionPlayAnalyzer({ ticker }: { ticker: string | null }) {
             </Alert>
         )}
         {result && (
-            <div className="p-4 rounded-lg bg-muted/50 animate-in fade-in-50 duration-500">
-                <h3 className="font-semibold text-sm text-muted-foreground">AI Assessment for {ticker}</h3>
-                <p className="font-bold text-lg text-primary">{result.assessment}</p>
+            <div className="p-4 rounded-lg bg-muted/50 animate-in fade-in-50 duration-500 space-y-2">
+                <h3 className="font-semibold text-sm text-muted-foreground">AI Contextual Assessment for {ticker}</h3>
+                <p className="text-sm text-primary">{result.contextualAssessment}</p>
             </div>
         )}
       </CardContent>
