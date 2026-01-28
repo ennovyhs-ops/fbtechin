@@ -769,6 +769,8 @@ export default function Home() {
             />
           )}
 
+          <OptionPlayAnalyzer ticker={submittedTicker} />
+
           {submittedTicker && (
             <NewsAnalysis 
                 ticker={submittedTicker}
@@ -802,8 +804,6 @@ export default function Home() {
                 ticker={submittedTicker}
             />
           )}
-
-          <OptionPlayAnalyzer ticker={submittedTicker} />
 
           {showInitialSkeleton && (
             <div className="space-y-8 animate-pulse no-print">
