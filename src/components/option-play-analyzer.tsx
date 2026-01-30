@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { BrainCircuit, Loader2, AlertCircle, Sparkles, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
+import { BrainCircuit, Loader2, AlertCircle, Sparkles, HelpCircle, CheckCircle, XCircle, PlusCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { analyzeOptionPlayAction } from '@/app/actions';
@@ -21,14 +21,36 @@ interface OptionPlayAnalyzerProps {
   volatility: number | null;
 }
 
+type OptionLeg = {
+    id: number;
+    action: 'Buy' | 'Sell';
+    optionType: 'Call' | 'Put';
+    strikePrice: string;
+};
+
+let nextId = 2;
+
 export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: OptionPlayAnalyzerProps) {
-  const [action, setAction] = useState<'Buy' | 'Sell'>('Buy');
-  const [optionType, setOptionType] = useState<'Call' | 'Put'>('Call');
-  const [strikePrice, setStrikePrice] = useState('');
+  const [legs, setLegs] = useState<OptionLeg[]>([
+      { id: 1, action: 'Buy', optionType: 'Call', strikePrice: '' }
+  ]);
   const [expiration, setExpiration] = useState('');
   const [result, setResult] = useState<AnalyzeOptionPlayOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const handleLegChange = (id: number, field: keyof Omit<OptionLeg, 'id'>, value: string) => {
+      setLegs(legs.map(leg => leg.id === id ? { ...leg, [field]: value } : leg));
+  };
+
+  const addLeg = () => {
+      setLegs([...legs, { id: nextId++, action: 'Sell', optionType: 'Call', strikePrice: '' }]);
+  };
+
+  const removeLeg = (id: number) => {
+      setLegs(legs.filter(leg => leg.id !== id));
+  };
+
 
   const handleAnalyze = () => {
     const momentumSignal = analysisResult?.analysis?.signal;
@@ -37,8 +59,8 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
       setError('Please search for or upload data for a stock first.');
       return;
     }
-    if (!strikePrice.trim()) {
-      setError('Please enter a strike price to analyze.');
+    if (legs.some(leg => !leg.strikePrice.trim())) {
+      setError('Please enter a strike price for all legs to analyze.');
       return;
     }
      if (!momentumSignal || typeof volatility !== 'number') {
@@ -49,7 +71,10 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
     setError(null);
     setResult(null);
 
-    const playDescription = `${action === 'Buy' ? 'Buying' : 'Selling'} a ${expiration ? expiration + ' ' : ''}${optionType.toLowerCase()} with a strike of $${strikePrice}`;
+    const playDescription = legs.map(leg => 
+        `${leg.action === 'Buy' ? 'Buying' : 'Selling'} a ${leg.optionType.toLowerCase()} with a strike of $${leg.strikePrice}`
+    ).join(' and ') + (expiration ? ` with a ${expiration} expiration.` : '.');
+
 
     startTransition(async () => {
       try {
@@ -76,7 +101,7 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
         </CardTitle>
         <div className="flex items-center gap-2">
             <CardDescription>
-              Describe an option play for {ticker ? <strong>{ticker}</strong> : 'the current stock'} to get a contextual assessment from the AI.
+              Build an option play for {ticker ? <strong>{ticker}</strong> : 'the current stock'} to get a contextual assessment from the AI.
             </CardDescription>
             <TooltipProvider>
               <Tooltip>
@@ -94,7 +119,7 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
                   <div>
                     <p className="font-bold text-foreground">The AI Considers:</p>
                     <ul className="list-disc list-inside mt-1 space-y-1">
-                      <li><span className="font-semibold">Your Description:</span> The AI parses your text to understand your strategy's bias (bullish, bearish, neutral).</li>
+                      <li><span className="font-semibold">Your Strategy:</span> The AI parses your strategy's structure to understand its bias (bullish, bearish, neutral).</li>
                       <li><span className="font-semibold">Momentum Signal:</span> It checks if your play aligns with the calculated momentum.</li>
                       <li><span className="font-semibold">Volatility:</span> It considers whether the current volatility makes buying or selling options more or less attractive.</li>
                     </ul>
@@ -106,64 +131,90 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
-                <div className="space-y-2">
-                    <Label>Action</Label>
-                    <RadioGroup
-                        value={action}
-                        onValueChange={(value: 'Buy' | 'Sell') => setAction(value)}
-                        className="flex items-center gap-4 pt-2"
-                        disabled={!ticker}
-                    >
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Buy" id="buy" />
-                            <Label htmlFor="buy">Buy</Label>
+            <div className="space-y-4 p-4 border rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Strategy Expiration</Label>
+                        <Input
+                            id="expiration"
+                            type="text"
+                            placeholder="e.g., 30-day, weekly"
+                            value={expiration}
+                            onChange={(e) => setExpiration(e.target.value)}
+                            disabled={!ticker}
+                        />
+                    </div>
+                </div>
+                 <Separator />
+                {legs.map((leg, index) => (
+                    <div key={leg.id} className="space-y-4">
+                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                            <div className="space-y-2">
+                                <Label>Action</Label>
+                                <RadioGroup
+                                    value={leg.action}
+                                    onValueChange={(value: 'Buy' | 'Sell') => handleLegChange(leg.id, 'action', value)}
+                                    className="flex items-center gap-4 pt-2"
+                                    disabled={!ticker}
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Buy" id={`buy-${leg.id}`} />
+                                        <Label htmlFor={`buy-${leg.id}`}>Buy</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Sell" id={`sell-${leg.id}`} />
+                                        <Label htmlFor={`sell-${leg.id}`}>Sell</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor={`option-type-${leg.id}`}>Type</Label>
+                                <Select
+                                    value={leg.optionType}
+                                    onValueChange={(value: 'Call' | 'Put') => handleLegChange(leg.id, 'optionType', value)}
+                                    disabled={!ticker}
+                                >
+                                    <SelectTrigger id={`option-type-${leg.id}`}>
+                                        <SelectValue placeholder="Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Call">Call</SelectItem>
+                                        <SelectItem value="Put">Put</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor={`strike-price-${leg.id}`}>Strike Price</Label>
+                                <Input
+                                    id={`strike-price-${leg.id}`}
+                                    type="number"
+                                    placeholder="e.g., 180"
+                                    value={leg.strikePrice}
+                                    onChange={(e) => handleLegChange(leg.id, 'strikePrice', e.target.value)}
+                                    disabled={!ticker}
+                                />
+                            </div>
+                             {legs.length > 1 && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => removeLeg(leg.id)}
+                                    className="text-muted-foreground hover:text-destructive"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Remove Leg</span>
+                                </Button>
+                            )}
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Sell" id="sell" />
-                            <Label htmlFor="sell">Sell</Label>
-                        </div>
-                    </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="option-type">Type</Label>
-                    <Select
-                        value={optionType}
-                        onValueChange={(value: 'Call' | 'Put') => setOptionType(value)}
-                        disabled={!ticker}
-                    >
-                        <SelectTrigger id="option-type">
-                            <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Call">Call</SelectItem>
-                            <SelectItem value="Put">Put</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="strike-price">Strike Price</Label>
-                    <Input
-                        id="strike-price"
-                        type="number"
-                        placeholder="e.g., 180"
-                        value={strikePrice}
-                        onChange={(e) => setStrikePrice(e.target.value)}
-                        disabled={!ticker}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="expiration">Expiration</Label>
-                    <Input
-                        id="expiration"
-                        type="text"
-                        placeholder="e.g., 30-day, weekly"
-                        value={expiration}
-                        onChange={(e) => setExpiration(e.target.value)}
-                        disabled={!ticker}
-                    />
-                </div>
+                        {index < legs.length - 1 && <Separator />}
+                    </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={addLeg} disabled={!ticker || legs.length >= 4}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Leg (max 4)
+                </Button>
             </div>
+            
             <Button onClick={handleAnalyze} disabled={isPending || !ticker}>
               {isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
