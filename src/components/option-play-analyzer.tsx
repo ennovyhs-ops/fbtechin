@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { BrainCircuit, Loader2, AlertCircle, Sparkles, HelpCircle } from 'lucide-react';
+import { BrainCircuit, Loader2, AlertCircle, Sparkles, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -119,10 +119,39 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
             </Alert>
         )}
         {result && (
-            <div className="p-4 rounded-lg bg-muted/50 animate-in fade-in-50 duration-500 space-y-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">AI Contextual Assessment for {ticker}</h3>
-                <p className="text-sm text-primary">{result.contextualAssessment}</p>
+          <div className="p-4 rounded-lg bg-muted/50 animate-in fade-in-50 duration-500 space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm text-muted-foreground">AI Contextual Assessment</h3>
+              <p className="text-sm text-primary mt-1">{result.contextualAssessment}</p>
             </div>
+            
+            <Separator />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-semibold text-sm text-green-400 mb-2">Potential Advantages</h3>
+                <ul className="space-y-2">
+                  {result.advantages.map((adv, i) => (
+                    <li key={`adv-${i}`} className="flex items-start gap-2 text-sm text-foreground">
+                      <CheckCircle className="h-4 w-4 text-green-400 mt-0.5 shrink-0" />
+                      <span>{adv}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-red-400 mb-2">Potential Disadvantages</h3>
+                 <ul className="space-y-2">
+                  {result.disadvantages.map((dis, i) => (
+                    <li key={`dis-${i}`} className="flex items-start gap-2 text-sm text-foreground">
+                      <XCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+                      <span>{dis}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

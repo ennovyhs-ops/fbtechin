@@ -21,6 +21,8 @@ export type AnalyzeOptionPlayInput = z.infer<typeof AnalyzeOptionPlayInputSchema
 
 const AnalyzeOptionPlayOutputSchema = z.object({
   contextualAssessment: z.string().describe("A 2-3 sentence contextual assessment of the play, explaining how it aligns with the provided momentum and volatility data."),
+  advantages: z.array(z.string()).describe("A list of 1-2 potential advantages of the described play's structure."),
+  disadvantages: z.array(z.string()).describe("A list of 1-2 potential disadvantages or risks of the described play's structure."),
 });
 export type AnalyzeOptionPlayOutput = z.infer<typeof AnalyzeOptionPlayOutputSchema>;
 
@@ -35,7 +37,7 @@ const analyzeOptionPlayPrompt = ai.definePrompt({
   input: { schema: AnalyzeOptionPlayInputSchema },
   output: { schema: AnalyzeOptionPlayOutputSchema },
   prompt: `You are an expert options trading coach. A user is describing a potential option play for {{ticker}}.
-Your task is to provide a concise, 2-3 sentence contextual assessment. Do not give financial advice.
+Your task is to provide a concise, multi-part analysis. Do not give financial advice.
 
 **User's Play:**
 "{{playDescription}}"
@@ -44,19 +46,33 @@ Your task is to provide a concise, 2-3 sentence contextual assessment. Do not gi
 *   **Momentum Signal:** "{{momentumSignal}}"
 *   **30-Day Volatility:** {{volatility}}% (Consider >40% as high, <20% as low)
 
-**Your Analysis (Thought Process):**
-1.  **Identify the User's Bias:** Does the user's play bet on the price going up (bullish), down (bearish), or sideways (neutral)?
-2.  **Check for Alignment:** Does the user's bias align with the provided **Momentum Signal**?
-    *   *If it aligns:* Start by saying something like "This bullish play aligns well with the current bullish momentum..."
-    *   *If it misaligns:* Start by saying something like "This bullish play is contrary to the current bearish momentum, making it a contrarian bet..."
-3.  **Add Volatility Context:** How does the current **Volatility** affect the play?
-    *   *For buying options (debit plays):* Mention if high volatility makes the play expensive or low volatility makes it cheaper. (e.g., "...however, be aware that high volatility makes buying these options relatively expensive.")
-    *   *For selling options (credit plays):* Mention if high volatility results in a higher premium received, or if low volatility results in a lower one. (e.g., "...and the high volatility environment means you would collect a significant premium for selling this put.")
+---
 
-**Example (User wants to buy a call, momentum is 'STRONG BULLISH', volatility is 18%):**
+**Part 1: Contextual Assessment**
+First, generate the 'contextualAssessment'. This should be a 2-3 sentence assessment of how the user's play fits the current market context.
+*   **Identify Bias:** Does the play seem bullish, bearish, or neutral?
+*   **Check Alignment:** Does the bias align with the **Momentum Signal**? (e.g., "This bullish play aligns well with the current bullish momentum...")
+*   **Add Volatility Context:** How does the **Volatility** affect the play? (e.g., "...however, be aware that high volatility makes buying these options relatively expensive.")
+
+**Example Contextual Assessment (User wants to buy a call, momentum is 'STRONG BULLISH', volatility is 18%):**
 "This bullish strategy aligns well with the strong bullish momentum signal. The low volatility environment is also favorable, as it makes buying these calls relatively inexpensive."
 
-Generate the 'contextualAssessment' based on this logic.
+---
+
+**Part 2: General Advantages & Disadvantages**
+Next, based on the user's play description, identify the general structure of the strategy (e.g., it looks like a long call, a credit spread, etc.). Generate 1-2 'advantages' and 1-2 'disadvantages' inherent to that *type* of strategy. These should be educational and general, not specific to the current {{ticker}} price.
+
+**Example (User's play is a Long Call):**
+*   **advantages**: ["Benefit from unlimited profit potential if the stock rises significantly.", "Risk is strictly limited to the premium paid for the call."]
+*   **disadvantages**: ["The option will lose value over time due to time decay (theta).", "Requires the stock to move up enough to cover the cost of the premium to be profitable."]
+
+**Example (User's play is a Covered Call):**
+*   **advantages**: ["Generates income from the premium received.", "Provides a small buffer against a drop in the stock price."]
+*   **disadvantages**: ["Caps the potential profit on the stock if it rises significantly above the strike price.", "Still exposes you to significant downside risk on the stock, minus the premium received."]
+
+---
+
+Generate the full JSON output including 'contextualAssessment', 'advantages', and 'disadvantages' based on this logic.
 `,
 });
 
