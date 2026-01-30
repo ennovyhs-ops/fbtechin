@@ -4,12 +4,16 @@ import { useState, useTransition } from 'react';
 import { BrainCircuit, Loader2, AlertCircle, Sparkles, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { analyzeOptionPlayAction } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import type { AnalyzeOptionPlayOutput, CombinedAnalysisResult } from '@/lib/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from './ui/separator';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
 
 interface OptionPlayAnalyzerProps {
   ticker: string | null;
@@ -18,7 +22,10 @@ interface OptionPlayAnalyzerProps {
 }
 
 export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: OptionPlayAnalyzerProps) {
-  const [playDescription, setPlayDescription] = useState('');
+  const [action, setAction] = useState<'Buy' | 'Sell'>('Buy');
+  const [optionType, setOptionType] = useState<'Call' | 'Put'>('Call');
+  const [strikePrice, setStrikePrice] = useState('');
+  const [expiration, setExpiration] = useState('');
   const [result, setResult] = useState<AnalyzeOptionPlayOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -30,8 +37,8 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
       setError('Please search for or upload data for a stock first.');
       return;
     }
-    if (!playDescription.trim()) {
-      setError('Please describe your option play.');
+    if (!strikePrice.trim()) {
+      setError('Please enter a strike price to analyze.');
       return;
     }
      if (!momentumSignal || typeof volatility !== 'number') {
@@ -41,6 +48,8 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
 
     setError(null);
     setResult(null);
+
+    const playDescription = `${action === 'Buy' ? 'Buying' : 'Selling'} a ${expiration ? expiration + ' ' : ''}${optionType.toLowerCase()} with a strike of $${strikePrice}`;
 
     startTransition(async () => {
       try {
@@ -96,21 +105,75 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Textarea
-          placeholder={ticker ? `e.g., 'Buying a 30-day call with a strike of $180' or 'Selling a weekly put below the current price'` : 'Load a stock to enable the sandbox.'}
-          value={playDescription}
-          onChange={(e) => setPlayDescription(e.target.value)}
-          rows={3}
-          disabled={!ticker}
-        />
-        <Button onClick={handleAnalyze} disabled={isPending || !ticker}>
-          {isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-4 w-4" />
-          )}
-          Analyze Play
-        </Button>
+        <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                <div className="space-y-2">
+                    <Label>Action</Label>
+                    <RadioGroup
+                        value={action}
+                        onValueChange={(value: 'Buy' | 'Sell') => setAction(value)}
+                        className="flex items-center gap-4 pt-2"
+                        disabled={!ticker}
+                    >
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Buy" id="buy" />
+                            <Label htmlFor="buy">Buy</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Sell" id="sell" />
+                            <Label htmlFor="sell">Sell</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="option-type">Type</Label>
+                    <Select
+                        value={optionType}
+                        onValueChange={(value: 'Call' | 'Put') => setOptionType(value)}
+                        disabled={!ticker}
+                    >
+                        <SelectTrigger id="option-type">
+                            <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Call">Call</SelectItem>
+                            <SelectItem value="Put">Put</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="strike-price">Strike Price</Label>
+                    <Input
+                        id="strike-price"
+                        type="number"
+                        placeholder="e.g., 180"
+                        value={strikePrice}
+                        onChange={(e) => setStrikePrice(e.target.value)}
+                        disabled={!ticker}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="expiration">Expiration</Label>
+                    <Input
+                        id="expiration"
+                        type="text"
+                        placeholder="e.g., 30-day, weekly"
+                        value={expiration}
+                        onChange={(e) => setExpiration(e.target.value)}
+                        disabled={!ticker}
+                    />
+                </div>
+            </div>
+            <Button onClick={handleAnalyze} disabled={isPending || !ticker}>
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Analyze Play
+            </Button>
+        </div>
+
         {error && (
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
