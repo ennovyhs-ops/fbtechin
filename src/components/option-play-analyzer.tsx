@@ -109,15 +109,18 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs p-3 space-y-2">
                   <div>
-                    <p className="font-bold text-foreground">Multi-Leg Strategy Analysis</p>
+                    <p className="font-bold text-foreground">Custom Strategy Analysis</p>
                     <p>
-                      Enter the details for each leg of your strategy. The AI will analyze the combined structure against current momentum and volatility.
+                      Define a multi-leg strategy for the current ticker. The AI will assess how your play aligns with the <strong>Momentum Signal</strong> and <strong>Historical Volatility</strong> calculated for this asset.
                     </p>
                   </div>
                   <Separator />
                   <div>
-                    <p className="font-bold text-foreground">Individual Expiries:</p>
-                    <p>You can specify different expiration timeframes (e.g., "Weekly", "Jan 20") for each leg. If left blank, the AI assumes a standard 30-day (1 calendar month) expiration.</p>
+                    <p className="font-bold text-foreground">Flexible Input:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li><strong>Multi-Leg:</strong> Add up to 4 distinct legs to build complex spreads.</li>
+                      <li><strong>Expiries:</strong> Enter custom timeframes (e.g. "Next week", "Jan 20"). If left blank, the AI assumes a standard 30-day expiration.</li>
+                    </ul>
                   </div>
                 </TooltipContent>
               </Tooltip>
