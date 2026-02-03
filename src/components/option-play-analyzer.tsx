@@ -70,9 +70,10 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
     setError(null);
     setResult(null);
 
-    const playDescription = legs.map(leg => 
-        `${leg.action}ing a ${leg.optionType.toLowerCase()} with a strike of $${leg.strikePrice}${leg.expiration ? ` expiring ${leg.expiration}` : ''}`
-    ).join(' and ') + '.';
+    const playDescription = legs.map(leg => {
+        const expiry = leg.expiration.trim() ? ` expiring ${leg.expiration.trim()}` : ' (assuming a 30-day expiration)';
+        return `${leg.action}ing a ${leg.optionType.toLowerCase()} with a strike of $${leg.strikePrice}${expiry}`;
+    }).join(' and ') + '.';
 
     startTransition(async () => {
       try {
@@ -116,7 +117,7 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
                   <Separator />
                   <div>
                     <p className="font-bold text-foreground">Individual Expiries:</p>
-                    <p>You can now specify different expiration timeframes (e.g., "Weekly", "30-day", "Jan 20") for each leg to analyze complex spreads or calendar plays.</p>
+                    <p>You can specify different expiration timeframes (e.g., "Weekly", "Jan 20") for each leg. If left blank, the AI assumes a standard 30-day (1 calendar month) expiration.</p>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -176,7 +177,7 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
                                 <Label className="text-[10px] uppercase text-muted-foreground">Expiry</Label>
                                 <Input
                                     type="text"
-                                    placeholder="e.g. Weekly"
+                                    placeholder="e.g. Weekly (blank = 30d)"
                                     value={leg.expiration}
                                     onChange={(e) => handleLegChange(leg.id, 'expiration', e.target.value)}
                                     className="h-8 text-xs"
