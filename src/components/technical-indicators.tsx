@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -179,7 +180,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 diffInfo = (
                     <div className={`flex items-center gap-0.5 text-[10px] ${color}`}>
                         <Icon className="h-3 w-3" />
-                        <span>{Math.abs(spreadDiff).toFixed(2)}% vs yesterday</span>
+                        <span>{Math.abs(spreadDiff).toFixed(2)}% was</span>
                     </div>
                 );
             }
