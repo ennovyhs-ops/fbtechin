@@ -179,7 +179,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                 diffInfo = (
                     <div className={`flex items-center gap-0.5 text-[10px] ${color}`}>
                         <Icon className="h-3 w-3" />
-                        <span>{prevSpread > 0 ? '+' : ''}{prevSpread.toFixed(2)}% was</span>
+                        <span>was {prevSpread > 0 ? '+' : ''}{prevSpread.toFixed(2)}%</span>
                     </div>
                 );
             }
