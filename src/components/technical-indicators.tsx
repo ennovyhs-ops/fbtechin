@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -158,6 +157,44 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             <PriceVsEmaText ema={value} />
         </div>
     );
+
+    const EmaSpread = ({ ema1, ema2, prevEma1, prevEma2 }: { ema1?: string|null, ema2?: string|null, prevEma1?: string|null, prevEma2?: string|null }) => {
+        if (!ema1 || !ema2) return null;
+        const v1 = parseFloat(ema1);
+        const v2 = parseFloat(ema2);
+        if (isNaN(v1) || isNaN(v2) || v2 === 0) return null;
+
+        const spread = ((v1 / v2) - 1) * 100;
+        
+        let diffInfo = null;
+        if (prevEma1 && prevEma2) {
+            const pv1 = parseFloat(prevEma1);
+            const pv2 = parseFloat(prevEma2);
+            if (!isNaN(pv1) && !isNaN(pv2) && pv2 !== 0) {
+                const prevSpread = ((pv1 / pv2) - 1) * 100;
+                const spreadDiff = spread - prevSpread;
+                const isUp = spreadDiff > 0;
+                const Icon = isUp ? TrendingUp : TrendingDown;
+                const color = isUp ? 'text-green-400' : 'text-red-400';
+                diffInfo = (
+                    <div className={`flex items-center gap-0.5 text-[10px] ${color}`}>
+                        <Icon className="h-3 w-3" />
+                        <span>{Math.abs(spreadDiff).toFixed(2)}% vs yesterday</span>
+                    </div>
+                );
+            }
+        }
+
+        return (
+            <div className="flex flex-col items-center justify-center p-2 bg-muted/30 rounded border border-dashed ml-2">
+                <span className="text-[10px] uppercase text-muted-foreground font-bold leading-none mb-1">Spread %</span>
+                <span className={`text-xs font-bold leading-none ${spread > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {spread > 0 ? '+' : ''}{spread.toFixed(2)}%
+                </span>
+                {diffInfo}
+            </div>
+        );
+    }
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
@@ -332,9 +369,15 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             <div className="space-y-4">
                                 <h4 className="font-semibold text-primary text-xs">Short-Term Trend (EMA)</h4>
-                                <div className="flex flex-row gap-4 items-start">
+                                <div className="flex flex-row gap-4 items-center">
                                     <EmaDisplayGroup period={localPeriods.emaShort1} value={latestEmaShort1?.EMA} previousValue={prevEmaShort1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaShort2} value={latestEmaShort2?.EMA} previousValue={prevEmaShort2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort2', val)} />
+                                    <EmaSpread 
+                                        ema1={latestEmaShort1?.EMA} 
+                                        ema2={latestEmaShort2?.EMA} 
+                                        prevEma1={prevEmaShort1?.EMA} 
+                                        prevEma2={prevEmaShort2?.EMA} 
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-6">
