@@ -45,7 +45,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     
     const isSynthesizedData = useMemo(() => {
         if (!marketData || marketData.length === 0) return false;
-        // Check a sample of recent data to avoid iterating over a huge array
         const sample = marketData.slice(0, 20);
         return sample.every(d => d.high === d.low);
     }, [marketData]);
@@ -58,7 +57,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     };
 
     const handleComplexPeriodChange = (indicator: 'macd' | 'bbands' | 'stochastic', subKey: keyof IndicatorPeriods['macd'] | keyof IndicatorPeriods['bbands'] | keyof IndicatorPeriods['stochastic'], value: string) => {
-        const numValue = parseFloat(value); // Use parseFloat for stdDev
+        const numValue = parseFloat(value);
          if (!isNaN(numValue) && numValue > 0) {
             setLocalPeriods(prev => ({
                 ...prev,
@@ -213,7 +212,7 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         );
     }
 
-    if (loading && !data) { // Show loading only on initial load
+    if (loading && !data) {
         return (
             <Card>
                 <CardHeader>
@@ -346,7 +345,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     {/* EMA/SMA Section */}
                     <div className="p-3 border rounded-lg space-y-3">
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -408,7 +406,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                     </div>
-                    {/* MACD */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                             <Tooltip>
@@ -485,7 +482,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             )}
                         </div>
                     </div>
-                     {/* Bollinger Bands */}
                      <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2">
                             <Tooltip>
@@ -550,7 +546,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             )}
                         </div>
                     </div>
-                    {/* ROC */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <Tooltip>
@@ -598,7 +593,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             )}
                         </div>
                     </div>
-                    {/* RSI */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <Tooltip>
@@ -646,7 +640,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             }`}>{rsiStatus}</p>
                         </div>
                     </div>
-                     {/* Stochastic Oscillator */}
                     {isSynthesizedData ? (
                         <div className="p-3 border rounded-lg space-y-2 bg-muted/50 border-dashed">
                              <h3 className="font-semibold text-xs text-muted-foreground">STOCHASTIC OSCILLATOR</h3>
@@ -725,7 +718,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             </div>
                         </div>
                     )}
-                    {/* Volume */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <Tooltip>
@@ -765,7 +757,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             )}
                         </div>
                     </div>
-                     {/* VWMA */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <Tooltip>
@@ -812,7 +803,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             )}
                         </div>
                     </div>
-                      {/* On-Balance Volume (OBV) */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <Tooltip>
@@ -853,7 +843,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                             )}
                         </div>
                     </div>
-                    {/* Chaikin Money Flow (CMF) */}
                     <div className="p-3 border rounded-lg space-y-2">
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <Tooltip>
