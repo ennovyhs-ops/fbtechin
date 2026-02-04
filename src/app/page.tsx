@@ -38,8 +38,8 @@ const FormSchema = z.object({
 });
 
 const defaultPeriods: IndicatorPeriods = {
-  emaShort1: 12,
-  emaShort2: 26,
+  emaShort1: 9,
+  emaShort2: 20,
   emaLong1: 50,
   emaLong2: 200,
   smaLong1: 50,
