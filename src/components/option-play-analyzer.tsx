@@ -78,10 +78,10 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
     startTransition(async () => {
       try {
         const res = await analyzeOptionPlayAction({
-          ticker,
+          ticker: ticker as string,
           playDescription,
-          momentumSignal,
-          volatility,
+          momentumSignal: momentumSignal as string,
+          volatility: volatility as number,
         });
         setResult(res);
       } catch (e: any) {
@@ -137,7 +137,7 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
                                 <Label className="text-[10px] uppercase text-muted-foreground">Action</Label>
                                 <Select
                                     value={leg.action}
-                                    onValueChange={(value: 'Buy' | 'Sell') => handleLegChange(leg.id, 'action', value)}
+                                    onValueChange={(value: string) => handleLegChange(leg.id, 'action', value)}
                                     disabled={!ticker || isPending}
                                 >
                                     <SelectTrigger className="h-8 text-xs">
@@ -153,7 +153,7 @@ export function OptionPlayAnalyzer({ ticker, analysisResult, volatility }: Optio
                                 <Label className="text-[10px] uppercase text-muted-foreground">Type</Label>
                                 <Select
                                     value={leg.optionType}
-                                    onValueChange={(value: 'Call' | 'Put') => handleLegChange(leg.id, 'optionType', value)}
+                                    onValueChange={(value: string) => handleLegChange(leg.id, 'optionType', value)}
                                     disabled={!ticker || isPending}
                                 >
                                     <SelectTrigger className="h-8 text-xs">
