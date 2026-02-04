@@ -40,6 +40,8 @@ const FormSchema = z.object({
 const defaultPeriods: IndicatorPeriods = {
   emaShort1: 12,
   emaShort2: 26,
+  emaLong1: 50,
+  emaLong2: 200,
   smaLong1: 50,
   smaLong2: 200,
   roc: 22,
@@ -62,7 +64,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort1: EmaData[], emaShort2: EmaData[], smaLong1: SmaData[], smaLong2: SmaData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort1: EmaData[], emaShort2: EmaData[], emaLong1: EmaData[], emaLong2: EmaData[], smaLong1: SmaData[], smaLong2: SmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -85,6 +87,8 @@ export default function Home() {
         
         const emaShort1Result = ema(closePrices, periods.emaShort1);
         const emaShort2Result = ema(closePrices, periods.emaShort2);
+        const emaLong1Result = ema(closePrices, periods.emaLong1);
+        const emaLong2Result = ema(closePrices, periods.emaLong2);
         const smaLong1Result = sma(closePrices, periods.smaLong1);
         const smaLong2Result = sma(closePrices, periods.smaLong2);
         const rsi = calculateRSI(closePrices, periods.rsi);
@@ -108,6 +112,8 @@ export default function Home() {
         setIndicatorData({
             emaShort1: emaShort1Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
             emaShort2: emaShort2Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaLong1: emaLong1Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            emaLong2: emaLong2Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
             smaLong1: smaLong1Result.reverse().map((val, i) => ({ date: dates[i], SMA: formatNumber(val) })),
             smaLong2: smaLong2Result.reverse().map((val, i) => ({ date: dates[i], SMA: formatNumber(val) })),
             rsi: rsi.reverse().map((val, i) => ({ date: dates[i], RSI: formatNumber(val) })),
@@ -174,7 +180,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort1: [], emaShort2: [], smaLong1: [], smaLong2: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort1: [], emaShort2: [], emaLong1: [], emaLong2: [], smaLong1: [], smaLong2: [] });
         }
       } else {
         setMarketData(null);

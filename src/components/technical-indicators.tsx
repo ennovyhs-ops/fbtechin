@@ -26,6 +26,8 @@ interface TechnicalIndicatorsProps {
         cmf: CmfData[];
         emaShort1: EmaData[];
         emaShort2: EmaData[];
+        emaLong1: EmaData[];
+        emaLong2: EmaData[];
         smaLong1: SmaData[];
         smaLong2: SmaData[];
     } | null;
@@ -123,11 +125,11 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         );
     };
 
-    const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
+    const EmaDisplayGroup = ({ period, value, previousValue, onPeriodChange, label = "EMA" }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void, label?: string }) => (
         <div className="flex flex-col items-start">
             <div className="flex items-center gap-2">
-                <label htmlFor={`ema-${period}`} className="text-xs text-muted-foreground">{`EMA`}</label>
-                <Input id={`ema-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
+                <label htmlFor={`ema-${period}-${label}`} className="text-xs text-muted-foreground">{label}</label>
+                <Input id={`ema-${period}-${label}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
             </div>
             <div>
                 <div className="flex items-center gap-1.5">
@@ -209,6 +211,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const prevEmaShort1 = data?.emaShort1?.[1];
     const latestEmaShort2 = data?.emaShort2?.[0];
     const prevEmaShort2 = data?.emaShort2?.[1];
+    const latestEmaLong1 = data?.emaLong1?.[0];
+    const prevEmaLong1 = data?.emaLong1?.[1];
+    const latestEmaLong2 = data?.emaLong2?.[0];
+    const prevEmaLong2 = data?.emaLong2?.[1];
     const latestSmaLong1 = data?.smaLong1?.[0];
     const prevSmaLong1 = data?.smaLong1?.[1];
     const latestSmaLong2 = data?.smaLong2?.[0];
@@ -289,42 +295,6 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const cmfValue = latestCmf?.CMF ? parseFloat(latestCmf.CMF) : null;
     const cmfPosition = cmfValue !== null ? (cmfValue > 0 ? 'Bullish' : 'Bearish') : null;
     
-    const EmaComparisonBadge = ({ value1, value2, label1, label2 }: { value1?: string|null, value2?:string|null, label1:string, label2:string }) => {
-        if (!value1 || !value2) return null;
-        const v1 = parseFloat(value1);
-        const v2 = parseFloat(value2);
-        if (isNaN(v1) || isNaN(v2)) return null;
-
-        const isBullish = v1 > v2;
-        const Icon = isBullish ? TrendingUp : TrendingDown;
-        const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
-        
-        return (
-            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
-                <Icon className="h-3 w-3" />
-                <span>{`EMA(${label1}) ${isBullish ? '>' : '<'} EMA(${label2})`}</span>
-            </div>
-        );
-    };
-
-    const SmaComparisonBadge = ({ value1, value2, label1, label2 }: { value1?: string|null, value2?:string|null, label1:string, label2:string }) => {
-        if (!value1 || !value2) return null;
-        const v1 = parseFloat(value1);
-        const v2 = parseFloat(value2);
-        if (isNaN(v1) || isNaN(v2)) return null;
-
-        const isBullish = v1 > v2;
-        const Icon = isBullish ? TrendingUp : TrendingDown;
-        const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
-        
-        return (
-            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
-                <Icon className="h-3 w-3" />
-                <span>{`SMA(${label1}) ${isBullish ? '>' : '<'} SMA(${label2})`}</span>
-            </div>
-        );
-    };
-
     return (
         <TooltipProvider>
             <Card className="animate-in fade-in-50 duration-500 delay-100">
@@ -366,18 +336,18 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <EmaDisplayGroup period={localPeriods.emaShort1} value={latestEmaShort1?.EMA} previousValue={prevEmaShort1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaShort2} value={latestEmaShort2?.EMA} previousValue={prevEmaShort2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort2', val)} />
                                 </div>
-                                <div className="text-left pt-1">
-                                    <EmaComparisonBadge value1={latestEmaShort1?.EMA} value2={latestEmaShort2?.EMA} label1={String(localPeriods.emaShort1)} label2={String(localPeriods.emaShort2)} />
-                                </div>
                             </div>
-                            <div className="space-y-4">
-                                <h4 className="font-semibold text-primary text-xs">Long-Term Trend (SMA)</h4>
-                                <div className="flex flex-row gap-4 items-start">
-                                    <SmaDisplayGroup period={localPeriods.smaLong1} value={latestSmaLong1?.SMA} previousValue={prevSmaLong1?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong1', val)} />
-                                    <SmaDisplayGroup period={localPeriods.smaLong2} value={latestSmaLong2?.SMA} previousValue={prevSmaLong2?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong2', val)} />
-                                </div>
-                                <div className="text-left pt-1">
-                                    <SmaComparisonBadge value1={latestSmaLong1?.SMA} value2={latestSmaLong2?.SMA} label1={String(localPeriods.smaLong1)} label2={String(localPeriods.smaLong2)} />
+                            <div className="space-y-6">
+                                <h4 className="font-semibold text-primary text-xs">Long-Term Trend (50/200 Day)</h4>
+                                <div className="space-y-4">
+                                    <div className="flex flex-row gap-4 items-start">
+                                        <SmaDisplayGroup period={localPeriods.smaLong1} value={latestSmaLong1?.SMA} previousValue={prevSmaLong1?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong1', val)} />
+                                        <SmaDisplayGroup period={localPeriods.smaLong2} value={latestSmaLong2?.SMA} previousValue={prevSmaLong2?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong2', val)} />
+                                    </div>
+                                    <div className="flex flex-row gap-4 items-start border-t pt-4">
+                                        <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} label="EMA" />
+                                        <EmaDisplayGroup period={localPeriods.emaLong2} value={latestEmaLong2?.EMA} previousValue={prevEmaLong2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong2', val)} label="EMA" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

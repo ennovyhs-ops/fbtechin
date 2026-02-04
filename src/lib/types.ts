@@ -114,6 +114,8 @@ export type NewsAnalysis = {
 export type IndicatorPeriods = {
   emaShort1: number;
   emaShort2: number;
+  emaLong1: number;
+  emaLong2: number;
   smaLong1: number;
   smaLong2: number;
   roc: number;
