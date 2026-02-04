@@ -387,10 +387,22 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                     <div className="flex flex-row gap-4 items-start">
                                         <SmaDisplayGroup period={localPeriods.smaLong1} value={latestSmaLong1?.SMA} previousValue={prevSmaLong1?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong1', val)} />
                                         <SmaDisplayGroup period={localPeriods.smaLong2} value={latestSmaLong2?.SMA} previousValue={prevSmaLong2?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong2', val)} />
+                                        <EmaSpread 
+                                            ema1={latestSmaLong1?.SMA} 
+                                            ema2={latestSmaLong2?.SMA} 
+                                            prevEma1={prevSmaLong1?.SMA} 
+                                            prevEma2={prevSmaLong2?.SMA} 
+                                        />
                                     </div>
                                     <div className="flex flex-row gap-4 items-start border-t pt-4">
                                         <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} label="EMA" />
                                         <EmaDisplayGroup period={localPeriods.emaLong2} value={latestEmaLong2?.EMA} previousValue={prevEmaLong2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong2', val)} label="EMA" />
+                                        <EmaSpread 
+                                            ema1={latestEmaLong1?.EMA} 
+                                            ema2={latestEmaLong2?.EMA} 
+                                            prevEma1={prevEmaLong1?.EMA} 
+                                            prevEma2={prevEmaLong2?.EMA} 
+                                        />
                                     </div>
                                 </div>
                             </div>
