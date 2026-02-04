@@ -1,12 +1,11 @@
 
-
 // Simple implementation of technical indicators.
 // For production use, a robust library like 'technicalindicators' would be better.
 
 import type { MarketData } from "./types";
 
 // Simple Moving Average
-const sma = (data: number[], period: number): number[] => {
+export const sma = (data: number[], period: number): number[] => {
     if (data.length < period) return new Array(data.length).fill(NaN);
 
     const result: number[] = new Array(period - 1).fill(NaN);
@@ -672,9 +671,3 @@ export const calculateCMF = (
     
     return cmfValues;
 };
-
-
-
-
-
-    

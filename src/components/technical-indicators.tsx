@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -8,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Activity, Zap, TrendingUp, TrendingDown, ChevronsUp, ChevronsDown, Info, Minus, HelpCircle } from 'lucide-react';
-import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData, MarketData, EmaData } from '@/lib/types';
+import type { RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData, MarketData, EmaData, SmaData } from '@/lib/types';
 import { isCryptoPair, isCurrencyPair, formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from './ui/separator';
@@ -27,8 +26,8 @@ interface TechnicalIndicatorsProps {
         cmf: CmfData[];
         emaShort1: EmaData[];
         emaShort2: EmaData[];
-        emaLong1: EmaData[];
-        emaLong2: EmaData[];
+        smaLong1: SmaData[];
+        smaLong2: SmaData[];
     } | null;
     loading: boolean;
     error: string | null;
@@ -140,6 +139,23 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
             <PriceVsEmaText ema={value} />
         </div>
     );
+
+    const SmaDisplayGroup = ({ period, value, previousValue, onPeriodChange }: { period: number, value?: string|null, previousValue?: string|null, onPeriodChange: (val: string) => void }) => (
+        <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2">
+                <label htmlFor={`sma-${period}`} className="text-xs text-muted-foreground">{`SMA`}</label>
+                <Input id={`sma-${period}`} type="number" value={period} onChange={e => onPeriodChange(e.target.value)} className="w-14 h-6 text-xs" />
+            </div>
+            <div>
+                <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-xs text-primary">{formatCurrency(value, currency)}</p>
+                    <TrendChangeIcon current={value} previous={previousValue} />
+                </div>
+                <WasValue previous={previousValue} formatter={(val) => formatCurrency(val, currency)} />
+            </div>
+            <PriceVsEmaText ema={value} />
+        </div>
+    );
     
     if (isCurrencyPair(ticker) || isCryptoPair(ticker)) {
         return (
@@ -193,10 +209,10 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
     const prevEmaShort1 = data?.emaShort1?.[1];
     const latestEmaShort2 = data?.emaShort2?.[0];
     const prevEmaShort2 = data?.emaShort2?.[1];
-    const latestEmaLong1 = data?.emaLong1?.[0];
-    const prevEmaLong1 = data?.emaLong1?.[1];
-    const latestEmaLong2 = data?.emaLong2?.[0];
-    const prevEmaLong2 = data?.emaLong2?.[1];
+    const latestSmaLong1 = data?.smaLong1?.[0];
+    const prevSmaLong1 = data?.smaLong1?.[1];
+    const latestSmaLong2 = data?.smaLong2?.[0];
+    const prevSmaLong2 = data?.smaLong2?.[1];
     const latestObv = data?.obv?.[0];
     const prevObv = data?.obv?.[1];
     const latestStochastic = data?.stochastic?.[0];
@@ -291,6 +307,24 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
         );
     };
 
+    const SmaComparisonBadge = ({ value1, value2, label1, label2 }: { value1?: string|null, value2?:string|null, label1:string, label2:string }) => {
+        if (!value1 || !value2) return null;
+        const v1 = parseFloat(value1);
+        const v2 = parseFloat(value2);
+        if (isNaN(v1) || isNaN(v2)) return null;
+
+        const isBullish = v1 > v2;
+        const Icon = isBullish ? TrendingUp : TrendingDown;
+        const color = isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
+        
+        return (
+            <div className={`inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-md ${color}`}>
+                <Icon className="h-3 w-3" />
+                <span>{`SMA(${label1}) ${isBullish ? '>' : '<'} SMA(${label2})`}</span>
+            </div>
+        );
+    };
+
     return (
         <TooltipProvider>
             <Card className="animate-in fade-in-50 duration-500 delay-100">
@@ -304,30 +338,30 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     {/* EMA Section */}
+                     {/* EMA/SMA Section */}
                     <div className="p-3 border rounded-lg space-y-3">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">EXPONENTIAL MOVING AVERAGES (EMA)</h3>
+                                <h3 className="font-semibold text-xs text-muted-foreground cursor-help underline decoration-dotted">MOVING AVERAGES (EMA & SMA)</h3>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs p-3 space-y-2">
                                 <div>
-                                    <p className="font-bold text-foreground">What are EMAs?</p>
-                                    <p>Exponential Moving Averages (EMAs) are trend-following indicators that give more weight to recent prices, making them more responsive to new information than Simple Moving Averages (SMAs).</p>
+                                    <p className="font-bold text-foreground">What are Moving Averages?</p>
+                                    <p>Indicators that smooth out price data to identify trends. EMAs give more weight to recent prices, while SMAs give equal weight to all prices in the period.</p>
                                 </div>
                                 <Separator />
                                 <div>
                                     <p className="font-bold text-foreground">How to Interpret Them:</p>
                                     <ul className="list-disc list-inside mt-1 space-y-1">
-                                        <li><span className="font-semibold text-primary">Crossovers:</span> A "Golden Cross" (short-term EMA crosses above long-term EMA) is bullish. A "Death Cross" (short-term crosses below long-term) is bearish.</li>
-                                        <li><span className="font-semibold text-primary">Price vs. EMA:</span> If the price is consistently above an EMA, it can be seen as a support level in an uptrend. If below, it can act as resistance in a downtrend.</li>
+                                        <li><span className="font-semibold text-primary">Crossovers:</span> A "Golden Cross" (short-term EMA crosses above long-term SMA) is bullish. A "Death Cross" (short-term crosses below long-term) is bearish.</li>
+                                        <li><span className="font-semibold text-primary">Price vs. MA:</span> If the price is consistently above an MA, it can be seen as a support level.</li>
                                     </ul>
                                 </div>
                             </TooltipContent>
                         </Tooltip>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             <div className="space-y-4">
-                                <h4 className="font-semibold text-primary text-xs">Short-Term Trend</h4>
+                                <h4 className="font-semibold text-primary text-xs">Short-Term Trend (EMA)</h4>
                                 <div className="flex flex-row gap-4 items-start">
                                     <EmaDisplayGroup period={localPeriods.emaShort1} value={latestEmaShort1?.EMA} previousValue={prevEmaShort1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort1', val)} />
                                     <EmaDisplayGroup period={localPeriods.emaShort2} value={latestEmaShort2?.EMA} previousValue={prevEmaShort2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaShort2', val)} />
@@ -337,13 +371,13 @@ export function TechnicalIndicators({ ticker, data, loading, error, currency, pe
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h4 className="font-semibold text-primary text-xs">Long-Term Trend</h4>
+                                <h4 className="font-semibold text-primary text-xs">Long-Term Trend (SMA)</h4>
                                 <div className="flex flex-row gap-4 items-start">
-                                    <EmaDisplayGroup period={localPeriods.emaLong1} value={latestEmaLong1?.EMA} previousValue={prevEmaLong1?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong1', val)} />
-                                    <EmaDisplayGroup period={localPeriods.emaLong2} value={latestEmaLong2?.EMA} previousValue={prevEmaLong2?.EMA} onPeriodChange={(val) => handlePeriodChange('emaLong2', val)} />
+                                    <SmaDisplayGroup period={localPeriods.smaLong1} value={latestSmaLong1?.SMA} previousValue={prevSmaLong1?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong1', val)} />
+                                    <SmaDisplayGroup period={localPeriods.smaLong2} value={latestSmaLong2?.SMA} previousValue={prevSmaLong2?.SMA} onPeriodChange={(val) => handlePeriodChange('smaLong2', val)} />
                                 </div>
                                 <div className="text-left pt-1">
-                                    <EmaComparisonBadge value1={latestEmaLong1?.EMA} value2={latestEmaLong2?.EMA} label1={String(localPeriods.emaLong1)} label2={String(localPeriods.emaLong2)} />
+                                    <SmaComparisonBadge value1={latestSmaLong1?.SMA} value2={latestSmaLong2?.SMA} label1={String(localPeriods.smaLong1)} label2={String(localPeriods.smaLong2)} />
                                 </div>
                             </div>
                         </div>

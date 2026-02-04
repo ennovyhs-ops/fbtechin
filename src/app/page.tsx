@@ -6,9 +6,9 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart, Edit } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData, SmaData } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
-import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF, ema } from '@/lib/technical-analysis';
+import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF, ema, sma } from '@/lib/technical-analysis';
 import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
 import { predictPriceTarget } from '@/ai/flows/predict-price-target';
 
@@ -40,8 +40,8 @@ const FormSchema = z.object({
 const defaultPeriods: IndicatorPeriods = {
   emaShort1: 12,
   emaShort2: 26,
-  emaLong1: 50,
-  emaLong2: 200,
+  smaLong1: 50,
+  smaLong2: 200,
   roc: 22,
   rsi: 14,
   macd: { fast: 12, slow: 26, signal: 9 },
@@ -62,7 +62,7 @@ export default function Home() {
   const [currency, setCurrency] = useState<string | null>(null);
   const [region, setRegion] = useState<string | null>(null);
 
-  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort1: EmaData[], emaShort2: EmaData[], emaLong1: EmaData[], emaLong2: EmaData[]} | null>(null);
+  const [indicatorData, setIndicatorData] = useState<{rsi: RsiData[], macd: MacdData[], bbands: BbandsData[], roc: RocData[], maVol: MAVolData[], vwma: VwmaData[], obv: ObvData[], stochastic: StochasticData[], cmf: CmfData[], emaShort1: EmaData[], emaShort2: EmaData[], smaLong1: SmaData[], smaLong2: SmaData[]} | null>(null);
   const [indicatorsLoading, setIndicatorsLoading] = useState(false);
   const [indicatorsError, setIndicatorsError] = useState<string|null>(null);
   
@@ -85,8 +85,8 @@ export default function Home() {
         
         const emaShort1Result = ema(closePrices, periods.emaShort1);
         const emaShort2Result = ema(closePrices, periods.emaShort2);
-        const emaLong1Result = ema(closePrices, periods.emaLong1);
-        const emaLong2Result = ema(closePrices, periods.emaLong2);
+        const smaLong1Result = sma(closePrices, periods.smaLong1);
+        const smaLong2Result = sma(closePrices, periods.smaLong2);
         const rsi = calculateRSI(closePrices, periods.rsi);
         const macd = calculateMACD(closePrices, periods.macd.fast, periods.macd.slow, periods.macd.signal);
         const bbands = calculateBollingerBands(closePrices, periods.bbands.period, periods.bbands.stdDev);
@@ -108,8 +108,8 @@ export default function Home() {
         setIndicatorData({
             emaShort1: emaShort1Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
             emaShort2: emaShort2Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
-            emaLong1: emaLong1Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
-            emaLong2: emaLong2Result.reverse().map((val, i) => ({ date: dates[i], EMA: formatNumber(val) })),
+            smaLong1: smaLong1Result.reverse().map((val, i) => ({ date: dates[i], SMA: formatNumber(val) })),
+            smaLong2: smaLong2Result.reverse().map((val, i) => ({ date: dates[i], SMA: formatNumber(val) })),
             rsi: rsi.reverse().map((val, i) => ({ date: dates[i], RSI: formatNumber(val) })),
             macd: macd.reverse().map((val, i) => ({ 
                 date: dates[i],
@@ -174,7 +174,7 @@ export default function Home() {
         if (!isForexOrCrypto) {
             calculateIndicators(result.data, defaultPeriods);
         } else {
-            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort1: [], emaShort2: [], emaLong1: [], emaLong2: [] });
+            setIndicatorData({ rsi: [], macd: [], bbands: [], roc: [], maVol: [], vwma: [], obv: [], stochastic: [], cmf: [], emaShort1: [], emaShort2: [], smaLong1: [], smaLong2: [] });
         }
       } else {
         setMarketData(null);
@@ -871,7 +871,7 @@ export default function Home() {
                 </Card>
 
                 <Card>
-                     <CardHeader>
+                    <CardHeader>
                         <CardTitle className="flex items-center gap-2 font-headline text-2xl">
                             <Activity className="h-6 w-6 text-muted-foreground" />
                             <span>Technical Indicators</span>

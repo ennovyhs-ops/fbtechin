@@ -62,6 +62,11 @@ export type EmaData = {
   EMA: string | null;
 }
 
+export type SmaData = {
+  date: string;
+  SMA: string | null;
+}
+
 export type ObvData = {
     date: string;
     OBV: string | null;
@@ -109,8 +114,8 @@ export type NewsAnalysis = {
 export type IndicatorPeriods = {
   emaShort1: number;
   emaShort2: number;
-  emaLong1: number;
-  emaLong2: number;
+  smaLong1: number;
+  smaLong2: number;
   roc: number;
   rsi: number;
   macd: {
