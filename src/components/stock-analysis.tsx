@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
 import { formatCurrency, isCryptoPair, isCurrencyPair } from '@/lib/utils';
-import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface StockAnalysisProps {
   ticker: string;
@@ -271,26 +271,10 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         {momentumAnalysis.totalScore.toFixed(2)}
                     </span>
                     
-                    {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className={`flex items-center justify-center gap-1 text-[10px] font-semibold cursor-help ${
-                                        momentumChange === 'Increasing' ? 'text-green-400' :
-                                        momentumChange === 'Decreasing' ? 'text-red-400' :
-                                        'text-muted-foreground'
-                                    }`}>
-                                        {momentumChange === 'Increasing' ? <TrendingUp className="h-2.5 w-2.5" /> :
-                                        momentumChange === 'Decreasing' ? <TrendingDown className="h-2.5 w-2.5" /> :
-                                        <Minus className="h-2.5 w-2.5" />}
-                                        <span>Momentum is {momentumChange}</span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Change vs. yesterday: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                    {prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
+                        <span className="text-xs text-muted-foreground">
+                            (was {prevMomentumAnalysis.totalScore.toFixed(2)})
+                        </span>
                     )}
 
                     <TooltipProvider>
@@ -303,6 +287,14 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>{signalInfo.explanation}</p>
+                                {momentumChange && (
+                                    <p className="mt-1 flex items-center gap-1">
+                                        Trend: {momentumChange} 
+                                        {momentumChange === 'Increasing' ? <TrendingUp className="h-3 w-3" /> :
+                                         momentumChange === 'Decreasing' ? <TrendingDown className="h-3 w-3" /> :
+                                         <Minus className="h-3 w-3" />}
+                                    </p>
+                                )}
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
