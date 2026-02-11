@@ -10,7 +10,7 @@ import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
 import { formatCurrency, isCryptoPair, isCurrencyPair } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
-
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface StockAnalysisProps {
   ticker: string;
@@ -87,6 +87,68 @@ const FibonacciDisplay = ({ label, value, currency, highlight }: { label: string
     </div>
 );
 
+const MomentumGauge = ({ score }: { score: number }) => {
+  // Score is -1 to 1. Map to 0 to 180 for a semi-circle
+  const needleAngle = (score + 1) * 90;
+  
+  const data = [
+    { name: 'Bearish', value: 60, color: 'hsl(var(--destructive))' },
+    { name: 'Neutral', value: 60, color: 'hsl(var(--muted))' },
+    { name: 'Bullish', value: 60, color: 'hsl(var(--chart-2))' },
+  ];
+
+  const RADIAN = Math.PI / 180;
+  const cx = 150;
+  const cy = 110;
+  const iR = 60;
+  const oR = 100;
+
+  const needle = (value: number, data: any[], cx: number, cy: number, iR: number, oR: number, color: string) => {
+    let total = 0;
+    data.forEach((v) => {
+      total += v.value;
+    });
+    const ang = 180.0 * (1 - value / total);
+    const length = (iR + 2 * oR) / 3;
+    const sin = Math.sin(-RADIAN * ang);
+    const cos = Math.cos(-RADIAN * ang);
+
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={5} fill={color} stroke="none" />
+        <path d={`M${cx} ${cy} L${cx + length * cos} ${cy + length * sin}`} strokeWidth="3" stroke={color} fill="none" />
+      </g>
+    );
+  };
+
+  return (
+    <div className="w-full h-[150px] relative">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <Pie
+            dataKey="value"
+            startAngle={180}
+            endAngle={0}
+            data={data}
+            cx={cx}
+            cy={cy}
+            innerRadius={iR}
+            outerRadius={oR}
+            stroke="none"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} opacity={0.8} />
+            ))}
+          </Pie>
+          {needle(score + 1, [{ value: 2 }], cx, cy, iR, oR, 'hsl(var(--foreground))')}
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="absolute bottom-4 left-0 right-0 text-center">
+        <span className="text-2xl font-black tracking-tighter">{score.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+};
 
 export function StockAnalysis({ ticker, marketData, analysisResult, currency, loading, meanReversionTarget }: StockAnalysisProps) {
 
@@ -140,7 +202,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
   const prevMomentumAnalysis = analysisResult.prevAnalysis;
   const prediction = analysisResult.prediction;
   
-  if (!momentumAnalysis) return null; // Should not happen if error is handled, but for type safety
+  if (!momentumAnalysis) return null;
 
   const { icon, color } = getSignalInfo(momentumAnalysis.signal);
   const actionExplanation = actionGlossary[momentumAnalysis.tradeAction];
@@ -214,7 +276,6 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     );
   }
 
-  // Simplified view for Forex/Crypto
   if (momentumAnalysis.signal === 'N/A') {
       return (
            <Card className="animate-in fade-in-50 duration-500 delay-300">
@@ -263,43 +324,28 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             </div>
         )}
         <div className="flex flex-col md:flex-row justify-around items-center gap-6 p-4 rounded-lg bg-muted/50">
-            {/* Left side: Momentum Score */}
-            <div className="flex flex-col items-center gap-2 text-center">
+            <div className="flex flex-col items-center gap-2 text-center w-full md:w-1/3">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
-                                Momentum Score (-1 to 1)
+                                Momentum Gauge
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
-                             <p>This score is calculated from multiple technical indicators (RSI, MACD, Volume, Trend, etc.). A score closer to +1.0 is strongly bullish, while a score closer to -1.0 is strongly bearish.</p>
+                             <p>This score is calculated from multiple technical indicators. A score closer to +1.0 is strongly bullish, while a score closer to -1.0 is strongly bearish.</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
 
-                <div className="flex items-baseline gap-2">
-                    <p className="font-bold text-xl text-foreground">{momentumAnalysis.totalScore.toFixed(2)}</p>
-                    {prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <p className="font-semibold text-sm text-muted-foreground cursor-help">(was {prevMomentumAnalysis.totalScore.toFixed(2)})</p>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Previous day's score</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    )}
-                </div>
+                <MomentumGauge score={momentumAnalysis.totalScore} />
                 
                 {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className={`flex items-center gap-1 text-xs font-semibold cursor-help ${
+                                <div className={`flex items-center justify-center gap-1 text-xs font-semibold cursor-help ${
                                     momentumChange === 'Increasing' ? 'text-green-400' :
                                     momentumChange === 'Decreasing' ? 'text-red-400' :
                                     'text-muted-foreground'
@@ -307,11 +353,11 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                     {momentumChange === 'Increasing' ? <TrendingUp className="h-3 w-3" /> :
                                     momentumChange === 'Decreasing' ? <TrendingDown className="h-3 w-3" /> :
                                     <Minus className="h-3 w-3" />}
-                                    <span>{momentumChange}</span>
+                                    <span>Momentum is {momentumChange}</span>
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Change vs. previous day: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
+                                <p>Change vs. yesterday: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
@@ -320,7 +366,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className={`flex items-center gap-1.5 font-semibold text-base ${color} cursor-help`}>
+                            <div className={`flex items-center justify-center gap-1.5 font-semibold text-base ${color} cursor-help mt-1`}>
                                 {icon}
                                 <span>{momentumAnalysis.signal}</span>
                             </div>
@@ -335,8 +381,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
             <Separator orientation="vertical" className="h-24 hidden md:block" />
             <Separator orientation="horizontal" className="w-full md:hidden" />
 
-            {/* Right side: Price Target */}
-             <div className="flex flex-col items-center gap-4 text-center">
+             <div className="flex flex-col items-center gap-4 text-center w-full md:w-1/2">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -348,16 +393,12 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         <TooltipContent className="max-w-xs space-y-2">
                              <div>
                                 <p className="font-bold">Short-Term Target:</p>
-                                <p>This is calculated by adding a momentum-adjusted volatility measure to the current price. The formula is:</p>
-                                <p className="font-mono text-xs p-2 bg-background rounded-md mt-1">Current Price + (ATR * Momentum Multiplier)</p>
-                                <p>ATR (Average True Range) is a measure of recent market volatility. The multiplier increases with the strength of the momentum signal.</p>
+                                <p>Projected price based on momentum strength and current volatility (ATR).</p>
                             </div>
                             <Separator/>
                             <div>
                                 <p className="font-bold">Long-Term Target:</p>
-                                <p>This uses historical standard deviation to project a 6-month price. The formula is:</p>
-                                 <p className="font-mono text-xs p-2 bg-background rounded-md mt-1">Current Price * (1 + (Momentum * Volatility % * 5.0))</p>
-                                <p>This model assumes the current trend strength will influence the price over a longer period.</p>
+                                <p>6-month forecast using standard deviation and historical trend persistence.</p>
                             </div>
                         </TooltipContent>
                     </Tooltip>
@@ -377,24 +418,22 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     <h4 className="font-semibold text-sm text-blue-400">Alternative Outlook: Breakout Potential</h4>
                 </div>
                 <p className="text-xs text-blue-400/90 mt-2 max-w-xl mx-auto">
-                    Neutral momentum often precedes a breakout. A move above the R1 pivot could signal a new uptrend, while a drop below S1 could indicate a new downtrend. These are the key levels to watch.
+                    Neutral momentum often precedes a breakout. A move above the R1 pivot could signal a new uptrend, while a drop below S1 could indicate a new downtrend.
                 </p>
                 {pivots ? (
                     <div className="mt-3 flex justify-center items-center gap-8">
                         <div className="text-center">
-                            <p className="text-xs font-semibold text-blue-400/90">Bullish Breakout Target</p>
+                            <p className="text-xs font-semibold text-blue-400/90">Bullish Breakout</p>
                             <p className="font-bold text-lg text-blue-400/90">{formatCurrency(pivots.r1, currency)}</p>
                             <p className="text-xs text-blue-400/80">(R1 Pivot)</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-xs font-semibold text-blue-400/90">Bearish Breakdown Target</p>
+                            <p className="text-xs font-semibold text-blue-400/90">Bearish Breakdown</p>
                             <p className="font-bold text-lg text-blue-400/90">{formatCurrency(pivots.s1, currency)}</p>
                             <p className="text-xs text-blue-400/80">(S1 Pivot)</p>
                         </div>
                     </div>
-                ) : (
-                     <p className="text-xs text-blue-400/90 mt-2">Pivot points are not available for breakout analysis.</p>
-                )}
+                ) : null}
             </div>
         ) : (
             <div className="p-3 rounded-lg border-dashed border bg-orange-500/10 border-orange-500/20 text-center">
@@ -405,22 +444,21 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                 {meanReversionTarget ? (
                     <>
                         <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                           If the current trend stalls, prices may revert to the 20-day moving average, a common technical level for a pullback.
+                           If the current trend stalls, prices may revert to the 20-day moving average.
                         </p>
                         <div className="mt-3">
-                            <p className="text-xs font-semibold text-orange-400/90">Potential Mean Reversion Target</p>
+                            <p className="text-xs font-semibold text-orange-400/90">Reversion Target</p>
                             <p className="font-bold text-lg text-orange-400/90">{formatCurrency(meanReversionTarget, currency)}</p>
                             <p className="text-xs text-orange-400/80">(Current 20-Day SMA)</p>
                         </div>
                     </>
                 ) : (
                     <p className="text-xs text-orange-400/90 mt-2 max-w-xl mx-auto">
-                        This analysis is purely technical. Always consider that prices can revert to their historical average and that fundamental news (like earnings) can override technical trends.
+                        This analysis is purely technical. Prices can revert to their historical average if momentum fades.
                     </p>
                 )}
             </div>
         )}
-
 
         {pivots && (
             <div className="space-y-4">
@@ -435,16 +473,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                         <TooltipContent className="max-w-xs space-y-2">
                           <div>
                             <p className="font-bold text-foreground mb-1">What are Swing Pivots?</p>
-                            <p>These are key support and resistance levels calculated from the 30-day high, low, and close. They are watched by traders to identify potential market turning points.</p>
-                          </div>
-                          <Separator/>
-                           <div>
-                            <p className="font-bold text-foreground mb-1">How to Use Them:</p>
-                            <ul className="list-disc list-inside space-y-1">
-                                <li><span className="font-semibold">The Pivot (PP):</span> The central point. Trading above it is generally bullish; below is bearish.</li>
-                                <li><span className="font-semibold">Support (S1, S2):</span> Price levels where a downtrend might pause or reverse.</li>
-                                <li><span className="font-semibold">Resistance (R1, R2):</span> Price levels where an uptrend might pause or reverse. A strong break above R1 can signal a new bullish leg.</li>
-                            </ul>
+                            <p>Key support and resistance levels watched by traders to identify potential turning points.</p>
                           </div>
                         </TooltipContent>
                     </Tooltip>
@@ -458,44 +487,6 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     </div>
                     <PivotDisplay label="R1" value={pivots.r1} currency={currency} />
                     <PivotDisplay label="R2" value={pivots.r2} currency={currency} />
-                </div>
-            </div>
-        )}
-
-        {fibonacci && (
-            <div className="space-y-4">
-                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
-                                Fibonacci Retracement (90-Day, Calculated)
-                                <HelpCircle className="h-4 w-4" />
-                            </h3>
-                        </TooltipTrigger>
-                         <TooltipContent className="max-w-xs p-3 space-y-2">
-                             <div>
-                               <p className="font-bold text-foreground">What are Fibonacci Levels?</p>
-                               <p>These are horizontal lines that indicate where support and resistance are likely to occur. They are calculated based on the high and low points of the price over the last 90 days.</p>
-                             </div>
-                             <Separator />
-                             <div>
-                               <p className="font-bold text-foreground">How to Use Them:</p>
-                               <ul className="list-disc list-inside mt-1 space-y-1">
-                                    <li>After a significant price move, the price will often "retrace" or pull back to one of these levels before continuing in the original direction.</li>
-                                    <li>The area between the 50% and 61.8% levels is known as the <strong className="text-primary">"Golden Zone,"</strong> often considered a high-probability area for a reversal.</li>
-                               </ul>
-                             </div>
-                         </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <div className="flex flex-row flex-wrap justify-around items-center gap-x-4 gap-y-2 p-3 rounded-lg bg-muted/50">
-                    <FibonacciDisplay label="Low (0%)" value={fibonacci.rangeLow} currency={currency} />
-                    <FibonacciDisplay label="23.6%" value={fibonacci.level236} currency={currency} />
-                    <FibonacciDisplay label="38.2%" value={fibonacci.level382} currency={currency} />
-                    <FibonacciDisplay label="50.0%" value={fibonacci.level500} currency={currency} highlight />
-                    <FibonacciDisplay label="61.8%" value={fibonacci.level618} currency={currency} highlight />
-                    <FibonacciDisplay label="78.6%" value={fibonacci.level786} currency={currency} />
-                    <FibonacciDisplay label="High (100%)" value={fibonacci.rangeHigh} currency={currency} />
                 </div>
             </div>
         )}
@@ -527,7 +518,3 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
     </Card>
   );
 }
-
-    
-
-    
