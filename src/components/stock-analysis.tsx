@@ -9,7 +9,6 @@ import type { MarketData } from '@/lib/types';
 import { Separator } from './ui/separator';
 import { formatCurrency, isCryptoPair, isCurrencyPair } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface StockAnalysisProps {
   ticker: string;
@@ -79,76 +78,6 @@ const PivotDisplay = ({ label, value, currency }: { label: string; value: number
     </div>
 );
 
-const FibonacciDisplay = ({ label, value, currency, highlight }: { label: string; value: number; currency: string | null, highlight?: boolean }) => (
-    <div className={`flex flex-col items-center p-1 rounded-md ${highlight ? 'bg-background' : ''}`}>
-        <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-        <span className="font-bold text-sm text-foreground">{formatCurrency(value, currency)}</span>
-    </div>
-);
-
-const MomentumGauge = ({ score }: { score: number }) => {
-  // Score is -1 to 1. Map to 0 to 180 for a semi-circle
-  const needleAngle = (score + 1) * 90;
-  
-  const data = [
-    { name: 'Bearish', value: 60, color: 'hsl(var(--destructive))' },
-    { name: 'Neutral', value: 60, color: 'hsl(var(--muted))' },
-    { name: 'Bullish', value: 60, color: 'hsl(var(--chart-2))' },
-  ];
-
-  const RADIAN = Math.PI / 180;
-  const cx = 150;
-  const cy = 110;
-  const iR = 60;
-  const oR = 100;
-
-  const needle = (value: number, data: any[], cx: number, cy: number, iR: number, oR: number, color: string) => {
-    let total = 0;
-    data.forEach((v) => {
-      total += v.value;
-    });
-    const ang = 180.0 * (1 - value / total);
-    const length = (iR + 2 * oR) / 3;
-    const sin = Math.sin(-RADIAN * ang);
-    const cos = Math.cos(-RADIAN * ang);
-
-    return (
-      <g>
-        <circle cx={cx} cy={cy} r={5} fill={color} stroke="none" />
-        <path d={`M${cx} ${cy} L${cx + length * cos} ${cy + length * sin}`} strokeWidth="3" stroke={color} fill="none" />
-      </g>
-    );
-  };
-
-  return (
-    <div className="w-full h-[150px] relative">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-          <Pie
-            dataKey="value"
-            startAngle={180}
-            endAngle={0}
-            data={data}
-            cx={cx}
-            cy={cy}
-            innerRadius={iR}
-            outerRadius={oR}
-            stroke="none"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} opacity={0.8} />
-            ))}
-          </Pie>
-          {needle(score + 1, [{ value: 2 }], cx, cy, iR, oR, 'hsl(var(--foreground))')}
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="absolute bottom-4 left-0 right-0 text-center">
-        <span className="text-2xl font-black tracking-tighter">{score.toFixed(2)}</span>
-      </div>
-    </div>
-  );
-};
-
 export function StockAnalysis({ ticker, marketData, analysisResult, currency, loading, meanReversionTarget }: StockAnalysisProps) {
 
   if (loading) {
@@ -208,7 +137,6 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
   const isPredictionError = analysisResult.error && (!prediction || 'error' in prediction);
   const signalInfo = getSignalInfoForPrediction(momentumAnalysis.signal);
   const pivots = (prediction && 'pivots' in prediction && prediction.pivots) ? prediction.pivots : null;
-  const fibonacci = (prediction && 'fibonacci' in prediction && prediction.fibonacci) ? prediction.fibonacci : null;
 
   let momentumChange: 'Increasing' | 'Decreasing' | 'Stable' | null = null;
   let momentumDiff = 0;
@@ -328,7 +256,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-1.5 cursor-help">
-                                Momentum Gauge
+                                Momentum Score
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
@@ -338,7 +266,11 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     </Tooltip>
                 </TooltipProvider>
 
-                <MomentumGauge score={momentumAnalysis.totalScore} />
+                <div className="py-4">
+                    <span className="text-5xl font-black tracking-tighter text-foreground">
+                        {momentumAnalysis.totalScore.toFixed(2)}
+                    </span>
+                </div>
                 
                 {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
                     <TooltipProvider>
