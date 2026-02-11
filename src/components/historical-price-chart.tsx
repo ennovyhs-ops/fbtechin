@@ -13,11 +13,15 @@ const chartConfig = {
         color: 'hsl(var(--primary))',
     },
     upperBand: {
-        label: 'Upper Band',
+        label: 'Upper BB',
         color: 'hsl(var(--chart-2))',
     },
     lowerBand: {
-        label: 'Lower Band',
+        label: 'Lower BB',
+        color: 'hsl(var(--chart-2))',
+    },
+    middleBand: {
+        label: 'Middle BB',
         color: 'hsl(var(--chart-2))',
     },
     rsi: {
@@ -85,14 +89,11 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
         const rsi = chronologicalRsi[index];
         const macd = chronologicalMacd[index];
         const vol = chronologicalVol[index];
-        const lower = bbands?.['Real Lower Band'] ? parseFloat(bbands['Real Lower Band']) : null;
-        const upper = bbands?.['Real Upper Band'] ? parseFloat(bbands['Real Upper Band']) : null;
         return {
             date: data.date,
             price: parseFloat(data.close),
-            upperBand: upper,
-            lowerBand: lower,
-            bb_area: (lower !== null && upper !== null) ? upper - lower : null,
+            upperBand: bbands?.['Real Upper Band'] ? parseFloat(bbands['Real Upper Band']) : null,
+            lowerBand: bbands?.['Real Lower Band'] ? parseFloat(bbands['Real Lower Band']) : null,
             middleBand: bbands?.['Real Middle Band'] ? parseFloat(bbands['Real Middle Band']) : null,
             rsi: rsi?.RSI ? parseFloat(rsi.RSI) : null,
             macd: macd?.MACD ? parseFloat(macd.MACD) : null,
@@ -140,18 +141,17 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
     }
   }, [analysisResult]);
 
-  const { mcLower, mcUpper, mcAverage } = useMemo(() => {
+  const { mcLower, mcUpper } = useMemo(() => {
     if (!monteCarloResult) return {};
     return {
         mcLower: monteCarloResult.probableRange.lower,
         mcUpper: monteCarloResult.probableRange.upper,
-        mcAverage: monteCarloResult.averageTarget,
     }
   }, [monteCarloResult]);
 
   const yDomainPrice = useMemo(() => {
     const priceValues = chartData.flatMap(d => [d.upperBand, d.lowerBand, d.price]).filter(v => v !== null && !isNaN(v)) as number[];
-    const targetValues = [shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper, mcAverage].filter(v => v !== undefined && v !== null) as number[];
+    const targetValues = [shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper].filter(v => v !== undefined && v !== null) as number[];
     
     const allValues = [...priceValues, ...targetValues];
     if (allValues.length === 0) return ['auto', 'auto'];
@@ -161,7 +161,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
 
     const padding = (maxVal - minVal) * 0.05 || 1;
     return [minVal - padding, maxVal + padding];
-  }, [chartData, shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper, mcAverage]);
+  }, [chartData, shortTermTarget, breakoutTarget, breakdownTarget, mcLower, mcUpper]);
 
   if (!chartData || chartData.length === 0) {
       return null;
@@ -174,7 +174,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             <div>
                 <CardTitle className="font-headline text-2xl">Advanced Charting for {ticker}</CardTitle>
                 <CardDescription>
-                    Price action with Volume and momentum overlays.
+                    Price action with Volume and Bollinger Band overlays.
                 </CardDescription>
             </div>
             <div className="flex items-center gap-2 no-print">
@@ -229,11 +229,18 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         />
                     )}
 
-                    <Area
-                        yAxisId="left" type="monotone" dataKey="bb_area"
-                        stroke={chartConfig.upperBand.color} fill={chartConfig.upperBand.color}
-                        strokeWidth={1} strokeOpacity={0.2} fillOpacity={0.05} activeDot={false}
-                        name="Bollinger Bands"
+                    {/* Bollinger Band Overlays */}
+                    <Line 
+                        yAxisId="left" type="monotone" dataKey="upperBand" 
+                        stroke={chartConfig.upperBand.color} strokeWidth={1} strokeDasharray="3 3" dot={false} name="Upper BB"
+                    />
+                    <Line 
+                        yAxisId="left" type="monotone" dataKey="lowerBand" 
+                        stroke={chartConfig.lowerBand.color} strokeWidth={1} strokeDasharray="3 3" dot={false} name="Lower BB"
+                    />
+                    <Line 
+                        yAxisId="left" type="monotone" dataKey="middleBand" 
+                        stroke={chartConfig.middleBand.color} strokeWidth={1} opacity={0.3} dot={false} name="Middle BB"
                     />
 
                     <Line 
