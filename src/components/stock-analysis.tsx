@@ -266,47 +266,47 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                     </Tooltip>
                 </TooltipProvider>
 
-                <div className="py-4">
-                    <span className="text-5xl font-black tracking-tighter text-foreground">
+                <div className="flex flex-col items-center">
+                    <span className="font-bold text-base text-foreground">
                         {momentumAnalysis.totalScore.toFixed(2)}
                     </span>
-                </div>
-                
-                {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
+                    
+                    {momentumChange && prevMomentumAnalysis && 'totalScore' in prevMomentumAnalysis && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className={`flex items-center justify-center gap-1 text-[10px] font-semibold cursor-help ${
+                                        momentumChange === 'Increasing' ? 'text-green-400' :
+                                        momentumChange === 'Decreasing' ? 'text-red-400' :
+                                        'text-muted-foreground'
+                                    }`}>
+                                        {momentumChange === 'Increasing' ? <TrendingUp className="h-2.5 w-2.5" /> :
+                                        momentumChange === 'Decreasing' ? <TrendingDown className="h-2.5 w-2.5" /> :
+                                        <Minus className="h-2.5 w-2.5" />}
+                                        <span>Momentum is {momentumChange}</span>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Change vs. yesterday: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className={`flex items-center justify-center gap-1 text-xs font-semibold cursor-help ${
-                                    momentumChange === 'Increasing' ? 'text-green-400' :
-                                    momentumChange === 'Decreasing' ? 'text-red-400' :
-                                    'text-muted-foreground'
-                                }`}>
-                                    {momentumChange === 'Increasing' ? <TrendingUp className="h-3 w-3" /> :
-                                    momentumChange === 'Decreasing' ? <TrendingDown className="h-3 w-3" /> :
-                                    <Minus className="h-3 w-3" />}
-                                    <span>Momentum is {momentumChange}</span>
+                                <div className={`flex items-center justify-center gap-1.5 font-semibold text-xs ${color} cursor-help mt-1`}>
+                                    {icon}
+                                    <span>{momentumAnalysis.signal}</span>
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Change vs. yesterday: {momentumDiff > 0 ? '+' : ''}{momentumDiff.toFixed(3)}</p>
+                                <p>{signalInfo.explanation}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                )}
-
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className={`flex items-center justify-center gap-1.5 font-semibold text-base ${color} cursor-help mt-1`}>
-                                {icon}
-                                <span>{momentumAnalysis.signal}</span>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{signalInfo.explanation}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                </div>
             </div>
 
             <Separator orientation="vertical" className="h-24 hidden md:block" />
@@ -408,7 +408,7 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                           </div>
                           <Separator />
                           <div>
-                            <p className="font-bold text-foreground mb-1">How are they calculated?</p>
+                            <p className="font-bold text-foreground mb-1">How are them calculated?</p>
                             <p className="text-[10px] leading-relaxed">
                                 Our engine calculates these daily using the Standard Pivot formula:
                                 <br/><br/>
