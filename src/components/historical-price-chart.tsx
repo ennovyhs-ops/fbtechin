@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -228,7 +227,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                     {shortTermTarget && (
                         <ReferenceLine 
                             yAxisId="left" y={shortTermTarget} 
-                            label={{ value: "Tgt", position: 'right', fill: chartConfig.shortTermTarget.color, fontSize: 10 }}
+                            label={{ value: "Momentum Target", position: 'right', fill: chartConfig.shortTermTarget.color, fontSize: 10 }}
                             stroke={chartConfig.shortTermTarget.color} strokeDasharray="3 3" 
                         />
                     )}

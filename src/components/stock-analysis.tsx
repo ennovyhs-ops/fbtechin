@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -470,10 +469,23 @@ export function StockAnalysis({ ticker, marketData, analysisResult, currency, lo
                                 <HelpCircle className="h-4 w-4" />
                             </h3>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs space-y-2">
+                        <TooltipContent className="max-w-xs space-y-4">
                           <div>
                             <p className="font-bold text-foreground mb-1">What are Swing Pivots?</p>
-                            <p>Key support and resistance levels watched by traders to identify potential turning points.</p>
+                            <p>Key support and resistance levels watched by traders to identify potential turning points within a 30-day "swing" window.</p>
+                          </div>
+                          <Separator />
+                          <div>
+                            <p className="font-bold text-foreground mb-1">How are they calculated?</p>
+                            <p className="text-[10px] leading-relaxed">
+                                Our engine calculates these daily using the Standard Pivot formula:
+                                <br/><br/>
+                                • <strong>Pivot Point (PP):</strong> The average of the 30-day High, 30-day Low, and latest Close.
+                                <br/>
+                                • <strong>Resistance (R1/R2):</strong> Calculated by doubling the PP and subtracting the 30-day Low.
+                                <br/>
+                                • <strong>Support (S1/S2):</strong> Calculated by doubling the PP and subtracting the 30-day High.
+                            </p>
                           </div>
                         </TooltipContent>
                     </Tooltip>
