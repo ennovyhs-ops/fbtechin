@@ -174,7 +174,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             <div>
                 <CardTitle className="font-headline text-2xl">Advanced Charting for {ticker}</CardTitle>
                 <CardDescription>
-                    Price action with Volume and MACD momentum overlays.
+                    Price action with Volume and momentum overlays.
                 </CardDescription>
             </div>
             <div className="flex items-center gap-2 no-print">
@@ -191,15 +191,12 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             <ResponsiveContainer width="100%" height="100%">
                  <ComposedChart
                     data={chartData}
-                    margin={{ top: 20, right: 20, left: -10, bottom: 5 }}
+                    margin={{ top: 20, right: 20, left: -10, bottom: 0 }}
                 >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
                         dataKey="date" 
-                        tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        tick={{ fontSize: 10 }}
-                        interval="preserveStartEnd"
-                        tickCount={6}
+                        hide
                     />
                     <YAxis 
                         yAxisId="left"
@@ -253,11 +250,11 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             </ResponsiveContainer>
          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div className="flex flex-col gap-2">
             {/* MACD Chart */}
-            <div className="h-48 w-full border rounded-md p-2 bg-muted/5">
+            <div className="h-32 w-full border rounded-md p-2 bg-muted/5">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                         <XAxis dataKey="date" hide />
                         <YAxis tick={{ fontSize: 8 }} />
@@ -272,11 +269,17 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
             </div>
 
             {/* RSI Chart */}
-            <div className="h-48 w-full border rounded-md p-2 bg-muted/5">
+            <div className="h-40 w-full border rounded-md p-2 bg-muted/5">
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                        <XAxis dataKey="date" hide />
+                        <XAxis 
+                            dataKey="date" 
+                            tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            tick={{ fontSize: 9 }}
+                            interval="preserveStartEnd"
+                            tickCount={8}
+                        />
                         <YAxis domain={[0, 100]} tick={{ fontSize: 8 }} />
                         <Tooltip contentStyle={{ fontSize: '10px' }} />
                         <ReferenceLine y={70} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
@@ -284,7 +287,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                         <Line type="monotone" dataKey="rsi" stroke={chartConfig.rsi.color} strokeWidth={1.5} dot={false} name="RSI" />
                     </LineChart>
                 </ResponsiveContainer>
-                <div className="text-[10px] text-muted-foreground font-bold px-2 uppercase tracking-tighter">Relative Strength (RSI)</div>
+                <div className="text-[10px] text-muted-foreground font-bold px-2 uppercase tracking-tighter -mt-4">Relative Strength (RSI)</div>
             </div>
          </div>
       </CardContent>
