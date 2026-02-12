@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition, useCallback, useMemo, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { z } from 'zod';
 import { Loader2, AlertCircle, Calendar, Download, TrendingUp, TrendingDown, Minus, Scale, Activity, BrainCircuit, Zap, Info, Lightbulb, Globe, Newspaper, HelpCircle, Target, Building, Crown, Mountain, AreaChart, Edit } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, FetchResult, MonteCarloResult, CombinedAnalysisResult, ObvData, StochasticData, CmfData, EmaData, SmaData } from '@/lib/types';
+import type { MarketData, RsiData, MacdData, BbandsData, RocData, IndicatorPeriods, MAVolData, VwmaData, ObvData, StochasticData, CmfData, EmaData, SmaData, CombinedAnalysisResult, MonteCarloResult } from '@/lib/types';
 import { fetchMarketData } from '@/app/actions';
 import { calculateBollingerBands, calculateMACD, calculateRSI, calculateROC, calculateMAVol, calculateVWMA, calculateVolatility, runMonteCarloSimulation, calculateOBV, calculateStochastic, calculateCMF, ema, sma } from '@/lib/technical-analysis';
 import { analyzeStockMomentum, type AnalyzeStockMomentumOutput } from '@/ai/flows/analyze-stock-momentum';
