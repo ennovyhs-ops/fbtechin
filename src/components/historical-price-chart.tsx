@@ -160,7 +160,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
         case '6m':
             return allData.slice(-TRADING_DAYS_6M);
         case '1y':
-            return allData.slice(-TRADING_DAYS_252);
+            return allData.slice(-TRADING_DAYS_1Y);
         case 'all':
         default:
             return allData;
