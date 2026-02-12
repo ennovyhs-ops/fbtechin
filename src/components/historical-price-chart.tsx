@@ -160,7 +160,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
         case '6m':
             return allData.slice(-TRADING_DAYS_6M);
         case '1y':
-            return allData.slice(-TRADING_DAYS_1Y);
+            return allData.slice(-TRADING_DAYS_252);
         case 'all':
         default:
             return allData;
@@ -234,7 +234,7 @@ export function HistoricalPriceChart({ marketData, indicatorData, currency, tick
                     Price action with Volume and customizable Study overlays.
                 </CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-2 no-print">
+            <div className="flex flex-wrap items-center justify-end gap-2 no-print">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
