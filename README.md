@@ -1,17 +1,17 @@
-# AI-Powered Market Data Analyzer (fbeasy)
+# fbeasy: AI-Powered Market Data Analyzer
 
-An advanced, AI-driven financial analysis tool built with Next.js, Genkit, and Tailwind CSS. This application provides real-time market data retrieval, deep technical analysis, and probabilistic forecasting using Google Gemini models.
+An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit**, and **Tailwind CSS**. This application provides real-time market data retrieval, deep technical analysis, and probabilistic forecasting using Google Gemini models.
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **AI Momentum Scoring**: A proprietary deterministic model synthesized by Google Gemini to provide a clear Bullish/Bearish signal.
-- **Advanced Multi-Pane Charting**: Stacked interactive charts with Price/Volume, MACD, and RSI panes synchronized by date.
+- **AI Momentum Scoring**: A proprietary deterministic model synthesized by Google Gemini to provide a clear Bullish/Bearish signal with historical comparison.
+- **Advanced Multi-Pane Charting**: Stacked interactive charts with Price/Volume, MACD, and RSI panes synchronized by date for precision analysis.
 - **Technical Overlays**: Toggleable Bollinger Bands, EMA 9, EMA 20, SMA 50, and SMA 200 directly on the price chart.
-- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 5,000+ simulated paths.
+- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 5,000+ simulated paths to visualize risk and reward.
 - **AI-Driven Trade Ideas**: Contextualized trade strategies (Standard, Alternative, and "Lotto") synthesized from momentum and volatility models.
 - **News Sentiment & Divergence**: AI-powered news analysis that detects if sentiment confirms or diverges from technical indicators.
 - **Customizable Indicators**: Real-time browser-side recalculation of RSI, MACD, and other indicators with user-defined periods.
-- **Option Play Sandbox**: Build and analyze custom multi-leg option strategies with instant AI feedback.
+- **Option Play Sandbox**: Build and analyze custom multi-leg option strategies with instant AI feedback on alignment with market context.
 
 ## 🛠️ Tech Stack
 
@@ -32,24 +32,25 @@ An advanced, AI-driven financial analysis tool built with Next.js, Genkit, and T
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/ennovyhs-ops/fbeasy.git
    cd fbeasy
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. Create a `.env` file in the root directory:
+3. **Configure Environment**:
+   Create a `.env` file in the root directory:
    ```env
    ALPHAVANTAGE_API_KEY=your_alpha_vantage_key
    GEMINI_API_KEY=your_gemini_api_key
    ```
 
-4. Run the development server:
+4. **Run the development server**:
    ```bash
    npm run dev
    ```
