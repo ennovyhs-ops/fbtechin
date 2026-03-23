@@ -4,14 +4,21 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
 
 ## 🚀 Key Features
 
+### 📊 Advanced Technical Analysis
 - **AI Momentum Scoring**: A proprietary deterministic model synthesized by Google Gemini to provide a clear Bullish/Bearish signal with historical comparison.
 - **Advanced Multi-Pane Charting**: Stacked interactive charts with Price/Volume, MACD, and RSI panes synchronized by date for precision analysis.
 - **Technical Overlays**: Toggleable Bollinger Bands, EMA 9, EMA 20, SMA 50, and SMA 200 directly on the price chart.
-- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 5,000+ simulated paths to visualize risk and reward.
-- **AI-Driven Trade Ideas**: Contextualized trade strategies (Standard, Alternative, and "Lotto") synthesized from momentum and volatility models.
-- **News Sentiment & Divergence**: AI-powered news analysis that detects if sentiment confirms or diverges from technical indicators.
 - **Customizable Indicators**: Real-time browser-side recalculation of RSI, MACD, and other indicators with user-defined periods.
-- **Option Play Sandbox**: Build and analyze custom multi-leg option strategies with instant AI feedback on alignment with market context.
+
+### 🤖 Generative AI Insights (Powered by Genkit)
+- **AI-Driven Trade Ideas**: Contextualized trade strategies (Standard, Alternative, and "Lotto") synthesized from momentum and volatility models.
+- **Signal Explainer**: Natural language explanations of complex technical indicator alignments.
+- **News Sentiment & Divergence**: AI-powered news analysis that detects if market sentiment confirms or diverges from technical indicators.
+- **Option Play Sandbox**: Build custom multi-leg option strategies and receive instant AI feedback on alignment with market context.
+
+### 📉 Probabilistic Forecasting
+- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 5,000+ simulated paths to visualize risk and reward.
+- **Price Target Projections**: Short-term and long-term targets calculated using ATR-based volatility and trend persistence.
 
 ## 🛠️ Tech Stack
 
@@ -55,6 +62,10 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
    npm run dev
    ```
 
+## 🛡️ Disclaimer
+
+This application is for educational and informational purposes only. It does not constitute financial advice. Trading involves significant risk, and you should consult with a qualified financial advisor before making any investment decisions.
+
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
