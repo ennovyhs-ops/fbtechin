@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -18,7 +16,7 @@ interface MonteCarloSimulationProps {
 }
 
 const SIMULATION_DAYS = 30;
-const NUM_SIMULATIONS = 5000;
+const NUM_SIMULATIONS = 10000;
 
 export function MonteCarloSimulation({ monteCarloResult, currency, loading }: MonteCarloSimulationProps) {
   

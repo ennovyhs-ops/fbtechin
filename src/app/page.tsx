@@ -222,7 +222,7 @@ export default function Home() {
         // Monte Carlo Simulation
         const closePrices = marketData.map(d => parseFloat(d.close)).reverse();
         if (closePrices.length > 30) {
-             const simulationResult = runMonteCarloSimulation(closePrices, 30, 5000, 0.70);
+             const simulationResult = runMonteCarloSimulation(closePrices, 30, 10000, 0.70);
              setMonteCarloResult(simulationResult);
         }
 
