@@ -1,4 +1,4 @@
-# AI-Powered Market Data Analyzer (fbtechin)
+# AI-Powered Market Data Analyzer (fbeasy)
 
 An advanced, AI-driven financial analysis tool built with Next.js, Genkit, and Tailwind CSS. This application provides real-time market data retrieval, deep technical analysis, and probabilistic forecasting using Google Gemini models.
 
@@ -34,8 +34,8 @@ An advanced, AI-driven financial analysis tool built with Next.js, Genkit, and T
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ennovyhs-ops/fbtechin.git
-   cd fbtechin
+   git clone https://github.com/ennovyhs-ops/fbeasy.git
+   cd fbeasy
    ```
 
 2. Install dependencies:
