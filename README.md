@@ -17,8 +17,14 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
 - **Option Play Sandbox**: Build custom multi-leg option strategies and receive instant AI feedback on alignment with market context.
 
 ### 📉 Probabilistic Forecasting
-- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 5,000+ simulated paths to visualize risk and reward.
+- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 10,000+ simulated paths to visualize risk and reward.
 - **Price Target Projections**: Short-term and long-term targets calculated using ATR-based volatility and trend persistence.
+
+## ⚠️ Data Limits & API Information
+
+- **API Source**: All live data is fetched via the Alpha Vantage API.
+- **100-Day Limit**: For stock tickers, the application fetches the last **100 trading days** (approx. 5 months) of data to remain compatible with the free API tier.
+- **Extended History**: If you require a full year of data for 52-Week Range analysis, please use the **Upload File** feature (supporting CSV, XLS, XLSX).
 
 ## 🛠️ Tech Stack
 

@@ -138,25 +138,27 @@ export function DataInputForm({
                             <div className="space-y-4 text-sm overflow-y-auto pr-4">
                             
                             <div>
-                                <h3 className="font-semibold text-foreground mb-2">1. Data Input</h3>
+                                <h3 className="font-semibold text-foreground mb-2">1. Data Input & Limits</h3>
                                 <p className="text-muted-foreground">
-                                    You can fetch market data by entering a ticker, or upload your own historical data via a CSV or Excel (.xls, .xlsx) file. For best results with file uploads, name your file with the ticker (e.g., "SPY.xlsx"). The file must have columns that can be identified as 'date', and 'close'. 'Open', 'high', 'low', and 'volume' are optional but recommended for full analysis. If 'volume' is not provided, it will default to 0.
+                                    You can fetch market data by entering a ticker, or upload your own historical data via a CSV or Excel (.xls, .xlsx) file.
                                 </p>
+                                <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
+                                    <li><strong>API Limit:</strong> For stocks, the app fetches the last **100 trading days** (about 5 months). This ensures compatibility with the Alpha Vantage free tier.</li>
+                                    <li><strong>Extended Analysis:</strong> Features like the 52-Week Range require 252 days of data. To use these for stocks, please **upload a file** containing at least one year of historical data.</li>
+                                    <li><strong>File Upload:</strong> For best results, ensure columns for 'date' and 'close' are present. 'Open', 'high', 'low', and 'volume' are highly recommended for technical momentum scoring.</li>
+                                </ul>
                             </div>
 
                             <div>
                                 <h3 className="font-semibold text-foreground mb-2">2. Data Source & API Usage</h3>
                                 <p className="text-muted-foreground">
-                                All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a general limit of 25 requests per day.
+                                All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is typically limited to 25 requests per day.
                                 </p>
                                 <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                                <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. For stocks, this fetches the last 100 days of data (`compact`) to ensure compatibility with free tier API keys. For Forex/Crypto, it can fetch a more extensive history (`full`).</li>
+                                <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request.</li>
                                 <li><span className="font-semibold text-foreground">Upload File:</span> Uses **0** API requests.</li>
                                 <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
                                 </ul>
-                                <p className="text-muted-foreground mt-2">
-                                If you are unsure of a symbol, you can use <a href="https://finance.yahoo.com/lookup" target="_blank" rel="noopener noreferrer" className="text-primary underline">a tool like Yahoo Finance</a> to find it.
-                                </p>
                             </div>
 
                             <div>
@@ -167,7 +169,7 @@ export function DataInputForm({
                                 <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
                                 <li><span className="font-semibold text-foreground">Momentum Score & Recommendation:</span> A proprietary score (-1.0 to +1.0) and a direct 'Buy/Sell/Hold' recommendation calculated from multiple technical indicators.</li>
                                 <li><span className="font-semibold text-foreground">Calculated Price Target:</span> A price projection based on the momentum score and recent volatility (ATR).</li>
-                                <li><span className="font-semibold text-foreground">Monte Carlo Forecast:</span> A probabilistic 30-day price forecast based on thousands of simulations.</li>
+                                <li><span className="font-semibold text-foreground">Monte Carlo Forecast:</span> A probabilistic 30-day price forecast based on 10,000 simulations.</li>
                                 <li><span className="font-semibold text-foreground">AI Signal Explanation:</span> An AI-generated explanation detailing the key drivers behind the current momentum signal.</li>
                                 <li><span className="font-semibold text-foreground">Rule-Based Option Strategies:</span> A deterministic engine suggests potential option strategies based on momentum and volatility.</li>
                                 <li><span className="font-semibold text-foreground">AI News Impact:</span> When news is loaded, an AI analyzes the articles to provide a summary and predict its impact.</li>
