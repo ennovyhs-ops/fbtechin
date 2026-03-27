@@ -4,26 +4,28 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
 
 ## 🚀 Key Features
 
-### 📊 Advanced Technical Analysis
-- **AI Momentum Scoring**: A proprietary deterministic model synthesized by Google Gemini to provide a clear Bullish/Bearish signal with historical comparison.
-- **Advanced Multi-Pane Charting**: Stacked interactive charts with Price/Volume, MACD, and RSI panes synchronized by date for precision analysis.
-- **Technical Overlays**: Toggleable Bollinger Bands, EMA 9, EMA 20, SMA 50, and SMA 200 directly on the price chart.
-- **Customizable Indicators**: Real-time browser-side recalculation of RSI, MACD, and other indicators with user-defined periods.
+### 📊 Supported Market Data (via Alpha Vantage)
+- **Global Stocks**: Daily historical data for thousands of global tickers.
+- **Forex (FX)**: Major and minor currency pair tracking (e.g., EURUSD).
+- **Cryptocurrencies**: Digital asset performance data paired with USD.
+- **Market News**: Real-time news feed with ticker-specific sentiment scores.
+
+### 📉 Probabilistic & Technical Analysis
+- **10,000 Path Monte Carlo Simulations**: Probabilistic 30-day price forecasting to visualize potential risk and reward.
+- **AI Momentum Scoring**: A multi-factor deterministic model synthesized by Google Gemini to provide a clear Bullish/Bearish signal.
+- **Advanced Multi-Pane Charting**: Synchronized price, volume, MACD, and RSI charts with toggleable overlays (Bollinger Bands, EMA, SMA).
+- **Price Target Projections**: Short-term and long-term targets calculated using ATR-based volatility and trend persistence models.
 
 ### 🤖 Generative AI Insights (Powered by Genkit)
-- **AI-Driven Trade Ideas**: Contextualized trade strategies (Standard, Alternative, and "Lotto") synthesized from momentum and volatility models.
-- **Signal Explainer**: Natural language explanations of complex technical indicator alignments.
-- **News Sentiment & Divergence**: AI-powered news analysis that detects if market sentiment confirms or diverges from technical indicators.
-- **Option Play Sandbox**: Build custom multi-leg option strategies and receive instant AI feedback on alignment with market context.
+- **AI-Driven Trade Ideas**: Contextualized trade strategies synthesized from momentum and volatility models.
+- **News Divergence Analysis**: Detects if news sentiment confirms or diverges from technical indicators.
+- **Signal Explainer**: Natural language explanations of complex indicator alignments.
+- **Option Play Sandbox**: Build custom multi-leg option strategies and receive instant AI feedback.
 
-### 📉 Probabilistic Forecasting
-- **Monte Carlo Simulations**: Probabilistic 30-day price forecasting based on 10,000+ simulated paths to visualize risk and reward.
-- **Price Target Projections**: Short-term and long-term targets calculated using ATR-based volatility and trend persistence.
-
-## ⚠️ Data Limits & API Information
+## ⚠️ Data Source & API Limits
 
 - **API Source**: All live data is fetched via the Alpha Vantage API.
-- **100-Day Limit**: For stock tickers, the application fetches the last **100 trading days** (approx. 5 months) of data to remain compatible with the free API tier.
+- **100-Day Limit**: To ensure compatibility with the free API tier, the application fetches the last **100 trading days** (approx. 5 months) of data for stock tickers.
 - **Extended History**: If you require a full year of data for 52-Week Range analysis, please use the **Upload File** feature (supporting CSV, XLS, XLSX).
 
 ## 🛠️ Tech Stack
@@ -41,7 +43,7 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
 
 - Node.js 18+
 - An [Alpha Vantage API Key](https://www.alphavantage.co/support/#api-key)
-- A [Google AI API Key](https://aistudio.google.com/app/apikey) (for Gemini/Genkit)
+- A [Google AI API Key](https://aistudio.google.com/app/apikey)
 
 ### Installation
 
