@@ -125,8 +125,8 @@ export default function Home() {
             bbands: bbands.reverse().map((val, i) => ({
                 date: dates[i],
                 'Real Upper Band': formatNumber(val.upper),
-                'Real Middle Band': formatNumber(val.middle),
-                'Real Lower Band': formatNumber(val.lower)
+                'Real Lower Band': formatNumber(val.lower),
+                'Real Middle Band': formatNumber(val.middle)
             })),
             roc: roc.reverse().map((val, i) => ({ date: dates[i], ROC: formatNumber(val) })),
             maVol: maVol.reverse().map((val, i) => ({ 
@@ -254,7 +254,8 @@ export default function Home() {
       const ticker = values.ticker.toUpperCase();
       setSubmittedTicker(ticker);
       
-      const marketResult = await fetchMarketData(ticker, 'full');
+      // Use 'compact' mode to stay within free tier limits (~100 days of data).
+      const marketResult = await fetchMarketData(ticker, 'compact');
       
       handleDataResult(marketResult, ticker);
     });

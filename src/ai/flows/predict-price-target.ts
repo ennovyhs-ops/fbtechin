@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -74,7 +73,7 @@ export async function predictPriceTarget(
   try {
     const requiredDataPoints = 90; // For long-term volatility and Fibonacci calculation
     if (!marketData || marketData.length < requiredDataPoints) {
-      return { error: `Insufficient data for prediction. At least ${requiredDataPoints} days of data are required. Live data may be limited to 100 days on the free API plan.` };
+      return { error: `Insufficient data for prediction. At least ${requiredDataPoints} days of data are required. Free API plans are typically limited to 100 days of stock data (the "compact" mode used by this app).` };
     }
 
     const currentPrice = parseFloat(marketData[0].close);
@@ -216,5 +215,3 @@ export async function predictPriceTarget(
     return { error: e.message || 'An unexpected error occurred during price target calculation.' };
   }
 }
-
-    

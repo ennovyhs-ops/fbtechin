@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRef } from 'react';
@@ -151,7 +150,7 @@ export function DataInputForm({
                                 All financial data is sourced from the <a href="https://www.alphavantage.co/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Alpha Vantage API</a>. A free API key is used, which has a general limit of 25 requests per day.
                                 </p>
                                 <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                                <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. For stocks, this fetches the last 100 days of data (`compact`). For Forex/Crypto, it can fetch a more extensive history (`full`), as this is often supported on the free tier for those asset types.</li>
+                                <li><span className="font-semibold text-foreground">Get Data:</span> Uses **1** API request. For stocks, this fetches the last 100 days of data (`compact`) to ensure compatibility with free tier API keys. For Forex/Crypto, it can fetch a more extensive history (`full`).</li>
                                 <li><span className="font-semibold text-foreground">Upload File:</span> Uses **0** API requests.</li>
                                 <li><span className="font-semibold text-foreground">Load News & Analysis:</span> Uses **1** API request.</li>
                                 </ul>
