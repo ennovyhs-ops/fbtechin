@@ -4,13 +4,14 @@ import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Upload, X, HelpCircle, Printer } from 'lucide-react';
+import { Loader2, Upload, X, HelpCircle, Printer, Zap, BrainCircuit, BarChart3, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 const FormSchema = z.object({
   ticker: z.string().min(1, 'Ticker symbol is required.').max(20, 'Ticker symbol is too long.'),
@@ -128,49 +129,89 @@ export function DataInputForm({
                             <HelpCircle className="ml-2 h-4 w-4" />
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-h-[90vh] flex flex-col">
+                        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                             <DialogHeader>
-                            <DialogTitle className="font-headline text-2xl">Application Guide</DialogTitle>
+                            <DialogTitle className="font-headline text-3xl">Application Guide</DialogTitle>
                             <DialogDescription>
-                                Learn about the market data and AI insights available in this platform.
+                                Deep dive into the market data integration and AI-driven insights of fbtechin.
                             </DialogDescription>
                             </DialogHeader>
-                            <div className="space-y-4 text-sm overflow-y-auto pr-4">
+                            <div className="space-y-6 text-sm overflow-y-auto pr-4 pb-4">
                             
-                            <div>
-                                <h3 className="font-semibold text-foreground mb-2">1. Available Market Data</h3>
-                                <p className="text-muted-foreground">
-                                    This application integrates with Alpha Vantage to provide:
-                                </p>
-                                <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                                    <li><strong>Global Stocks:</strong> End-of-day data for thousands of symbols in US and select international markets (e.g., AAPL, TSLA, 0700.HK).</li>
-                                    <li><strong>Forex:</strong> Real-time and historical daily data for major and minor currency pairs (e.g., EURUSD, GBPJPY).</li>
-                                    <li><strong>Cryptocurrencies:</strong> Daily historical data for digital assets paired with USD (e.g., BTCUSD, ETHUSD).</li>
-                                    <li><strong>Market News & Sentiment:</strong> Real-time news feed with AI-scored sentiment for any of the above assets.</li>
-                                </ul>
-                            </div>
+                            <section>
+                                <h3 className="font-bold text-base text-foreground mb-2 flex items-center gap-2">
+                                    <BarChart3 className="h-4 w-4 text-primary" />
+                                    1. Data Sources & Capabilities
+                                </h3>
+                                <div className="space-y-3">
+                                    <p className="text-muted-foreground">
+                                        Integrated via Alpha Vantage, providing high-fidelity financial data across multiple asset classes:
+                                    </p>
+                                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                                        <li><strong>Global Equities:</strong> Access end-of-day data for thousands of tickers across US and international exchanges (e.g., AAPL, TSLA, 0700.HK, BABA).</li>
+                                        <li><strong>Forex (FX):</strong> Track major and minor currency pairs with daily historical precision (e.g., EURUSD, GBPJPY, AUDCAD).</li>
+                                        <li><strong>Cryptocurrencies:</strong> Monitor digital asset performance paired with USD (e.g., BTCUSD, ETHUSD, SOLUSD).</li>
+                                        <li><strong>News & Sentiment:</strong> Real-time feed with ticker-specific sentiment scores derived from natural language processing.</li>
+                                    </ul>
+                                </div>
+                            </section>
 
-                            <div>
-                                <h3 className="font-semibold text-foreground mb-2">2. Data Limits & File Upload</h3>
-                                <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                                    <li><strong>API Limit:</strong> For stock symbols, the app fetches the last **100 trading days** (approx. 5 months) per request to remain within the free API tier.</li>
-                                    <li><strong>Extended Analysis:</strong> Long-term features like the 52-Week Range require 252 days of data. To use these for stocks, please **upload a file** (CSV or Excel) containing at least one year of historical data.</li>
-                                    <li><strong>File Upload:</strong> Your files must contain 'date' and 'close' columns at minimum.</li>
-                                </ul>
-                            </div>
+                            <Separator />
 
-                            <div>
-                                <h3 className="font-semibold text-foreground mb-2">3. AI-Powered Analysis</h3>
-                                <p className="text-muted-foreground">
-                                    The platform uses a "Strategy Synthesis" approach:
-                                </p>
-                                <ul className="list-disc pl-5 mt-2 space-y-2 text-muted-foreground">
-                                <li><strong>Momentum Score:</strong> A deterministic technical model (-1.0 to +1.0) derived from RSI, MACD, Bollinger Bands, and Trend Alignment.</li>
-                                <li><strong>Monte Carlo Forecast:</strong> Runs 10,000 simulations to predict a 30-day probable price range.</li>
-                                <li><strong>AI Signal Explainer:</strong> Gemini 1.5 Flash explains *why* the momentum model reached its conclusion.</li>
-                                <li><strong>News Divergence:</strong> Compares news sentiment with technical momentum to identify if the market is ignoring or overreacting to news.</li>
-                                </ul>
-                            </div>
+                            <section>
+                                <h3 className="font-bold text-base text-foreground mb-2 flex items-center gap-2">
+                                    <Info className="h-4 w-4 text-primary" />
+                                    2. Limits & Data Management
+                                </h3>
+                                <div className="space-y-3">
+                                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                                        <li><strong>The 100-Day Limit:</strong> To ensure stability on the Alpha Vantage free tier, stock data is fetched in <strong>"compact"</strong> mode (the last 100 trading days). This provides roughly 5 months of history.</li>
+                                        <li><strong>Full Historical Analysis:</strong> Features like the <strong>52-Week Range</strong> or long-term backtesting require 252+ days. To unlock these for stocks, use the <strong>Upload File</strong> feature with your own CSV/Excel data.</li>
+                                        <li><strong>File Requirements:</strong> Uploaded files must include at least two columns: <code>date</code> and <code>close</code>. The engine will automatically detect other headers like <code>volume</code> and <code>high/low</code>.</li>
+                                    </ul>
+                                </div>
+                            </section>
+
+                            <Separator />
+
+                            <section>
+                                <h3 className="font-bold text-base text-foreground mb-2 flex items-center gap-2">
+                                    <Zap className="h-4 w-4 text-primary" />
+                                    3. Dynamic Market Simulation
+                                </h3>
+                                <div className="space-y-3">
+                                    <p className="text-muted-foreground">
+                                        One of the core features is the <strong>Live Price Simulation</strong> located in the main data card.
+                                    </p>
+                                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                                        <li><strong>What-If Analysis:</strong> Manually adjust the price in the input field to simulate a real-time move.</li>
+                                        <li><strong>Instant Recalculation:</strong> Clicking "Recalculate" instantly updates the AI Momentum Score, the probabilistic Monte Carlo range, and the short-term price targets based on your hypothetical entry.</li>
+                                    </ul>
+                                </div>
+                            </section>
+
+                            <Separator />
+
+                            <section>
+                                <h3 className="font-bold text-base text-foreground mb-2 flex items-center gap-2">
+                                    <BrainCircuit className="h-4 w-4 text-primary" />
+                                    4. Advanced AI Synthesis
+                                </h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <h4 className="font-semibold text-foreground text-sm">Momentum & Probability</h4>
+                                        <p className="text-muted-foreground mt-1">A deterministic engine scores momentum (-1 to +1) while a 10,000-path Monte Carlo simulation calculates a 30-day "probable range" based on historical drift and volatility.</p>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-foreground text-sm">Option Play Sandbox</h4>
+                                        <p className="text-muted-foreground mt-1">Build custom multi-leg strategies. The AI evaluates your play's alignment with current technical momentum and annualized volatility, highlighting structural advantages and risks.</p>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-foreground text-sm">Trade Idea Synthesis</h4>
+                                        <p className="text-muted-foreground mt-1">Google Gemini 1.5 Flash synthesizes the momentum model, Monte Carlo forecast, and volatility state into three distinct ideas: <strong>Primary</strong> (highest suitability), <strong>Alternative</strong> (creative hedging), and <strong>Lotto Ticket</strong> (high-risk/high-reward speculative play).</p>
+                                    </div>
+                                </div>
+                            </section>
                             
                             </div>
                         </DialogContent>
