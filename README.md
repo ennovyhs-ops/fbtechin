@@ -46,18 +46,28 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
    ```
 5. `npm run dev`
 
-## ☁️ Deployment
+## ☁️ Web Deployment (Step-by-Step)
 
-To deploy this app using **Firebase App Hosting**:
+To deploy **fbtechin** live using **Firebase App Hosting**:
 
-1. **Push your code** to your GitHub repository (`fbtechin`).
-2. Go to the **[Firebase Console](https://console.firebase.google.com/)**.
-3. Select your project and navigate to **App Hosting** in the left sidebar.
-4. Click **Get Started** and connect your GitHub repository.
-5. **Environment Variables**: In the App Hosting settings for your backend, navigate to the **Environment Variables** tab and add:
-   - `ALPHAVANTAGE_API_KEY`: Your Alpha Vantage key.
-   - `GEMINI_API_KEY`: Your Google AI key.
-6. Firebase will automatically build and deploy your app to a live URL every time you push to your main branch.
+1. **Commit and Push**: Ensure your latest code is pushed to your GitHub repository:
+   ```bash
+   git add .
+   git commit -m "Deployment ready"
+   git push origin main
+   ```
+2. **Firebase Console**: Go to the **[Firebase Console](https://console.firebase.google.com/)**.
+3. **App Hosting**: 
+   - Select your project.
+   - Navigate to **App Hosting** in the left sidebar.
+   - Click **Get Started** and connect your GitHub account.
+   - Select the `fbtechin` repository and the `main` branch.
+4. **Environment Variables**:
+   - In the App Hosting setup/settings, navigate to the **Environment Variables** tab.
+   - Add the following keys (these are required for the app to function):
+     - `ALPHAVANTAGE_API_KEY`: Your Alpha Vantage key.
+     - `GEMINI_API_KEY`: Your Google AI key.
+5. **Rollout**: Firebase will automatically detect your Next.js project, build it, and deploy it to a live URL.
 
 ## 🛡️ Disclaimer
 This application is for educational purposes only. It does not constitute financial advice. Options trading involves significant risk.

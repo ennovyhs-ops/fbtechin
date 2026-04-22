@@ -5,7 +5,7 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 5
-  # Increase timeout for AI-intensive operations
-  timeoutSeconds: 60
+  # Increased timeout for AI-intensive operations (Genkit/Gemini)
+  timeoutSeconds: 120
   # Specify the amount of memory to allocate to the server
   memoryMiB: 512
