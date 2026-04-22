@@ -48,10 +48,12 @@ To deploy this app as a live web app:
 
 1. **Push your code** to your GitHub repository (`fbtechin`).
 2. Go to the **[Firebase Console](https://console.firebase.google.com/)**.
-3. Select your project and navigate to **App Hosting**.
+3. Select your project and navigate to **App Hosting** in the left sidebar.
 4. Click **Get Started** and connect your GitHub repository.
-5. Set your environment variables (`ALPHAVANTAGE_API_KEY`, `GEMINI_API_KEY`) in the App Hosting settings.
-6. Firebase will automatically build and deploy your app to a live URL.
+5. **Important**: In the App Hosting settings for your backend, navigate to the **Environment Variables** tab and add the following:
+   - `ALPHAVANTAGE_API_KEY`: Your Alpha Vantage key.
+   - `GEMINI_API_KEY`: Your Google AI key.
+6. Firebase will automatically build and deploy your app to a live URL every time you push to your main branch.
 
 ## 🛡️ Disclaimer
 This application is for educational purposes only. It does not constitute financial advice.
