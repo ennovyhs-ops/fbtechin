@@ -1,3 +1,4 @@
+
 # fbtechin: AI-Powered Market Data Analyzer
 
 An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit**, and **Tailwind CSS**. This application provides real-time market data retrieval, deep technical analysis, and probabilistic forecasting using Google Gemini models.
@@ -11,69 +12,46 @@ An advanced, AI-driven financial analysis tool built with **Next.js**, **Genkit*
 - **Market News**: Real-time news feed with ticker-specific sentiment scores.
 
 ### 📉 Probabilistic & Technical Analysis
-- **10,000 Path Monte Carlo Simulations**: Probabilistic 30-day price forecasting to visualize potential risk and reward.
-- **AI Momentum Scoring**: A multi-factor deterministic model synthesized by Google Gemini to provide a clear Bullish/Bearish signal.
-- **Advanced Multi-Pane Charting**: Synchronized price, volume, MACD, and RSI charts with toggleable overlays (Bollinger Bands, EMA, SMA).
-- **Price Target Projections**: Short-term and long-term targets calculated using ATR-based volatility and trend persistence models.
+- **10,000 Path Monte Carlo Simulations**: Probabilistic 30-day price forecasting.
+- **AI Momentum Scoring**: A multi-factor deterministic model synthesized by Google Gemini.
+- **Advanced Multi-Pane Charting**: Synchronized price, volume, MACD, and RSI charts.
+- **Live Price Simulation**: Manually adjust prices to see how technicals and targets react instantly.
 
 ### 🤖 Generative AI Insights (Powered by Genkit)
 - **AI-Driven Trade Ideas**: Contextualized trade strategies synthesized from momentum and volatility models.
 - **News Divergence Analysis**: Detects if news sentiment confirms or diverges from technical indicators.
-- **Signal Explainer**: Natural language explanations of complex indicator alignments.
 - **Option Play Sandbox**: Build custom multi-leg option strategies and receive instant AI feedback.
-
-## ⚠️ Data Source & API Limits
-
-- **API Source**: All live data is fetched via the Alpha Vantage API.
-- **100-Day Limit**: To ensure compatibility with the free API tier, the application fetches the last **100 trading days** (approx. 5 months) of data for stock tickers.
-- **Extended History**: If you require a full year of data for 52-Week Range analysis, please use the **Upload File** feature (supporting CSV, XLS, XLSX).
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
-- **AI Engine**: [Genkit 1.x](https://github.com/firebase/genkit) with Google AI (Gemini 1.5 Flash)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Shadcn UI](https://ui.shadcn.com/)
-- **Charts**: [Recharts](https://recharts.org/)
-- **Data Source**: Alpha Vantage API
-- **Language**: TypeScript
+- **Framework**: Next.js 14+ (App Router)
+- **AI Engine**: Genkit 1.x with Google AI (Gemini 1.5 Flash)
+- **Styling**: Tailwind CSS & Shadcn UI
+- **Deployment**: Firebase App Hosting
 
 ## 📦 Getting Started
 
 ### Prerequisites
-
 - Node.js 18+
-- An [Alpha Vantage API Key](https://www.alphavantage.co/support/#api-key)
-- A [Google AI API Key](https://aistudio.google.com/app/apikey)
+- [Alpha Vantage API Key](https://www.alphavantage.co/support/#api-key)
+- [Google AI API Key](https://aistudio.google.com/app/apikey)
 
 ### Installation
+1. `git clone https://github.com/ennovyhs-ops/fbtechin.git`
+2. `npm install`
+3. Create `.env` with `ALPHAVANTAGE_API_KEY` and `GEMINI_API_KEY`.
+4. `npm run dev`
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/ennovyhs-ops/fbtechin.git
-   cd fbtechin
-   ```
+## ☁️ Deployment
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+To deploy this app as a live web app:
 
-3. **Configure Environment**:
-   Create a `.env` file in the root directory:
-   ```env
-   ALPHAVANTAGE_API_KEY=your_alpha_vantage_key
-   GEMINI_API_KEY=your_gemini_api_key
-   ```
-
-4. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
+1. **Push your code** to your GitHub repository (`fbtechin`).
+2. Go to the **[Firebase Console](https://console.firebase.google.com/)**.
+3. Select your project and navigate to **App Hosting**.
+4. Click **Get Started** and connect your GitHub repository.
+5. Set your environment variables (`ALPHAVANTAGE_API_KEY`, `GEMINI_API_KEY`) in the App Hosting settings.
+6. Firebase will automatically build and deploy your app to a live URL.
 
 ## 🛡️ Disclaimer
-
-This application is for educational and informational purposes only. It does not constitute financial advice. Trading involves significant risk, and you should consult with a qualified financial advisor before making any investment decisions.
-
-## 📄 License
-
-This project is licensed under the MIT License.
+This application is for educational purposes only. It does not constitute financial advice.
