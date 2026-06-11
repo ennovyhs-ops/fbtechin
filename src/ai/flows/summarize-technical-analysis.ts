@@ -45,7 +45,12 @@ export type SummarizeTechnicalAnalysisOutput = z.infer<typeof SummarizeTechnical
 export async function summarizeTechnicalAnalysis(
   input: SummarizeTechnicalAnalysisInput
 ): Promise<SummarizeTechnicalAnalysisOutput> {
-  return summarizeTechnicalAnalysisFlow(input);
+  try {
+    return await summarizeTechnicalAnalysisFlow(input);
+  } catch (error: any) {
+    console.error('Genkit flow error in summarizeTechnicalAnalysis:', error);
+    throw new Error(error.message || 'AI generation failed');
+  }
 }
 
 const summarizeTechnicalAnalysisPrompt = ai.definePrompt({
@@ -96,6 +101,9 @@ const summarizeTechnicalAnalysisFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await summarizeTechnicalAnalysisPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('AI failed to produce a valid technical summary.');
+    }
+    return output;
   }
 );

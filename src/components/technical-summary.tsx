@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { Bot, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Bot, Loader2, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { summarizeTechnicalAnalysis } from '@/ai/flows/summarize-technical-analysis';
@@ -135,7 +135,7 @@ export function TechnicalSummary({ ticker, analysis, currentPrice, volatility, i
       })
       .catch(e => {
         console.error('Failed to get technical summary:', e);
-        setError('The AI analyst could not generate a summary at this time.');
+        setError(e.message || 'The AI analyst could not generate a summary at this time.');
       })
       .finally(() => {
         setLoading(false);
@@ -143,7 +143,7 @@ export function TechnicalSummary({ ticker, analysis, currentPrice, volatility, i
   };
 
   useEffect(() => {
-    if (analysis && volatility !== null && derivedSignalInfo) {
+    if (analysis && volatility !== null && derivedSignalInfo && !summary && !loading) {
         handleGenerateSummary();
     }
   }, [analysis, volatility, derivedSignalInfo]);
@@ -158,10 +158,24 @@ export function TechnicalSummary({ ticker, analysis, currentPrice, volatility, i
   return (
     <Card className="bg-primary/5 border-primary/20">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-2">
-          <Bot className="h-6 w-6 text-primary" />
-          <span>AI Technical Summary</span>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+            <CardTitle className="font-headline text-2xl flex items-center gap-2">
+            <Bot className="h-6 w-6 text-primary" />
+            <span>AI Technical Summary</span>
+            </CardTitle>
+            {(summary || error) && (
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleGenerateSummary} 
+                    disabled={loading}
+                    className="h-8 px-2 text-xs text-muted-foreground hover:text-primary"
+                >
+                    <RefreshCw className={`mr-1 h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                    Regenerate
+                </Button>
+            )}
+        </div>
         <CardDescription>
           A short, AI-generated passage summarizing the asset's technical posture.
         </CardDescription>
@@ -174,9 +188,14 @@ export function TechnicalSummary({ ticker, analysis, currentPrice, volatility, i
           </div>
         )}
         {error && (
-          <div className="flex items-center gap-2 text-destructive text-sm">
-            <AlertCircle className="h-4 w-4" />
-            <span>{error}</span>
+          <div className="flex flex-col gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <div className="flex items-center gap-2 text-destructive text-sm font-semibold">
+                <AlertCircle className="h-4 w-4" />
+                <span>AI Error: {error}</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+                This often occurs if the <strong>GEMINI_API_KEY</strong> is missing from your environment variables or if the AI service is currently unavailable.
+            </p>
           </div>
         )}
         {summary && (
